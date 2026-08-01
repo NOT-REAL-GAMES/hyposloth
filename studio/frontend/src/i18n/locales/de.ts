@@ -24,7 +24,7 @@ export const de = {
   shell: {
     beta: "BETA",
     brand: "unsloth",
-    product: "Unsloth Studio",
+    product: "Hyposloth Studio",
     accountMenu: "Kontomenü von {name}",
     updateAvailable: "Update verfügbar",
     resize: {
@@ -33,7 +33,7 @@ export const de = {
       drag: "Zum Ändern der Größe ziehen",
     },
     aria: {
-      home: "Unsloth Startseite",
+      home: "Hyposloth Startseite",
       closeSidebar: "Seitenleiste schließen",
       openSidebar: "Seitenleiste öffnen",
       resizeSidebar: "Seitenleiste anpassen oder einklappen",
@@ -100,7 +100,7 @@ export const de = {
     title: "Einstellungen",
     dialog: {
       title: "Einstellungen",
-      description: "Verwalten Sie Ihre Unsloth-Einstellungen.",
+      description: "Verwalten Sie Ihre Hyposloth-Einstellungen.",
       closeAriaLabel: "Einstellungen schließen",
     },
     tabs: {
@@ -115,7 +115,7 @@ export const de = {
     },
     general: {
       title: "Allgemein",
-      description: "Globale Einstellungen für Unsloth.",
+      description: "Globale Einstellungen für Hyposloth.",
       account: "Konto",
       huggingFaceToken: "Hugging Face Token",
       huggingFaceTokenDescription:
@@ -125,7 +125,7 @@ export const de = {
       tokenValidated: "Token validiert",
       password: "Passwort",
       passwordDescription:
-        "Ändern Sie das Passwort für dieses Unsloth-Konto.",
+        "Ändern Sie das Passwort für dieses Hyposloth-Konto.",
       passwordDialog: {
         trigger: "Passwort ändern",
         title: "Passwort ändern",
@@ -251,16 +251,16 @@ export const de = {
         action: "Einstellungen zurücksetzen",
         confirmTitle: "Alle lokalen Einstellungen zurücksetzen?",
         confirmDescription:
-          "Löscht nur lokal gespeicherte Einstellungen und lädt Unsloth neu. Chats, API-Zugriff und in der DB gespeicherte Einstellungen bleiben erhalten.",
+          "Löscht nur lokal gespeicherte Einstellungen und lädt Hyposloth neu. Chats, API-Zugriff und in der DB gespeicherte Einstellungen bleiben erhalten.",
         confirmAction: "Zurücksetzen und neu laden",
       },
     },
     profile: {
       title: "Profil",
-      description: "Wie Ihr Profil in Unsloth angezeigt wird.",
+      description: "Wie Ihr Profil in Hyposloth angezeigt wird.",
       changePicture: "Profilbild ändern",
       displayName: "Anzeigename",
-      nickname: "Wie soll Unsloth Sie nennen?",
+      nickname: "Wie soll Hyposloth Sie nennen?",
       nicknamePlaceholder: "Spitzname",
       nicknameSaved: "Bevorzugter Name gespeichert",
       avatarShape: "Form des Profilbilds",
@@ -280,7 +280,7 @@ export const de = {
     },
     appearance: {
       title: "Darstellung",
-      description: "Wie Unsloth Studio auf diesem Gerät aussieht.",
+      description: "Wie Hyposloth Studio auf diesem Gerät aussieht.",
       theme: {
         title: "Design",
         label: "Farbschema",
@@ -292,7 +292,7 @@ export const de = {
       language: {
         title: "Sprache",
         label: "Anzeigesprache",
-        description: "Die von Unsloth verwendete Sprache.",
+        description: "Die von Hyposloth verwendete Sprache.",
         autoDetect: "Automatisch erkennen",
       },
       layout: {
@@ -305,7 +305,7 @@ export const de = {
     resources: {
       title: "System",
       description:
-        "Überwachen Sie Hardware und Speicher dieses Unsloth-Servers.",
+        "Überwachen Sie Hardware und Speicher dieses Hyposloth-Servers.",
       liveUpdates: "Live-Updates",
       floatingWindow: "Schwebendes Fenster",
       disableOverlay: "Overlay deaktivieren",
@@ -453,7 +453,7 @@ export const de = {
     },
     apiKeys: {
       title: "API",
-      description: "Zugriff auf Unsloth über die OpenAI-kompatible API.",
+      description: "Zugriff auf Hyposloth über die OpenAI-kompatible API.",
       readDocs: "API-Dokumentation lesen",
       noAccess: "Noch kein API-Zugriff.",
       accessTokens: "Zugriffstoken",
@@ -481,7 +481,7 @@ export const de = {
       osWindows: "Windows",
       secureHttps: "Sicheres HTTPS",
       secureHttpsHint:
-        "Der 0.0.0.0-Port ist weiterhin global erreichbar. Für vollständige Sicherheit starten Sie Unsloth Studio mit --secure, um nur diesen HTTPS-Link freizugeben.",
+        "Der 0.0.0.0-Port ist weiterhin global erreichbar. Für vollständige Sicherheit starten Sie Hyposloth Studio mit --secure, um nur diesen HTTPS-Link freizugeben.",
       copyTunnelUrl: "Tunnel-URL kopieren",
       copySnippet: "Snippet kopieren",
       copy: "Kopieren",
@@ -518,7 +518,7 @@ export const de = {
     about: {
       title: "Über",
       description: "Dokumentation, Versionshinweise, Feedback und Build-Infos.",
-      studioVersion: "Unsloth-Version",
+      studioVersion: "Hyposloth-Version",
       packageVersion: "Paketversion",
       llamaCppVersion: "llama.cpp-Version",
       hardware: "Hardware",
@@ -534,27 +534,27 @@ export const de = {
       reportIssue: "Problem melden",
       license: {
         sectionTitle: "Lizenz",
-        studioLabel: "Unsloth Studio",
+        studioLabel: "Hyposloth Studio",
         studioLicense: "AGPL-3.0",
         studioDescription: "Open Source unter der GNU AGPL v3.0.",
-        libraryLabel: "Unsloth Core",
+        libraryLabel: "Hyposloth Core",
         libraryLicense: "Apache-2.0",
         libraryDescription: "Lizenziert unter Apache 2.0.",
       },
       dangerZone: "Gefahrenzone",
-      shutDownStudio: "Unsloth Studio herunterfahren",
+      shutDownStudio: "Hyposloth Studio herunterfahren",
       shutDownStudioDescription:
-        "Stoppt den Unsloth-Server und beendet Ihre Sitzung.",
+        "Stoppt den Hyposloth-Server und beendet Ihre Sitzung.",
       shutDown: "Herunterfahren",
       update: {
-        title: "Unsloth Studio aktualisieren",
+        title: "Hyposloth Studio aktualisieren",
         commandText: "{label}-Text",
         copied: "Kopiert",
         copyCommand: "Befehl kopieren",
         commandCopied: "{label} kopiert",
         copyNamedCommand: "{label} kopieren",
-        checkingInstall: "Prüfe, wie Unsloth installiert wurde...",
-        installIntro: "So installieren oder aktualisieren Sie Unsloth:",
+        checkingInstall: "Prüfe, wie Hyposloth installiert wurde...",
+        installIntro: "So installieren oder aktualisieren Sie Hyposloth:",
         localUpdateHeading: "Lokales Update",
         installCommandUnix: "macOS/Linux-Installationsbefehl",
         installCommandWindows: "Windows-Installationsbefehl",
@@ -568,11 +568,11 @@ export const de = {
           "Quell- oder VCS-Paketinstallation erkannt. Installieren Sie erneut vom ursprünglichen lokalen Pfad oder der Git-URL.",
         repoCheckoutFallback:
           "Wenn Sie den Repository-Checkout noch haben, führen Sie den lokalen Installer daraus aus:",
-        restartAfterUpdate: "Starten Sie Unsloth nach dem Update neu.",
+        restartAfterUpdate: "Starten Sie Hyposloth nach dem Update neu.",
         desktopManaged:
           "Die Desktop-App hält ihr gebündeltes Backend aktuell und weist auf neue Versionen hin, sobald sie verfügbar sind.",
         unknownInstall:
-          "Es konnte nicht erkannt werden, wie Unsloth installiert wurde. Verwenden Sie für Installer- oder PyPI-Installationen die obigen Befehle.",
+          "Es konnte nicht erkannt werden, wie Hyposloth installiert wurde. Verwenden Sie für Installer- oder PyPI-Installationen die obigen Befehle.",
         localCheckout:
           "Führen Sie bei lokalen Checkout-Installationen den lokalen Installer aus diesem Checkout aus:",
         docs: "Installationsdokumentation:",
@@ -1049,7 +1049,7 @@ export const de = {
       preparing: "Wird vorbereitet",
       left: "{eta} verbleibend",
       downloaded: "{size} heruntergeladen",
-      terminalStart: "> Unsloth-Training beginnt...",
+      terminalStart: "> Hyposloth-Training beginnt...",
       preparingResources: "> Modell und Datensatz werden vorbereitet...",
       gettingReady: "> Wir bereiten alles für Ihren Lauf vor...",
       waitingForFirstStep:

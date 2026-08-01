@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Unsloth extra-UI Playwright test: Compare tab, Recipes editor, /export, /studio, Settings tabs."""
+"""Hyposloth extra-UI Playwright test: Compare tab, Recipes editor, /export, /studio, Settings tabs."""
 
 import json
 import os
@@ -105,11 +105,11 @@ with sync_playwright() as p:
     )
     install_view_transition_killer(ctx)
     page = ctx.new_page()
-    # 60s default for slow macos-14 --single-process Chromium (second Unsloth boot of the job).
+    # 60s default for slow macos-14 --single-process Chromium (second Hyposloth boot of the job).
     page.set_default_timeout(60_000)
     page_errors = []
 
-    # Filter out known-benign React errors (timing artefacts on slow CI runners, not Unsloth bugs);
+    # Filter out known-benign React errors (timing artefacts on slow CI runners, not Hyposloth bugs);
     # shared base list lives in _playwright_robust.BENIGN_PAGE_ERROR_PATTERNS.
     def _on_pageerror(e):
         msg = str(e)
@@ -466,9 +466,9 @@ with sync_playwright() as p:
             )
 
     # ─────────────────────────────────────────────────────
-    # 4. Unsloth training route.
+    # 4. Hyposloth training route.
     # ─────────────────────────────────────────────────────
-    step(f"Unsloth route ({'chat-only redirect' if chat_only else 'tabs + sections'})")
+    step(f"Hyposloth route ({'chat-only redirect' if chat_only else 'tabs + sections'})")
     page.goto(f"{BASE}/studio")
     page.wait_for_timeout(1500)
     shoot("08-studio")

@@ -1,4 +1,4 @@
-# Unsloth
+# Hyposloth
 # Copyright 2023-present Daniel Han-Chen, Michael Han-Chen & the Unsloth team. All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -227,7 +227,7 @@ def get_or_autotune_moe_kernels(
         logger.error(f"MoE kernel auto-tuning failed: {e}")
         if "AttributeError" in str(e) and "_experimental_make_tensor_descriptor" in str(e):
             logger.warning(
-                "Unsloth: Your Triton version might be incompatible with TMA features. Falling back to default configs."
+                "Hyposloth: Your Triton version might be incompatible with TMA features. Falling back to default configs."
             )
         logger.info("Falling back to default kernel configurations")
         return _get_default_configs()

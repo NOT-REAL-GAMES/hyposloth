@@ -24,7 +24,7 @@ export const ko = {
   shell: {
     beta: "BETA",
     brand: "unsloth",
-    product: "Unsloth Studio",
+    product: "Hyposloth Studio",
     accountMenu: "{name} 계정 메뉴",
     updateAvailable: "업데이트 사용 가능",
     resize: {
@@ -33,7 +33,7 @@ export const ko = {
       drag: "드래그하여 크기 조절",
     },
     aria: {
-      home: "Unsloth 홈",
+      home: "Hyposloth 홈",
       closeSidebar: "사이드바 닫기",
       openSidebar: "사이드바 열기",
       resizeSidebar: "사이드바 크기 조절 또는 접기",
@@ -99,7 +99,7 @@ export const ko = {
     title: "설정",
     dialog: {
       title: "설정",
-      description: "Unsloth 환경설정을 관리합니다.",
+      description: "Hyposloth 환경설정을 관리합니다.",
       closeAriaLabel: "설정 닫기",
     },
     tabs: {
@@ -114,7 +114,7 @@ export const ko = {
     },
     general: {
       title: "일반",
-      description: "Unsloth의 전역 환경설정입니다.",
+      description: "Hyposloth의 전역 환경설정입니다.",
       account: "계정",
       huggingFaceToken: "Hugging Face 토큰",
       huggingFaceTokenDescription:
@@ -123,7 +123,7 @@ export const ko = {
       showToken: "토큰 표시",
       tokenValidated: "토큰이 확인되었습니다",
       password: "비밀번호",
-      passwordDescription: "이 Unsloth 계정의 비밀번호를 변경합니다.",
+      passwordDescription: "이 Hyposloth 계정의 비밀번호를 변경합니다.",
       passwordDialog: {
         trigger: "비밀번호 변경",
         title: "비밀번호 변경",
@@ -239,16 +239,16 @@ export const ko = {
         action: "환경설정 재설정",
         confirmTitle: "모든 로컬 환경설정을 재설정하시겠습니까?",
         confirmDescription:
-          "로컬 전용 환경설정을 지우고 Unsloth를 다시 로드합니다. 채팅, API 접근 권한, DB 기반 설정은 유지됩니다.",
+          "로컬 전용 환경설정을 지우고 Hyposloth를 다시 로드합니다. 채팅, API 접근 권한, DB 기반 설정은 유지됩니다.",
         confirmAction: "재설정 후 다시 로드",
       },
     },
     profile: {
       title: "프로필",
-      description: "Unsloth에서 프로필이 표시되는 방식입니다.",
+      description: "Hyposloth에서 프로필이 표시되는 방식입니다.",
       changePicture: "프로필 사진 변경",
       displayName: "표시 이름",
-      nickname: "Unsloth가 당신을 어떻게 부르면 될까요?",
+      nickname: "Hyposloth가 당신을 어떻게 부르면 될까요?",
       nicknamePlaceholder: "닉네임",
       nicknameSaved: "선호하는 이름이 저장되었습니다",
       avatarShape: "프로필 사진 모양",
@@ -268,7 +268,7 @@ export const ko = {
     },
     appearance: {
       title: "외관",
-      description: "이 기기에서 Unsloth Studio가 표시되는 방식입니다.",
+      description: "이 기기에서 Hyposloth Studio가 표시되는 방식입니다.",
       theme: {
         title: "테마",
         label: "색상 구성",
@@ -280,7 +280,7 @@ export const ko = {
       language: {
         title: "언어",
         label: "표시 언어",
-        description: "Unsloth에서 사용하는 언어입니다.",
+        description: "Hyposloth에서 사용하는 언어입니다.",
         autoDetect: "자동 감지",
       },
       layout: {
@@ -292,7 +292,7 @@ export const ko = {
     },
     resources: {
       title: "시스템",
-      description: "이 Unsloth 서버의 하드웨어와 저장소를 모니터링합니다.",
+      description: "이 Hyposloth 서버의 하드웨어와 저장소를 모니터링합니다.",
       liveUpdates: "실시간 업데이트",
       floatingWindow: "플로팅 창",
       disableOverlay: "오버레이 비활성화",
@@ -423,7 +423,7 @@ export const ko = {
     },
     apiKeys: {
       title: "API",
-      description: "OpenAI 호환 API를 통해 Unsloth에 접근합니다.",
+      description: "OpenAI 호환 API를 통해 Hyposloth에 접근합니다.",
       readDocs: "API 문서 읽기",
       noAccess: "아직 API 접근 권한이 없습니다.",
       accessTokens: "액세스 토큰",
@@ -451,7 +451,7 @@ export const ko = {
       osWindows: "Windows",
       secureHttps: "보안 HTTPS",
       secureHttpsHint:
-        "0.0.0.0 포트는 여전히 전역에서 접근할 수 있습니다. 완전한 보안을 위해서는 --secure로 Unsloth Studio를 실행하여 이 HTTPS 링크만 노출하세요.",
+        "0.0.0.0 포트는 여전히 전역에서 접근할 수 있습니다. 완전한 보안을 위해서는 --secure로 Hyposloth Studio를 실행하여 이 HTTPS 링크만 노출하세요.",
       copyTunnelUrl: "터널 URL 복사",
       copySnippet: "스니펫 복사",
       copy: "복사",
@@ -487,7 +487,7 @@ export const ko = {
     about: {
       title: "정보",
       description: "문서, 릴리스 노트, 피드백 및 빌드 정보입니다.",
-      studioVersion: "Unsloth 버전",
+      studioVersion: "Hyposloth 버전",
       packageVersion: "패키지 버전",
       llamaCppVersion: "llama.cpp 버전",
       hardware: "하드웨어",
@@ -503,27 +503,27 @@ export const ko = {
       reportIssue: "문제 보고",
       license: {
         sectionTitle: "라이선스",
-        studioLabel: "Unsloth Studio",
+        studioLabel: "Hyposloth Studio",
         studioLicense: "AGPL-3.0",
         studioDescription: "GNU AGPL v3.0 하에 오픈 소스입니다.",
-        libraryLabel: "Unsloth Core",
+        libraryLabel: "Hyposloth Core",
         libraryLicense: "Apache-2.0",
         libraryDescription: "Apache 2.0 하에 라이선스가 부여됩니다.",
       },
       dangerZone: "위험 구역",
-      shutDownStudio: "Unsloth Studio 종료",
+      shutDownStudio: "Hyposloth Studio 종료",
       shutDownStudioDescription:
-        "Unsloth 서버를 중지하고 세션을 종료합니다.",
+        "Hyposloth 서버를 중지하고 세션을 종료합니다.",
       shutDown: "종료",
       update: {
-        title: "Unsloth Studio 업데이트",
+        title: "Hyposloth Studio 업데이트",
         commandText: "{label} 텍스트",
         copied: "복사됨",
         copyCommand: "명령 복사",
         commandCopied: "{label} 복사됨",
         copyNamedCommand: "{label} 복사",
-        checkingInstall: "Unsloth 설치 방식을 확인하는 중...",
-        installIntro: "Unsloth를 설치하거나 업데이트하려면:",
+        checkingInstall: "Hyposloth 설치 방식을 확인하는 중...",
+        installIntro: "Hyposloth를 설치하거나 업데이트하려면:",
         localUpdateHeading: "로컬 업데이트",
         installCommandUnix: "macOS/Linux 설치 명령",
         installCommandWindows: "Windows 설치 명령",
@@ -537,11 +537,11 @@ export const ko = {
           "소스 또는 VCS 패키지 설치가 감지되었습니다. 원래의 로컬 경로 또는 Git URL에서 다시 설치하세요.",
         repoCheckoutFallback:
           "저장소 체크아웃이 아직 있다면 거기에서 로컬 설치 프로그램을 실행하세요:",
-        restartAfterUpdate: "업데이트 후 Unsloth를 다시 시작하세요.",
+        restartAfterUpdate: "업데이트 후 Hyposloth를 다시 시작하세요.",
         desktopManaged:
           "데스크톱 앱은 번들된 백엔드를 최신 상태로 유지하며 새 버전이 있으면 알립니다.",
         unknownInstall:
-          "Unsloth 설치 방식을 감지할 수 없습니다. 설치 프로그램 또는 PyPI 설치의 경우 위 명령을 사용하세요.",
+          "Hyposloth 설치 방식을 감지할 수 없습니다. 설치 프로그램 또는 PyPI 설치의 경우 위 명령을 사용하세요.",
         localCheckout:
           "로컬 체크아웃 설치의 경우 해당 체크아웃에서 로컬 설치 프로그램을 실행하세요:",
         docs: "설치 문서:",

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-🦥 Starter Script for Fine-Tuning FastLanguageModel with Unsloth
+🦥 Starter Script for Fine-Tuning FastLanguageModel with Hyposloth
 
 Configurable options for model loading, PEFT, training, and saving/pushing.
 Customize the dataset loading/preprocessing and the save/push config for your case.

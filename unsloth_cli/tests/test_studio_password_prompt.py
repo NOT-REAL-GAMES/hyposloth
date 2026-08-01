@@ -891,7 +891,7 @@ def test_run_non_tty_deletes_bootstrap_password_file(monkeypatch, tmp_path):
 
 def test_run_missing_frontend_exits_before_stripping_bootstrap(monkeypatch, tmp_path):
     # Regression (item B / reviewer finding 4): `unsloth studio run` serves the
-    # same Unsloth UI and strips the seeded password on a headless public launch,
+    # same Hyposloth UI and strips the seeded password on a headless public launch,
     # so a missing frontend dist must abort BEFORE the strip -- the same lockout
     # guard as `unsloth studio`, not just `studio run`'s model-load residual.
     import typer as _typer
@@ -1164,7 +1164,7 @@ def test_reset_password_seeds_the_admin_when_no_db_exists(monkeypatch, tmp_path)
 
 
 def test_reset_password_reports_an_unwritable_auth_dir(monkeypatch, tmp_path):
-    # _connect_auth_db creates auth/ before it opens SQLite, so a read-only Unsloth
+    # _connect_auth_db creates auth/ before it opens SQLite, so a read-only Hyposloth
     # home raises OSError, not sqlite3.Error.
     import pathlib
 

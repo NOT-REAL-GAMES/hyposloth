@@ -1103,13 +1103,13 @@ def run_inference_process(
             resp_queue,
             {
                 "type": "status",
-                "message": "Importing Unsloth...",
+                "message": "Importing Hyposloth...",
             },
         )
 
         _ensure_backend_on_path()
 
-        # Recover from any namespace-package shadow before importing Unsloth.
+        # Recover from any namespace-package shadow before importing Hyposloth.
         from core.import_guards import ensure_real_packages
 
         ensure_real_packages("unsloth_zoo", "unsloth")

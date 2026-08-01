@@ -21,7 +21,7 @@ const SIZES: Record<AvatarSize, string> = {
 
 const UNSLOTH_OWNER_LOGO: ProviderLogo = {
   id: "unsloth",
-  name: "Unsloth",
+  name: "Hyposloth",
   logoPath: "/rounded.png",
   treatment: "original",
   background: "transparent",
@@ -60,7 +60,7 @@ export function OwnerAvatar({
   /**
    * Repo name (after `owner/`). For an eligible owner (currently "unsloth"),
    * renders the matched upstream provider's logo instead of the HF profile pic
-   * (e.g. an Unsloth Qwen2.5 re-upload shows the Qwen logo).
+   * (e.g. a Hyposloth Qwen2.5 re-upload shows the Qwen logo).
    */
   repoName?: string;
   size?: AvatarSize;

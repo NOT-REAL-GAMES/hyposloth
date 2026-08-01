@@ -194,7 +194,7 @@ def _gated_refusal(repo_id: str) -> AutoDownloadRefusal:
         code = "model_access_denied",
         message = (
             f"'{repo_id}' is gated on Hugging Face. Accept its licence, then retry with "
-            "your own token in the X-Unsloth-HF-Token header: automatic download never "
+            "your own token in the X-Hyposloth-HF-Token header: automatic download never "
             "uses this server's Hugging Face identity."
         ),
     )
@@ -411,7 +411,7 @@ def _downloading_refusal(label: str, percent: Optional[float]) -> AutoDownloadRe
     return AutoDownloadRefusal(
         status = 503,
         code = "model_downloading",
-        message = (f"Downloading '{label}'{progress}. Retry shortly. Track it in Unsloth Studio."),
+        message = (f"Downloading '{label}'{progress}. Retry shortly. Track it in Hyposloth Studio."),
         retry_after = _RETRY_AFTER_S,
     )
 
@@ -580,7 +580,7 @@ async def _admit_and_start(
                 code = "model_access_denied",
                 message = (
                     f"Hugging Face rejected the token sent for '{repo_id}'. Replace the "
-                    "X-Unsloth-HF-Token header with a valid token; retrying will not help."
+                    "X-Hyposloth-HF-Token header with a valid token; retrying will not help."
                 ),
             )
         if status == 403:
@@ -596,7 +596,7 @@ async def _admit_and_start(
                 code = "model_not_found",
                 message = (
                     f"'{repo_id}' was not found on Hugging Face, or is not accessible. "
-                    "If it is private, send a token in the X-Unsloth-HF-Token header."
+                    "If it is private, send a token in the X-Hyposloth-HF-Token header."
                 ),
             )
         logger.warning("auto-download: Hub lookup failed for %r: %s", repo_id, exc)
@@ -626,7 +626,7 @@ async def _admit_and_start(
             code = "model_not_supported",
             message = (
                 f"'{repo_id}' has no GGUF weights. Automatic download serves GGUF only; "
-                "load other formats from Unsloth Studio."
+                "load other formats from Hyposloth Studio."
             ),
         )
 
@@ -656,7 +656,7 @@ async def _admit_and_start(
                     if unknown
                     else "ships custom code that runs on load"
                 )
-                + ". Load it once in Unsloth Studio to review and approve it, then retry."
+                + ". Load it once in Hyposloth Studio to review and approve it, then retry."
             ),
         )
 
@@ -835,7 +835,7 @@ async def _dispatch(
         code = "model_downloading",
         message = (
             f"Downloading '{label}' ({_gb(expected_bytes)}). Retry shortly. "
-            "Track it in Unsloth Studio."
+            "Track it in Hyposloth Studio."
         ),
         retry_after = _RETRY_AFTER_S,
     )

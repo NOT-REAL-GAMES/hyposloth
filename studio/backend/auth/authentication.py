@@ -180,7 +180,7 @@ async def authenticated_via_api_key(
 ) -> bool:
     """True when the caller used an sk-unsloth API key, not a UI session JWT.
 
-    Lets routes treat programmatic API callers differently from the Unsloth UI
+    Lets routes treat programmatic API callers differently from the Hyposloth UI
     (e.g. refuse a teardown the UI would allow).
     """
     return bool(credentials and credentials.credentials.startswith(API_KEY_PREFIX))
@@ -207,7 +207,7 @@ def _invalid_api_key_detail(token: str) -> str:
     if token == API_KEY_PLACEHOLDER:
         return (
             "This is the placeholder key from the example. Create an API key in "
-            f"Unsloth Studio under Settings > API and use it in place of {API_KEY_PLACEHOLDER}."
+            f"Hyposloth Studio under Settings > API and use it in place of {API_KEY_PLACEHOLDER}."
         )
     return "Invalid or expired API key"
 

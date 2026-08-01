@@ -38,7 +38,7 @@ except:
     transformers_version = Version(transformers_version)
     if not transformers_version >= Version("4.38"):
         raise ImportError(
-            f"Unsloth: Your transformers version of {transformers_version} does not support Gemma.\n"
+            f"Hyposloth: Your transformers version of {transformers_version} does not support Gemma.\n"
             f"The minimum required version is 4.38.\n"
             f'Try `pip install --upgrade "transformers>=4.38"`\n'
             f"to obtain the latest transformers build, then restart this session."

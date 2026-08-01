@@ -46,7 +46,7 @@ class _DummyVLMModel(_DummyModel):
 
 
 def test_mlx_exports_unsloth_trainer_api():
-    """MLX imports should expose the public Unsloth trainer API."""
+    """MLX imports should expose the public Hyposloth trainer API."""
     unsloth = _import_mlx_unsloth()
     from unsloth import (
         RawTextDataLoader,
@@ -69,7 +69,7 @@ def test_mlx_exports_unsloth_trainer_api():
 
 
 def test_non_mlx_exports_public_trainer_api_when_available():
-    """GPU/ROCm imports should keep exporting the public Unsloth trainer API."""
+    """GPU/ROCm imports should keep exporting the public Hyposloth trainer API."""
     try:
         unsloth = importlib.import_module("unsloth")
     except ImportError as exc:

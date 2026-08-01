@@ -71,7 +71,7 @@ def test_floor_stays_compatible_with_supported_torch() -> None:
     lowers = [Version(s.version) for s in req.specifier if s.operator in (">=", "==", "~=")]
     assert lowers, "spec must declare a lower bound"
     assert max(lowers) <= Version("0.6.0"), (
-        f"floor {max(lowers)} requires a torch newer than Unsloth's minimum (2.4); "
+        f"floor {max(lowers)} requires a torch newer than Hyposloth's minimum (2.4); "
         "llm-compressor >0.6.0 needs torch>=2.7. Keep the floor <= 0.6.0."
     )
 

@@ -95,7 +95,7 @@ def _mlx_distributed_launch_detected() -> bool:
 def _install_httpcore_asyncgen_silencer() -> None:
     """Silence benign httpx/httpcore asyncgen GC noise on Python 3.13.
 
-    When Unsloth proxies a llama-server stream via httpx, the innermost
+    When Hyposloth proxies a llama-server stream via httpx, the innermost
     ``HTTP11ConnectionByteStream.__aiter__`` async generator is finalised by
     the asyncgen GC hook on a task different from the one that opened it. Its
     ``aclose`` calls ``anyio.Lock.acquire`` → ``cancel_shielded_checkpoint``,
@@ -232,14 +232,14 @@ def _friendly_upstream_error(text: str) -> str:
     parse grammar" / "failed to initialize samplers"). This surfaces to coding agents as
     a hard 400 on every tool-bearing turn. It is a llama-server limitation with some
     model/quant + tool-schema combinations, and recent llama.cpp builds handle the common
-    coding-agent tools, so point the user at updating Unsloth rather than the raw body.
+    coding-agent tools, so point the user at updating Hyposloth rather than the raw body.
     """
     lowered = text.lower()
     if "failed to parse grammar" in lowered or "failed to initialize samplers" in lowered:
         return (
             "The model couldn't compile a tool-calling grammar for this request. This is a "
             "llama-server limitation with some model/quant and tool-schema combinations. "
-            "Update Unsloth (it installs the latest llama.cpp, which handles the common "
+            "Update Hyposloth (it installs the latest llama.cpp, which handles the common "
             "coding-agent tools) or try a different GGUF model."
         )
     return f"llama-server error: {text}"
@@ -736,7 +736,7 @@ def _openai_passthrough_sse_line_terminal_state(raw_line: str) -> Optional[str]:
 
     Some llama-server builds can emit the logical final chunk (``finish_reason``)
     and optional usage chunk, then keep the HTTP stream open without sending the
-    OpenAI ``data: [DONE]`` sentinel. Classifying those chunks lets Unsloth close
+    OpenAI ``data: [DONE]`` sentinel. Classifying those chunks lets Hyposloth close
     the client stream promptly while preserving an optional trailing usage chunk.
     """
     if not raw_line.startswith("data:"):
@@ -1895,8 +1895,8 @@ def _request_used_api_key(request: Any) -> bool:
     """True when this request authenticated with an sk-unsloth key.
 
     Studio's own chat hits these same endpoints with a session JWT, so this is
-    what separates "someone is using Unsloth as an API server" from "someone is
-    using Unsloth".
+    what separates "someone is using Hyposloth as an API server" from "someone is
+    using Hyposloth".
     """
     # Total by construction: this only decides a monitor label and must never fail a
     # load. Only a real Request hands back a string; the load routes take stand-ins too.
@@ -1945,7 +1945,7 @@ import numpy as np
 from datetime import date as _date
 
 router = APIRouter()
-# Unsloth-only router (not mounted on /v1 OpenAI-compat).
+# Hyposloth-only router (not mounted on /v1 OpenAI-compat).
 studio_router = APIRouter()
 
 
@@ -2276,9 +2276,9 @@ def _effective_enable_tools(payload) -> Optional[bool]:
 
 
 def _explicit_studio_tool_loop_requested(payload) -> bool:
-    """True when the request itself asks Unsloth to execute local tools.
+    """True when the request itself asks Hyposloth to execute local tools.
 
-    Process-wide CLI policy can default Unsloth's tool loop on for ordinary chat,
+    Process-wide CLI policy can default Hyposloth's tool loop on for ordinary chat,
     but it must not steal OpenAI-compatible client tools or response_format
     requests from the llama-server passthrough path. A policy of ``False``
     (--disable-tools) vetoes even an explicit ``enable_tools: true`` ask.
@@ -2290,7 +2290,7 @@ def _explicit_studio_tool_loop_requested(payload) -> bool:
 
 
 def _permission_mode_confirm(payload) -> bool:
-    """Effective confirm-gate intent for Unsloth's own local tool loop.
+    """Effective confirm-gate intent for Hyposloth's own local tool loop.
 
     An explicit confirm_tool_calls (True or False) wins; explicit ask/auto always
     engage the gate (a non-streaming one is then rejected, since it cannot prompt);
@@ -2311,7 +2311,7 @@ def _permission_mode_confirm(payload) -> bool:
 
 
 def _confirm_gate_needs_stream(payload) -> bool:
-    """Whether Unsloth's local tool-loop confirm gate still requires stream=true.
+    """Whether Hyposloth's local tool-loop confirm gate still requires stream=true.
 
     The gate can only prompt while streaming, so a non-streaming request that will
     prompt must 400 up front. auto ("Approve for me") only prompts for a call the
@@ -3472,7 +3472,7 @@ def _is_explicit_tensor_drop(request: LoadRequest) -> bool:
     """True only when the request explicitly selects a non-tensor --split-mode (e.g.
     layer/row/none), a deliberate departure from a preserved tensor->layer fallback.
 
-    A bare tensor_parallel field is NOT a drop: the Unsloth UI always sends it and echoes
+    A bare tensor_parallel field is NOT a drop: the Hyposloth UI always sends it and echoes
     the /load response's resolved value back, so after a fallback every reload carries
     tensor_parallel=false even though the user never changed it -- treating that as a drop
     would collapse the preserved multi-GPU placement on the next ctx/settings reload. An
@@ -4016,11 +4016,11 @@ async def _unavailable_model_message(requested_model: str) -> str:
     if not available:
         return (
             f"The model '{requested_model}' is not downloaded on this server, and no "
-            "models are downloaded yet. Download one in Unsloth Studio."
+            "models are downloaded yet. Download one in Hyposloth Studio."
         )
     return (
         f"The model '{requested_model}' is not downloaded on this server. "
-        f"Available models: {available}. Download more in Unsloth Studio, "
+        f"Available models: {available}. Download more in Hyposloth Studio, "
         "or list them with GET /v1/models."
     )
 
@@ -4430,14 +4430,14 @@ async def _reject_unservable_model(
         status_code, code = 503, "model_switch_failed"
         message = (
             f"The model '{requested_model}' is downloaded, but this server could not "
-            "switch to it. Retry shortly, or load it in Unsloth Studio."
+            "switch to it. Retry shortly, or load it in Hyposloth Studio."
         )
     elif downloaded:
         status_code, code = 404, "model_not_found"
         message = (
             f"The model '{requested_model}' is downloaded but not loaded, and "
             "'Switch model by request' is off, so this server can only serve the "
-            "loaded model. Turn it on in Unsloth Studio under Settings > API."
+            "loaded model. Turn it on in Hyposloth Studio under Settings > API."
         )
     else:
         status_code, code = 404, "model_not_found"
@@ -4529,7 +4529,7 @@ async def _maybe_auto_switch_model(
             # (path + quant + advertised id) so an alias/unknown name stays servable
             # and keeps the override keyed by the advertised id, not the load path.
             last = get_last_unloaded_model()
-            # A non-GGUF (Unsloth/Transformers) model loaded after the idle-unload
+            # A non-GGUF (Hyposloth/Transformers) model loaded after the idle-unload
             # leaves the GGUF slot empty but is the live model, so don't resurrect
             # the stale GGUF over it (that load would tear the active model down).
             if (
@@ -5628,7 +5628,7 @@ async def load_model(
     config (temperature, top_p, top_k, min_p) from the model's YAML, falling
     back to default.yaml for missing values.
 
-    GGUF models load via llama-server (llama.cpp) instead of Unsloth.
+    GGUF models load via llama-server (llama.cpp) instead of Hyposloth.
     """
     return await _tunnel_safe_json(
         load_model_gated(request, fastapi_request, current_subject), label = "Model load"
@@ -5865,7 +5865,7 @@ async def _load_model_impl(
                 and backend.active_model_name.lower() == model_identifier.lower()
             ):
                 api_monitor.discard(_load_event)  # nothing loaded, no monitor row
-                logger.info(f"Model already loaded (Unsloth): {model_log_label}, skipping reload")
+                logger.info(f"Model already loaded (Hyposloth): {model_log_label}, skipping reload")
                 inference_config = load_inference_config(backend.active_model_name)
                 _model_info = backend.models.get(backend.active_model_name, {})
                 _chat_template = None
@@ -5975,8 +5975,8 @@ async def _load_model_impl(
             raise HTTPException(
                 status_code = 400,
                 detail = (
-                    "Unsloth does not support distributed MLX inference under "
-                    "mlx.launch. Use `mlx.launch ... unsloth chat` or run Unsloth "
+                    "Hyposloth does not support distributed MLX inference under "
+                    "mlx.launch. Use `mlx.launch ... unsloth chat` or run Hyposloth "
                     "without the distributed launcher."
                 ),
             )
@@ -6086,10 +6086,10 @@ async def _load_model_impl(
                     timeout_s = _POST_CANCEL_DRAIN_TIMEOUT_S,
                 )
 
-            # Unload any active Unsloth model only after every hub conflict check.
+            # Unload any active Hyposloth model only after every hub conflict check.
             if unsloth_backend.active_model_name:
                 logger.info(
-                    f"Unloading Unsloth model '{unsloth_backend.active_model_name}' before loading GGUF"
+                    f"Unloading Hyposloth model '{unsloth_backend.active_model_name}' before loading GGUF"
                 )
                 await asyncio.to_thread(
                     unsloth_backend.unload_model, unsloth_backend.active_model_name
@@ -6332,7 +6332,7 @@ async def _load_model_impl(
                 **_parallel_slot_echo(llama_backend),
             )
 
-        # ── Standard path: load via Unsloth/transformers ──────────
+        # ── Standard path: load via Hyposloth/transformers ──────────
         backend = get_inference_backend()
 
         # Same sidecar rejection as GGUF: fast path ahead of the drain, rechecked after.
@@ -6345,7 +6345,7 @@ async def _load_model_impl(
         )
         _raise_if_sidecar_swap_in_progress()
 
-        # Point of no return for the Unsloth path: cancel only once nothing can still reject the load.
+        # Point of no return for the Hyposloth path: cancel only once nothing can still reject the load.
         if on_reload_confirmed is not None:
             on_reload_confirmed(cancel = True)
 
@@ -6358,7 +6358,7 @@ async def _load_model_impl(
         # Unload any active GGUF model first, off-loop: a 600 GB teardown measures
         # 160s and on-loop would block _tunnel_safe_json's own padding.
         if llama_backend.is_loaded:
-            logger.info("Unloading GGUF model before loading Unsloth model")
+            logger.info("Unloading GGUF model before loading Hyposloth model")
             await asyncio.to_thread(llama_backend.unload_model)
 
         # Shut down any export subprocess to free VRAM
@@ -6511,7 +6511,7 @@ async def _load_model_impl(
         if isinstance(e, SidecarSwapInProgress):
             # Lost the spawn-time race to a sidecar install/repair: retryable 409.
             raise HTTPException(status_code = 409, detail = str(e))
-        # Friendlier message for models Unsloth cannot load.
+        # Friendlier message for models Hyposloth cannot load.
         redacted_msg = redact_native_paths(str(e))
         if _is_unsupported_nvfp4_inference_error(redacted_msg):
             logger.warning(
@@ -6584,7 +6584,7 @@ def _requires_trust_remote_code_for_model(
     model_identifier: str, hf_token: Optional[str] = None
 ) -> bool:
     """Whether loading this model would execute custom repo code, so the consent
-    dialog must run first. True if the Unsloth YAML default enables
+    dialog must run first. True if the Hyposloth YAML default enables
     ``trust_remote_code`` OR the raw config declares an ``auto_map`` (Hub/local,
     config.json or tokenizer_config.json). Reads raw JSON only; never imports
     model code."""
@@ -7221,7 +7221,7 @@ async def unload_model(request: UnloadRequest, current_subject: str = Depends(ge
 async def _unload_model_impl(request: UnloadRequest, current_subject: str):
     """
     Unload a model from memory.
-    Routes to the correct backend (llama-server for GGUF, Unsloth otherwise).
+    Routes to the correct backend (llama-server for GGUF, Hyposloth otherwise).
     """
     # A deliberate unload means "stay unloaded": drop any idle reload stash so the
     # next /v1 request can't resurrect this model. The idle loop unloads via the
@@ -7280,7 +7280,7 @@ async def _unload_model_impl(request: UnloadRequest, current_subject: str):
                 cancel = False,
             )
 
-        # Serialize with /load under the same lifecycle gate: the Unsloth unload now runs
+        # Serialize with /load under the same lifecycle gate: the Hyposloth unload now runs
         # off the event loop (asyncio.to_thread), so without this a concurrent /load could
         # swap in a fresh subprocess mid-unload and the unload command would land on the
         # new worker. The gate makes load and unload exclusive.
@@ -7330,7 +7330,7 @@ async def _unload_model_impl(request: UnloadRequest, current_subject: str):
                 logger.info(f"Unloaded GGUF model: {request.model_path}")
                 return UnloadResponse(status = "unloaded", model = request.model_path)
 
-            # Unload from Unsloth backend off the event loop: unload takes _gen_lock, which
+            # Unload from Hyposloth backend off the event loop: unload takes _gen_lock, which
             # a slow SSE stream paused between tokens still holds, so a sync call would block
             # the loop that drives the stream's next token and the lock release.
             backend = get_inference_backend()
@@ -7415,7 +7415,7 @@ async def confirm_tool_call(
 
 @studio_router.get("/monitor")
 async def get_api_monitor(current_subject: str = Depends(get_current_subject)):
-    """Return recent OpenAI-compatible API activity for Unsloth."""
+    """Return recent OpenAI-compatible API activity for Hyposloth."""
     active_model = _monitor_active_model()
     active_requests = api_monitor.active_count(subject = current_subject)
     if active_requests:
@@ -7598,7 +7598,7 @@ async def generate_stream(
 async def get_status(current_subject: str = Depends(get_current_subject)):
     """
     Get current inference backend status.
-    Reports whichever backend (Unsloth or llama-server) is active.
+    Reports whichever backend (Hyposloth or llama-server) is active.
     """
     try:
         llama_backend = get_llama_cpp_backend()
@@ -7644,7 +7644,7 @@ async def get_status(current_subject: str = Depends(get_current_subject)):
                 _display_model_id = _llama_public_model_id(llama_backend) or _display_model_id
             _inference_cfg = load_inference_config(_model_id) if _model_id else None
             _audio_type = getattr(llama_backend, "_audio_type", None)
-            # Don't surface Unsloth's auto-applied bundled family template (e.g. the
+            # Don't surface Hyposloth's auto-applied bundled family template (e.g. the
             # gemma-4 override) as a user-authored override: the frontend adopts
             # status.chat_template_override as editable state and would otherwise
             # re-send it as an explicit override for a later, unrelated model. Only
@@ -7709,7 +7709,7 @@ async def get_status(current_subject: str = Depends(get_current_subject)):
                 llama_cpp_latest_tag = _latest_tag,
             )
 
-        # Otherwise, report Unsloth backend status
+        # Otherwise, report Hyposloth backend status
         backend = get_inference_backend()
 
         is_vision = False
@@ -7837,7 +7837,7 @@ async def generate_audio(
     """
     Generate audio (TTS) from the latest user message.
     Returns JSON with base64-encoded WAV audio.
-    Works with both GGUF (llama-server) and Unsloth/transformers backends.
+    Works with both GGUF (llama-server) and Hyposloth/transformers backends.
     """
     import base64
 
@@ -8654,7 +8654,7 @@ def _build_external_messages(
              metadata; strip it for providers that can't parse the unknown key.
           2. Marked server-side builtin cards (`_server_tool: true` on a
              canonical builtin name, or a Gemini `native_part` payload) are
-             Unsloth-internal tool cards from a prior native Gemini turn;
+             Hyposloth-internal tool cards from a prior native Gemini turn;
              forwarding them to OpenAI / Anthropic / custom OAI-compat gateways
              sends an orphan `tool_calls` entry (no matching tool declaration,
              often no matching `role="tool"` reply) that can be rejected. We
@@ -9291,7 +9291,7 @@ async def openai_chat_completions(
 
     Routes to the correct backend automatically:
     - GGUF models → llama-server via LlamaCppBackend
-    - Other models → Unsloth/transformers via InferenceBackend
+    - Other models → Hyposloth/transformers via InferenceBackend
     """
     # OpenAI's newer "developer" role is equivalent to "system". Normalize it
     # before provider routing so external providers (which may not accept the
@@ -9389,7 +9389,7 @@ async def openai_chat_completions(
         # is invalid and must not evict the resident model first.
         #
         # Enter the local-loop arm exactly when the passthrough router below would
-        # run Unsloth's own tool loop. That gate is `_tools_on or _mcp_allowed`
+        # run Hyposloth's own tool loop. That gate is `_tools_on or _mcp_allowed`
         # (see the use_tools block): _effective_enable_tools (which lets a
         # process-wide --enable-tools policy force the loop on) plus mcp_enabled
         # honoring --disable-tools, and tool_choice="none" disabling it unless the
@@ -9414,7 +9414,7 @@ async def openai_chat_completions(
             or bool(payload.openai_code_exec_container_id)
             or bool(payload.anthropic_code_exec_container_id)
             # A JSON-schema response_format is guided-decoding structured output the
-            # router forwards to the llama-server passthrough, not Unsloth's tool
+            # router forwards to the llama-server passthrough, not Hyposloth's tool
             # loop, so a --enable-tools policy must not 400 it as a local-confirm
             # request under ask/auto.
             or bool(_extract_response_format(payload))
@@ -9491,7 +9491,7 @@ async def openai_chat_completions(
     using_gguf = llama_backend.is_loaded
 
     # OpenAI-SDK clients send ``chat_template_kwargs`` via ``extra_body``, which
-    # the SDK spreads into the request body at the top level. Unsloth's
+    # the SDK spreads into the request body at the top level. Hyposloth's
     # ChatCompletionRequest has ``extra="allow"`` so pydantic stashes them in
     # ``model_extra``, but downstream generators consume the typed
     # ``payload.enable_thinking``. Lift ``enable_thinking`` from the extra-body
@@ -9779,7 +9779,7 @@ async def openai_chat_completions(
 
     # ── Standard OpenAI function-calling pass-through (GGUF only) ────
     # When a client (opencode / Claude Code via OpenAI compat / Cursor /
-    # Continue / ...) sends standard OpenAI `tools` without Unsloth's
+    # Continue / ...) sends standard OpenAI `tools` without Hyposloth's
     # `enable_tools` shorthand, forward the request to llama-server
     # verbatim so structured `tool_calls` flow back to the client. This
     # branch runs BEFORE `_extract_content_parts` because that helper is
@@ -9802,7 +9802,7 @@ async def openai_chat_completions(
     _has_tool_catalog = bool(payload.tools and len(payload.tools) > 0)
     _has_active_tool_catalog = _has_tool_catalog and payload.tool_choice != "none"
     _has_client_tool_contract = _has_active_tool_catalog or _has_tool_messages
-    # The Unsloth tool loop needs a tool-capable backend, so a request that asks
+    # The Hyposloth tool loop needs a tool-capable backend, so a request that asks
     # for it on a backend that can't run it (DiffusionGemma forces supports_tools
     # off) must not steal client tools from the passthrough (#6851).
     _studio_tool_loop_requested = (
@@ -9998,7 +9998,7 @@ async def openai_chat_completions(
                 use_tools = False
 
         if use_tools:
-            # permission_mode ask/auto require the confirm gate for Unsloth's own
+            # permission_mode ask/auto require the confirm gate for Hyposloth's own
             # tool loop. The request validator self-enables confirm only for
             # request-level tool signals (enable_tools/enabled_tools/mcp_enabled);
             # when a CLI policy (--enable-tools) forces the loop on without those,
@@ -11304,7 +11304,7 @@ async def openai_chat_completions(
                 if admission_lease is not None:
                     admission_lease.release()
                 _tracker.__exit__(None, None, None)
-    # ── Standard Unsloth path ─────────────────────────────────
+    # ── Standard Hyposloth path ─────────────────────────────────
 
     # Decode image (from content parts OR legacy field)
     image_b64 = extracted_image_b64 or payload.image_base64
@@ -11342,7 +11342,7 @@ async def openai_chat_completions(
     _sf_model_info = backend.models.get(backend.active_model_name, {})
     _sf_tpl = (_sf_model_info.get("chat_template_info") or {}).get("template")
     # Named templates may expose native reasoning only in their ``tool_use``
-    # branch. Use a truthy placeholder for Unsloth-managed tools, whose concrete
+    # branch. Use a truthy placeholder for Hyposloth-managed tools, whose concrete
     # schemas are selected below, and the request schemas for client passthrough.
     _sf_server_tool_intent = bool(
         _effective_enable_tools(payload) or _explicit_studio_tool_loop_requested(payload)
@@ -11421,7 +11421,7 @@ async def openai_chat_completions(
             _sf_use_tools = False
 
     if _sf_use_tools:
-        # permission_mode ask/auto require the confirm gate for Unsloth's own tool
+        # permission_mode ask/auto require the confirm gate for Hyposloth's own tool
         # loop; when a CLI policy (--enable-tools) forces the loop on without a
         # request-level tool signal, derive confirm here so the mode still gates
         # the call (matching the GGUF path). off/full never prompt.
@@ -12371,7 +12371,7 @@ def _openai_model_objects() -> list[dict]:
             entry["native_context_length"] = _native_ctx
         models.append(entry)
 
-    # Check Unsloth backend
+    # Check Hyposloth backend
     backend = get_inference_backend()
     if backend.active_model_name:
         model_info = backend.models.get(backend.active_model_name, {})
@@ -14873,7 +14873,7 @@ def _anthropic_requested_studio_tools(tools: Optional[list]) -> set[str]:
 def _select_anthropic_server_tools(
     all_tools: list[dict], requested_studio_tools: set[str], enabled_tools: Optional[list[str]]
 ) -> list[dict]:
-    """Select Unsloth tools requested through Anthropic tools and extensions."""
+    """Select Hyposloth tools requested through Anthropic tools and extensions."""
     if not requested_studio_tools and enabled_tools is None:
         return all_tools
 
@@ -15123,7 +15123,7 @@ async def anthropic_messages(
             ),
         )
 
-    # Reject an unsupported confirm-gated permission mode for Unsloth's own
+    # Reject an unsupported confirm-gated permission mode for Hyposloth's own
     # ("server") Anthropic tools before the switch, mirroring the malformed- and
     # mixed-tool checks above. ask always wants a per-call pause this passthrough
     # cannot offer, so it 400s whenever server tools are selected. auto only needs
@@ -15138,7 +15138,7 @@ async def anthropic_messages(
     # confirm_tool_calls=False opt-out always pass.
     # A process-wide ``--enable-tools`` policy is only a default for ordinary
     # chat. It must not steal an explicit Anthropic client-tool catalog (Claude
-    # Code's Write/Edit/Bash tools) and turn it into Unsloth's local tool loop.
+    # Code's Write/Edit/Bash tools) and turn it into Hyposloth's local tool loop.
     # An explicit per-request server-tool ask was rejected as mixed mode above.
     _enable_pre = False if _has_client_tool else _effective_enable_tools(payload)
     _server_tools_requested_pre = (
@@ -15254,7 +15254,7 @@ async def anthropic_messages(
 
     # ── Tool routing ──────────────────────────────────────────
     # Three paths:
-    # 1. enable_tools=true → server-side execution of built-in tools (Unsloth shorthand)
+    # 1. enable_tools=true → server-side execution of built-in tools (Hyposloth shorthand)
     # 2. tools=[...] only  → client-side pass-through (standard Anthropic behavior)
     # 3. neither           → plain chat
     # The server-side agentic loop doesn't support multimodal input -- matches
@@ -15853,7 +15853,7 @@ async def _anthropic_tool_stream(
                         ends_on_tool_use = True
                     elif etype == "tool_end":
                         tool_blocks_emitted += 1
-                        # Unsloth ran the tool server-side, so the response no longer ends on a pending
+                        # Hyposloth ran the tool server-side, so the response no longer ends on a pending
                         # client action; otherwise stop_reason "tool_use" tells the client to run it again.
                         ends_on_tool_use = False
                     elif etype == "content" and event.get("text"):
@@ -16987,7 +16987,7 @@ def _openai_messages_for_passthrough(payload) -> list[dict]:
     structured ``tool_calls``. Content-parts images already in the list are
     left untouched.
 
-    When a client uses Unsloth's legacy ``image_base64`` top-level field, the
+    When a client uses Hyposloth's legacy ``image_base64`` top-level field, the
     image is re-encoded to PNG (llama-server's stb_image has limited format
     support) and spliced into the last user message as an OpenAI ``image_url``
     content part so vision + function-calling requests work transparently.
@@ -17121,7 +17121,7 @@ def _build_openai_passthrough_body(
 ) -> dict:
     """Assemble the llama-server request body from a ChatCompletionRequest.
 
-    Only known OpenAI / llama-server fields are forwarded, so Unsloth-specific
+    Only known OpenAI / llama-server fields are forwarded, so Hyposloth-specific
     extensions (``enable_tools``, ``enabled_tools``, ``session_id``, ...) never
     leak to the backend.
     """
@@ -17371,7 +17371,7 @@ async def _openai_passthrough_stream_admitted(
     admission_lease: LlamaAdmissionLease,
     tracker,
 ):
-    """Streaming client-side pass-through after Unsloth granted an upstream slot.
+    """Streaming client-side pass-through after Hyposloth granted an upstream slot.
 
     Forwards the client's OpenAI function-calling request to llama-server and
     relays the SSE stream back with minimal normalization (reasoning-only

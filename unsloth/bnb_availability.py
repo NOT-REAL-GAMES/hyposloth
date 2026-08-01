@@ -67,7 +67,7 @@ def check_native_kernels(bnb, device_type):
     each handle on first lookup, so these are the ones bound later.
     """
     if bnb is None:
-        raise ImportError("Unsloth: `bitsandbytes` is not installed.")
+        raise ImportError("Hyposloth: `bitsandbytes` is not installed.")
     functional = getattr(bnb, "functional", None)
     if functional is None:
         # A part-initialised bitsandbytes leaves the parent without the attribute while
@@ -77,12 +77,12 @@ def check_native_kernels(bnb, device_type):
     lib = functional.lib
     if lib is None:
         # 0.45.5, the floor in pyproject.toml, on a native-load failure.
-        raise AttributeError("Unsloth: `bitsandbytes.functional.lib` is None.")
+        raise AttributeError("Hyposloth: `bitsandbytes.functional.lib` is None.")
     for symbol in bitsandbytes_symbols(device_type):
         handle = getattr(lib, symbol)  # AttributeError here is itself a failed check
         if not hasattr(handle, "restype"):
             raise AttributeError(
-                f"Unsloth: `bitsandbytes.functional.lib.{symbol}` is not a native "
+                f"Hyposloth: `bitsandbytes.functional.lib.{symbol}` is not a native "
                 "function pointer - the bitsandbytes native library did not load."
             )
 

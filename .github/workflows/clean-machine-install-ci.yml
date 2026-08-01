@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved.
 
-# Proves Unsloth installs on a machine that has never seen a developer toolchain.
+# Proves Hyposloth installs on a machine that has never seen a developer toolchain.
 #
 # Why: studio-mac-install-matrix.yml runs `install.sh --local --no-torch` on runners
 # with Xcode CLT selected AND actions/setup-python preinstalled, so the macOS

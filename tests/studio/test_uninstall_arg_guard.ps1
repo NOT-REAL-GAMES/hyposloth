@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 $sourceUninstallPath = [System.IO.Path]::Combine($PSScriptRoot, "..", "..", "scripts", "uninstall.ps1")
 $sourceUninstallPath = (Resolve-Path $sourceUninstallPath).Path
 $pwshPath = (Get-Process -Id $PID).Path
-$bodyEntry = '    _Step "Stopping any running Unsloth Studio servers..."'
+$bodyEntry = '    _Step "Stopping any running Hyposloth Studio servers..."'
 $bodyMarker = "__UNSLOTH_TEST_BODY_REACHED__"
 
 $source = Get-Content -Raw -LiteralPath $sourceUninstallPath
@@ -76,7 +76,7 @@ try {
     foreach ($flag in @("-Help", "-h", "-help", "--help", "-?", "/?")) {
         $r = Invoke-Uninstaller @($flag)
         Check "$flag exits 0"                    ($r.Code -eq 0)
-        Check "$flag prints usage"               ($r.Output -match "Unsloth Studio uninstaller")
+        Check "$flag prints usage"               ($r.Output -match "Hyposloth Studio uninstaller")
         Check "$flag never starts the uninstall" ($r.Output -notmatch $bodyMarker)
     }
 

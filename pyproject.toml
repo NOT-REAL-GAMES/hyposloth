@@ -12,7 +12,7 @@ license = "Apache-2.0"
 keywords = ["ai", "llm", "reinforcement learning", "machine learning", "artificial intelligence", "pytorch"]
 authors = [
     {email = "info@unsloth.ai"},
-    {name = "Unsloth AI team"},
+    {name = "Hyposloth AI team"},
 ]
 maintainers = [
     {name = "Daniel Han", email = "daniel@unsloth.ai"},

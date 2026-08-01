@@ -8,7 +8,7 @@ contract: text and line heights scale by size/16, the root font size and
 layout geometry never move, an explicit Code font size stays fixed, and an
 overflowing Radix select scrolls its viewport by keyboard and wheel.
 
-Runs against an already-booted, already-bootstrapped Unsloth:
+Runs against an already-booted, already-bootstrapped Hyposloth:
     BASE_URL=http://127.0.0.1:18894 STUDIO_PW=... python tests/studio/playwright_ui_font_scale.py
 """
 

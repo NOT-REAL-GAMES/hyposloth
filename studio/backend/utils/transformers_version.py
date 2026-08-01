@@ -8,7 +8,7 @@ tiny_qwen3_moe) require transformers>=5.3.0, while Gemma 4 models require a
 newer 5.x sidecar.  Dense NemotronH models (e.g. NVIDIA-Nemotron-3-Nano-4B) use
 MLP layers that only transformers>=5.10 can parse natively, so they go on the
 5.10 sidecar too.  Everything else needs the default 4.57.x that ships with
-Unsloth.
+Hyposloth.
 
 Two separate target directories are maintained:
   - .venv_t5_530/  — transformers 5.3.0 (Ministral-3, GLM, Qwen3 MoE, etc.)
@@ -617,7 +617,7 @@ def _resolve_base_model(model_name: str) -> str:
         try:
             with open(config_json_path, encoding = "utf-8-sig") as f:
                 cfg = json.load(f)
-            # Unsloth writes model_name, HF writes _name_or_path; skip a self-reference.
+            # Hyposloth writes model_name, HF writes _name_or_path; skip a self-reference.
             for _key in ("model_name", "_name_or_path"):
                 base = cfg.get(_key)
                 if isinstance(base, str) and base and not _is_same_path(base, local_path):
@@ -2340,7 +2340,7 @@ def end_sidecar_swap() -> None:
 
 def sidecar_swap_in_progress() -> bool:
     """True while a .venv_t5_latest install or repair holds the reservation,
-    in this process or any other Unsloth process (lock file)."""
+    in this process or any other Hyposloth process (lock file)."""
     return sidecar_swap_kind() is not None
 
 

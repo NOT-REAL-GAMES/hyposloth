@@ -336,7 +336,7 @@ def test_stop_reports_nothing_running_without_pid_files(monkeypatch, tmp_path):
     result = _run_stop(studio_mod)
 
     assert result.exit_code == 0, result.output
-    assert "no running unsloth server" in result.output.lower()
+    assert "no running hyposloth server" in result.output.lower()
 
 
 def test_stop_cleans_stale_pid_files_without_claiming_a_stop(monkeypatch, tmp_path):
@@ -469,7 +469,7 @@ def test_stop_does_not_claim_success_when_the_only_record_is_unreadable(monkeypa
 
     assert result.exit_code == 1, "an unreachable server is not a successful stop"
     output = result.output + (result.stderr or "")
-    assert "no running unsloth server" not in output.lower()
+    assert "no running hyposloth server" not in output.lower()
     assert killed == []
 
 

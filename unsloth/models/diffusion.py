@@ -15,7 +15,7 @@
 FastDiffusionModel: a transformers-only slow path for text-diffusion models (e.g. DiffusionGemma).
 
 These models use a block-diffusion sampling loop (custom generate) and a novel backbone, so we skip
-Unsloth's autoregressive kernel/compile patching and load the unmodified HF model (outputs stay
+Hyposloth's autoregressive kernel/compile patching and load the unmodified HF model (outputs stay
 bit-identical to transformers), keeping only the safe conveniences: 4bit/8bit loading, PEFT LoRA, the
 (model, tokenizer) API, and for_inference/for_training. Extend DIFFUSION_MODEL_TYPES as more land.
 """
@@ -74,7 +74,7 @@ def _resolve_diffusion_model_class(config):
         if cls is not None:
             return cls
     raise RuntimeError(
-        f"Unsloth: could not resolve a diffusion model class from architectures={archs}. "
+        f"Hyposloth: could not resolve a diffusion model class from architectures={archs}. "
         "Ensure you have the transformers build that ships the DiffusionGemma implementation."
     )
 
@@ -175,7 +175,7 @@ class FastDiffusionModel:
         model_type = getattr(config, "model_type", None)
         if not is_diffusion_model_type(model_type):
             raise RuntimeError(
-                f"Unsloth: FastDiffusionModel only supports diffusion model_types {DIFFUSION_MODEL_TYPES}, "
+                f"Hyposloth: FastDiffusionModel only supports diffusion model_types {DIFFUSION_MODEL_TYPES}, "
                 f"got '{model_type}'. Use FastModel/FastLanguageModel for autoregressive models."
             )
 
@@ -235,7 +235,7 @@ class FastDiffusionModel:
                 qcfg = BitsAndBytesConfig(load_in_8bit = True)
             load_kwargs["quantization_config"] = qcfg
 
-        print(f"==((  Unsloth: FastDiffusionModel (slow / transformers-only path)  ))==")
+        print(f"==((  Hyposloth: FastDiffusionModel (slow / transformers-only path)  ))==")
         print(f"   Model: {model_name}  | class: {model_cls.__name__}  | model_type: {model_type}")
         print(
             f"   dtype: {dtype} | 4bit: {load_in_4bit} | 8bit: {load_in_8bit} | attn: {attn_implementation}"
@@ -249,7 +249,7 @@ class FastDiffusionModel:
             return model, None
 
         # Prefer the processor (chat template + tokenizer); fall back to a bare tokenizer. Returned as
-        # "tokenizer" to match the Unsloth (model, tokenizer) contract.
+        # "tokenizer" to match the Hyposloth (model, tokenizer) contract.
         try:
             tokenizer = AutoProcessor.from_pretrained(
                 model_name,

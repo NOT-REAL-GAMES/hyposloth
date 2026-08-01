@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-// Full-page monitor for Unsloth's OpenAI-compatible API server. Settings still owns
+// Full-page monitor for Hyposloth's OpenAI-compatible API server. Settings still owns
 // configuration (keys, auto-switch, examples); this page owns observability.
 
 import { Button } from "@/components/ui/button";
@@ -639,7 +639,7 @@ export function ApiMonitorPage(): ReactElement {
             API
           </h1>
           <p className="text-sm text-muted-foreground">
-            Live traffic through Unsloth&apos;s OpenAI-compatible server.
+            Live traffic through Hyposloth&apos;s OpenAI-compatible server.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

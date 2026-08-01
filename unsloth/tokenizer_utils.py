@@ -363,7 +363,7 @@ def fix_sentencepiece_tokenizer(
             protobuf_version = Version(google.protobuf.__version__)
             if protobuf_version > Version("3.20.3"):
                 raise RuntimeError(
-                    f"Unsloth: Your protobuf version = {protobuf_version} is too new.\n"
+                    f"Hyposloth: Your protobuf version = {protobuf_version} is too new.\n"
                     f"Please downgrade via `pip install --force-reinstall protobuf==3.20.3`"
                 )
         except:
@@ -492,7 +492,7 @@ def fix_sentencepiece_gguf(saved_location):
                 patched += 1
     if patched > 0:
         logger.warning(
-            f"Unsloth: Patched {patched} special token(s) in {saved_location}/tokenizer.model "
+            f"Hyposloth: Patched {patched} special token(s) in {saved_location}/tokenizer.model "
             f"from NORMAL to CONTROL type so llama.cpp / GGUF chat inference works correctly."
         )
 
@@ -533,7 +533,7 @@ def fix_sentencepiece_gguf(saved_location):
 
     # Edit sentence piece tokens with added_tokens_json
     logger.warning(
-        f"Unsloth: Extending {saved_location}/tokenizer.model with added_tokens.json.\n"
+        f"Hyposloth: Extending {saved_location}/tokenizer.model with added_tokens.json.\n"
         f"Originally tokenizer.model is of size ({sentence_piece_size}).\n"
         f"But we need to extend to sentencepiece vocab size ({new_size})."
     )
@@ -600,7 +600,7 @@ def _load_correct_tokenizer(
     except:
         slow_tokenizer = None
         # print(
-        #     f"Unsloth: {tokenizer_name} has no tokenizer.model file.\n"\
+        #     f"Hyposloth: {tokenizer_name} has no tokenizer.model file.\n"\
         #     "Just informing you about this - this is not a critical error."
         # )
     # Unsure why this occurs!
@@ -634,7 +634,7 @@ def _load_correct_tokenizer(
         if assert_same_tokenization(slow_tokenizer, fast_tokenizer):
             return fast_tokenizer
         else:
-            logger.warning(f"Unsloth: Will load {tokenizer_name} as a legacy tokenizer.")
+            logger.warning(f"Hyposloth: Will load {tokenizer_name} as a legacy tokenizer.")
             return convert_to_fast_tokenizer(slow_tokenizer)
         pass
     else:
@@ -706,7 +706,7 @@ def load_correct_tokenizer(
         chat_template = fix_chat_template(tokenizer)
         if old_chat_template is not None and chat_template is None:
             raise RuntimeError(
-                "Unsloth: Fixing chat template failed - please file a report immediately!"
+                "Hyposloth: Fixing chat template failed - please file a report immediately!"
             )
         pass
 
@@ -1047,12 +1047,12 @@ def _format_chat_template_message(
     )
     if repaired:
         return (
-            "Unsloth: Patched the chat_template on `{name}` to add a "
+            "Hyposloth: Patched the chat_template on `{name}` to add a "
             "{{% if add_generation_prompt %}} block. {hint}"
         ).format(name = name_or_path, hint = source_hint)
     if has_generation_block:
         return (
-            "Unsloth: The tokenizer `{name}` has a "
+            "Hyposloth: The tokenizer `{name}` has a "
             "{{% if add_generation_prompt %}} block, but it does not change "
             "the rendered output. {hint}{suffix}"
         ).format(name = name_or_path, hint = source_hint, suffix = strict_suffix)
@@ -1064,7 +1064,7 @@ def _format_chat_template_message(
         "correct assistant-turn marker."
     )
     return (
-        "Unsloth: The tokenizer `{name}` does not have a "
+        "Hyposloth: The tokenizer `{name}` does not have a "
         "{{% if add_generation_prompt %}} block for generation purposes, and "
         "automatic repair was not possible. {load_clause} {hint}{suffix}"
     ).format(
@@ -1416,7 +1416,7 @@ def check_tokenizer(
                     # Confirm 1 more time!
                     if max(tokenizer.added_tokens_decoder.keys()) < max_embedding_size:
                         logger.warning_once(
-                            f"Unsloth loaded a broken tokenizer `{model_name}`, but managed to repair it!\n"
+                            f"Hyposloth loaded a broken tokenizer `{model_name}`, but managed to repair it!\n"
                             f"Tokens {bad_tokens} with ids {bad_indices} exceeds the max vocab size of {max_embedding_size}.\n"
                             "We removed these bad tokens. If you think this is incorrect, fix your tokenizer first."
                         )
@@ -1424,7 +1424,7 @@ def check_tokenizer(
 
                 # :( Failure
                 raise RuntimeError(
-                    f"Unsloth tried to load `{model_name}`, but cannot succeed.\n"
+                    f"Hyposloth tried to load `{model_name}`, but cannot succeed.\n"
                     f"Tokens {bad_tokens} with ids {bad_indices} exceeds the max vocab size of {max_embedding_size}.\n"
                     f"Fix your tokenizer since it'll perform out of bounds memory accesses."
                 )
@@ -1464,7 +1464,7 @@ def check_tokenizer(
                 # Tokenizer has out of bounds issues and we can't
                 # load the slow tokenizer version :(
                 logger.warning_once(
-                    "Unsloth: Tokenizer is most likely buggy, and Unsloth failed to repair it.\n"
+                    "Hyposloth: Tokenizer is most likely buggy, and Hyposloth failed to repair it.\n"
                     "It will still work, but beware of out of bounds memory accesses.\n"
                     "Please file an issue on the model owner's repo about this issue."
                 )
@@ -1476,7 +1476,7 @@ def get_tokenizer_info(tokenizer) -> dict:
     """Return a concise diagnostic summary of a tokenizer instance.
 
     Collects key properties into a JSON-safe dict for logging, debugging, or the
-    Unsloth UI. Missing attributes fall back to ``None`` rather than raising.
+    Hyposloth UI. Missing attributes fall back to ``None`` rather than raising.
 
     Example output::
 
@@ -1601,7 +1601,7 @@ def patch_sft_trainer_tokenizer():
         check_text = (
             "\n"
             "if 'tokenizer'          not in locals(): tokenizer = processing_class\n"
-            "if 'formatting_func'    not in locals(): raise RuntimeError('Unsloth: Please file a bug report - `formatting_func` does not exist!')\n"
+            "if 'formatting_func'    not in locals(): raise RuntimeError('Hyposloth: Please file a bug report - `formatting_func` does not exist!')\n"
             "if 'dataset_text_field' not in locals() and 'args' in locals(): dataset_text_field = args.dataset_text_field\n"
             "if 'dataset_text_field' not in locals(): dataset_text_field = None\n"
             "if formatting_func is None and dataset_text_field is None and 'prompt' in dataset[0] and 'completion' in dataset[0]:\n"
@@ -1691,9 +1691,9 @@ def patch_sft_trainer_tokenizer():
             "    # than one visible device is flagged as unsupported, matching\n"
             "    # the spirit of the per-device memory check used on CUDA.\n"
             "    if torch.cuda.device_count() > 1:\n"
-            "        raise RuntimeError('Unsloth currently does not support multi GPU setups - but we are working on it!')\n"
+            "        raise RuntimeError('Hyposloth currently does not support multi GPU setups - but we are working on it!')\n"
             "if ((a - PRE_CHECK) >= 1).sum() > 1:\n"
-            "    raise RuntimeError('Unsloth currently does not support multi GPU setups - but we are working on it!')\n"
+            "    raise RuntimeError('Hyposloth currently does not support multi GPU setups - but we are working on it!')\n"
             "for _ in range(3):\n"
             "    gc.collect()\n"
             "    torch.cuda.empty_cache()\n"
@@ -1713,7 +1713,7 @@ def patch_sft_trainer_tokenizer():
             "        from transformers import __version__ as transformers_version\n"
             "        from packaging.version import Version\n"
             "        if Version(transformers_version) <= Version('4.45.2'):\n"
-            "            print('**** Unsloth: Please use our fixed gradient_accumulation_steps by updating transformers, TRL and Unsloth!\\n'\\\n"
+            "            print('**** Hyposloth: Please use our fixed gradient_accumulation_steps by updating transformers, TRL and Hyposloth!\\n'\\\n"
             "                  '`pip install --upgrade --no-cache-dir --no-deps unsloth transformers git+https://github.com/huggingface/trl.git`')\n"
             "except:\n"
             "    pass\n"

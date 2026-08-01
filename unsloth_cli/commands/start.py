@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""`unsloth start` — launch a coding agent against a running Unsloth server."""
+"""`unsloth start` — launch a coding agent against a running Hyposloth server."""
 
 import atexit
 import base64
@@ -41,7 +41,7 @@ from unsloth_cli._inference import (
 )
 
 start_app = typer.Typer(
-    help = "Start a coding agent against a running Unsloth server.",
+    help = "Start a coding agent against a running Hyposloth server.",
     no_args_is_help = True,
     context_settings = {"help_option_names": ["-h", "--help"]},
 )
@@ -53,12 +53,12 @@ _HERMES_PROVIDER = "unsloth"
 # Skip the installer's interactive setup wizard: `unsloth start hermes` runs
 # this hint unattended and then writes its own session-scoped Hermes config, so
 # the wizard's global API-key/model prompts would block the launch and point the
-# user at a different (global) provider than the one Unsloth just configured.
+# user at a different (global) provider than the one Hyposloth just configured.
 # Both installers expose a skip flag: `-SkipSetup` (PowerShell) and
 # `--skip-setup` (POSIX; passed to the piped script via `bash -s --`). Pin both
 # the fetched script and the repository checkout it performs to the same full
 # commit so a later change to either upstream branch cannot silently replace
-# code that Unsloth executes with the user's privileges.
+# code that Hyposloth executes with the user's privileges.
 _HERMES_INSTALL_COMMIT = "f1af945f6c576eccb126fa955edc9be258b33020"
 _HERMES_INSTALL_BASE = (
     "https://raw.githubusercontent.com/NousResearch/hermes-agent/"
@@ -80,20 +80,20 @@ _HERMES_MIN_CONTEXT = 65536
 _PI_PROVIDER = "unsloth"
 _SUBAGENT_NAME = "unsloth"
 _SUBAGENT_DESCRIPTION = (
-    "Local coding subagent powered by Unsloth for debugging, implementation, and codebase "
-    "research. Use when the user asks to spawn an Unsloth or local agent."
+    "Local coding subagent powered by Hyposloth for debugging, implementation, and codebase "
+    "research. Use when the user asks to spawn a Hyposloth or local agent."
 )
 _SUBAGENT_INSTRUCTIONS = (
-    "You are a local coding subagent powered by Unsloth. Complete the assigned task directly, "
+    "You are a local coding subagent powered by Hyposloth. Complete the assigned task directly, "
     "use the available tools when useful, verify your work, and return a concise result to the "
     "parent agent."
 )
 _SUBAGENT_PLAN_DESCRIPTION = (
-    "Read-only local coding subagent powered by Unsloth for planning and codebase research. "
+    "Read-only local coding subagent powered by Hyposloth for planning and codebase research. "
     "Use this local agent when Claude is in plan mode."
 )
 _SUBAGENT_PLAN_INSTRUCTIONS = (
-    "You are a read-only local coding subagent powered by Unsloth. Investigate the assigned "
+    "You are a read-only local coding subagent powered by Hyposloth. Investigate the assigned "
     "task with read-only tools, produce a concrete plan or answer, and return a concise result "
     "to the parent agent. Do not modify files."
 )
@@ -112,7 +112,7 @@ _CODEX_SUBAGENT_TOOL_DESCRIPTION = (
     "requests. Other subagent requests may use the built-in tools normally."
 )
 _CODEX_SUBAGENT_ROUTING_INSTRUCTIONS = (
-    "When the user asks to spawn an Unsloth agent or local agent, you must call the "
+    "When the user asks to spawn a Hyposloth agent or local agent, you must call the "
     "spawn_local_agent MCP tool once with the complete task. Do not answer, simulate the "
     "result, call wait, or use a built-in subagent before calling the tool. Use built-in "
     "subagents for other delegation requests."
@@ -160,7 +160,7 @@ _MODEL_OPTION = typer.Option(
     "-m",
     rich_help_panel = _PANEL_MODEL,
     help = "Model for the agent, or a bare `org/name(:variant)` positional. "
-    "Defaults to the one loaded in Unsloth.",
+    "Defaults to the one loaded in Hyposloth.",
 )
 _GGUF_VARIANT_OPTION = typer.Option(
     None,
@@ -194,7 +194,7 @@ _GPU_MEMORY_MODE_OPTION = typer.Option(
     rich_help_panel = _PANEL_MODEL,
     help = (
         "GPU memory strategy for GGUF models loaded by this command. Auto lets "
-        "Unsloth manage placement. Manual with default layers and context delegates "
+        "Hyposloth manage placement. Manual with default layers and context delegates "
         "placement and sizing to llama.cpp --fit. Omit when attaching to preserve "
         "the running model's mode."
     ),
@@ -206,7 +206,7 @@ _SERVE_OPTION = typer.Option(
     True,
     "--serve/--no-serve",
     rich_help_panel = _PANEL_SERVER,
-    help = "If no Unsloth server is running, auto-start one for --model and keep it "
+    help = "If no Hyposloth server is running, auto-start one for --model and keep it "
     "available after the agent exits. --no-serve errors out instead.",
 )
 _ENABLE_TOOLS_OPTION = typer.Option(
@@ -297,7 +297,7 @@ _KEY_OPTION = typer.Option(
     "--api-key",
     envvar = "UNSLOTH_API_KEY",
     rich_help_panel = _PANEL_SESSION,
-    help = "Unsloth API key. For a local Unsloth it is minted automatically and "
+    help = "Hyposloth API key. For a local Hyposloth it is minted automatically and "
     "remembered per server. For a remote server, pass one with --api-key "
     "(or UNSLOTH_API_KEY); it is remembered for next time.",
 )
@@ -324,10 +324,10 @@ _PERSIST_OPTION = typer.Option(
     "--persist/--no-persist",
     rich_help_panel = _PANEL_SESSION,
     help = (
-        "Keep this agent's Unsloth-managed session dir so you can resume it later. "
-        "codex/openclaw/hermes/pi have their whole home relocated into an Unsloth dir "
+        "Keep this agent's Hyposloth-managed session dir so you can resume it later. "
+        "codex/openclaw/hermes/pi have their whole home relocated into a Hyposloth dir "
         "that is a throwaway temp dir (wiped on exit) by default; with --persist it "
-        "lives under the Unsloth agents dir and survives, so their own resume can reopen "
+        "lives under the Hyposloth agents dir and survives, so their own resume can reopen "
         "it. claude and opencode keep sessions in your own stores (~/.claude, "
         "~/.local/share/opencode), so they already resume regardless. To reopen a "
         "session, pass the agent's own resume command through, e.g. "
@@ -339,7 +339,7 @@ _AS_SUBAGENT_OPTION = typer.Option(
     False,
     "--as-subagent",
     rich_help_panel = _PANEL_SESSION,
-    help = "Keep the coding agent's current model and add Unsloth as a local subagent.",
+    help = "Keep the coding agent's current model and add Hyposloth as a local subagent.",
 )
 
 # Per-agent CLI flag for "run tools without prompting". OpenCode (native --auto is
@@ -585,7 +585,7 @@ def _subagent_model_id(
 ) -> str:
     """Return an API model id that preserves the selected GGUF variant.
 
-    Coding-agent model definitions outlive the initial load. If Unsloth later
+    Coding-agent model definitions outlive the initial load. If Hyposloth later
     unloads the model, a bare repository id may resolve to a different cached
     quant. Include the explicit or currently loaded variant so an automatic
     reload selects the same weights.
@@ -1001,7 +1001,7 @@ def _shutdown_auto_served() -> None:
     global _auto_served_server
     server, _auto_served_server = _auto_served_server, None
     if server is not None and server.poll() is None:
-        typer.echo("Stopping the auto-started Unsloth server…")
+        typer.echo("Stopping the auto-started Hyposloth server…")
         _shutdown_server(server)
 
 
@@ -1051,7 +1051,7 @@ def _start_studio_server(
         command += ["--gpu-memory-mode", load.gpu_memory_mode]
 
     log_path = Path(tempfile.gettempdir()) / f"unsloth-start-server-{os.getpid()}.log"
-    typer.echo("Starting Unsloth server")
+    typer.echo("Starting Hyposloth server")
     typer.echo(f"Model: {_display_model_spec(model, load.gguf_variant)}")
     typer.echo(f"Server log: {log_path}")
     # 0600: the `unsloth run` banner in this log carries the minted sk-unsloth- key, and
@@ -1120,7 +1120,7 @@ def _start_studio_server(
                 # The early key marker lands here before load finishes; redact it.
                 tail = _redacted_log_tail(log_path)
                 _shutdown_auto_served()
-                _fail(f"The Unsloth server stopped before it was ready. Last log lines:\n{tail}")
+                _fail(f"The Hyposloth server stopped before it was ready. Last log lines:\n{tail}")
             tail = _log_tail(log_path, lines = 400)
             if progress is None:
                 marker = re.search(
@@ -1153,7 +1153,7 @@ def _start_studio_server(
             progress.close()
     _shutdown_auto_served()
     _fail(
-        f"The Unsloth server didn't become ready within {_SERVER_START_TIMEOUT_S}s. See {log_path}."
+        f"The Hyposloth server didn't become ready within {_SERVER_START_TIMEOUT_S}s. See {log_path}."
     )
 
 
@@ -1199,7 +1199,7 @@ def _require_studio(
         ]
         if _pinned:
             typer.echo(
-                f"Warning: an Unsloth server is already running at {base}; sampling pins "
+                f"Warning: a Hyposloth server is already running at {base}; sampling pins "
                 f"({', '.join(_pinned)}) apply only when this command starts the server, so the "
                 "running server keeps its current sampling. Stop it with `unsloth studio stop` "
                 "and re-run to apply them.",
@@ -1207,7 +1207,7 @@ def _require_studio(
             )
         if server_options.reasoning is not None:
             typer.echo(
-                f"Warning: an Unsloth server is already running at {base}; "
+                f"Warning: a Hyposloth server is already running at {base}; "
                 f"--reasoning {server_options.reasoning} applies only when this command starts "
                 "the server, so the running server keeps its current reasoning mode. Stop it "
                 "with `unsloth studio stop` and re-run to apply the override.",
@@ -1231,12 +1231,12 @@ def _require_studio(
         expected = _effective_base(expected)
         load = load or LoadOptions()
         # Leave a bare GGUF repo's variant unset: the server's own quant preference already
-        # picks the best available (UD-Q4_K_XL for Unsloth uploads, else Q4_K_M) and falls back
+        # picks the best available (UD-Q4_K_XL for Hyposloth uploads, else Q4_K_M) and falls back
         # when that exact quant is missing, which forcing a fixed variant here would break.
         return expected, _start_studio_server(expected, model, load, server_options)
     model_hint = "" if model else " Pass --model to have it start one for you, or"
     _fail(
-        f"No running Unsloth server found at {expected}.{model_hint} start one with "
+        f"No running Hyposloth server found at {expected}.{model_hint} start one with "
         "`unsloth studio`, or point UNSLOTH_STUDIO_URL at a remote server."
     )
 
@@ -1350,12 +1350,12 @@ def _key_accepted(base: str, key: str) -> bool:
         if exc.code in (401, 403):
             return False
         _fail(
-            f"Unsloth server error while checking an API key ({exc.code}). "
+            f"Hyposloth server error while checking an API key ({exc.code}). "
             "The server may be starting up or unhealthy; try again shortly."
         )
     except (urllib.error.URLError, TimeoutError) as exc:
         _fail(
-            "Couldn't reach the Unsloth server while checking an API key: "
+            "Couldn't reach the Hyposloth server while checking an API key: "
             f"{getattr(exc, 'reason', None) or exc}"
         )
 
@@ -1375,10 +1375,10 @@ def _agent_api_key(
         # UNSLOTH_API_KEY meant for some other server must not fail the
         # launch: the loopback mint path below is guaranteed to work.
         # (An explicit key that the fresh server accepts, e.g. one persisted
-        # in this Unsloth home's auth db, is still honored above.)
+        # in this Hyposloth home's auth db, is still honored above.)
 
     # Replay a key the user saved for *this exact* server first (scoped per base,
-    # so it only goes back there -- including a remote/SSH-tunnelled Unsloth whose
+    # so it only goes back there -- including a remote/SSH-tunnelled Hyposloth whose
     # secret the local handshake can't match). Skip ones the server rejects.
     for key in _cached_keys(cache, base, "saved"):
         if _key_accepted(base, key):
@@ -1391,15 +1391,15 @@ def _agent_api_key(
     if not is_loopback_url(base):
         _fail(
             f"No saved API key for {base} and automatic minting only runs against "
-            "a local Unsloth. Create an API key in Unsloth → Settings → API and "
+            "a local Hyposloth. Create an API key in Hyposloth → Settings → API and "
             "pass it with --api-key (it is remembered per server), or set "
             "UNSLOTH_API_KEY."
         )
     if not verify_studio_identity(base):
         _fail(
-            f"Couldn't verify that {base} is your Unsloth (it may be running as a "
+            f"Couldn't verify that {base} is your Hyposloth (it may be running as a "
             "different OS user, or another process took the port). Create an API "
-            "key in Unsloth → Settings → API and pass it with --api-key, or set "
+            "key in Hyposloth → Settings → API and pass it with --api-key, or set "
             "UNSLOTH_API_KEY."
         )
 
@@ -1413,8 +1413,8 @@ def _agent_api_key(
     token = _studio_token()
     if token is None:
         _fail(
-            "Couldn't authenticate with the Unsloth server automatically. Create "
-            "an API key in Unsloth → Settings → API and pass it with --api-key, "
+            "Couldn't authenticate with the Hyposloth server automatically. Create "
+            "an API key in Hyposloth → Settings → API and pass it with --api-key, "
             "or set UNSLOTH_API_KEY."
         )
     key = _http_json(
@@ -1447,7 +1447,7 @@ def _is_hub_model_id(value: object) -> bool:
         return False
     # A hub id is exactly "namespace/name" over a restricted charset. Anything with
     # extra path segments (e.g. a server-side relative path such as
-    # models/Llama/Foo.gguf on a remote Unsloth) is not a hub id and must not be
+    # models/Llama/Foo.gguf on a remote Hyposloth) is not a hub id and must not be
     # casefold-matched against a differently cased path on a case-sensitive
     # filesystem. This is host independent, unlike the existence probe below which
     # cannot see a path that only exists on the server.
@@ -1481,7 +1481,7 @@ def _is_model_path(value: str) -> bool:
 
 
 def _public_model_id(value: Optional[str]) -> Optional[str]:
-    """The id Unsloth advertises for a model loaded by path.
+    """The id Hyposloth advertises for a model loaded by path.
 
     /v1/models never echoes a host path: it reports the file or directory name
     with any .gguf suffix stripped (core.inference.model_ids.public_model_id), so
@@ -1504,8 +1504,8 @@ def _model_id_matches(
     if actual == requested:
         return True
     # Case-insensitive matching is only safe when the local existence probe in
-    # _is_hub_model_id is authoritative, i.e. against a loopback Unsloth on this host.
-    # Against a remote Unsloth a two-segment string is indistinguishable from a
+    # _is_hub_model_id is authoritative, i.e. against a loopback Hyposloth on this host.
+    # Against a remote Hyposloth a two-segment string is indistinguishable from a
     # server-side relative path (e.g. Models/Foo vs models/foo), so casefolding it
     # could attach to the wrong model on a case-sensitive server; defer to an exact
     # match there and let the load endpoint resolve the requested path.
@@ -1524,7 +1524,7 @@ def _resolve_model(
 ) -> dict:
     models = _loaded_models(base, key)
     load_requested = False
-    # Only casefold-match ids against a loopback Unsloth, where _is_hub_model_id's
+    # Only casefold-match ids against a loopback Hyposloth, where _is_hub_model_id's
     # local existence probe can actually reject a server-side path; see the note there.
     allow_casefold = is_loopback_url(base)
     # /v1/models reports the model id but not the active GGUF variant or runtime load
@@ -1565,7 +1565,7 @@ def _resolve_model(
             requested,
             allow_casefold = allow_casefold,
         ):
-            typer.echo(f"Switching the Unsloth server from {active_id} to {requested}.")
+            typer.echo(f"Switching the Hyposloth server from {active_id} to {requested}.")
             typer.echo("This unloads the current model for every attached session.")
         elif active_id and load.gguf_variant:
             # Same repo id but an explicit quant still replaces the resident
@@ -1577,7 +1577,7 @@ def _resolve_model(
             resident = status.get("gguf_variant") if status.get("is_gguf") else None
             if resident and _normalized_variant(resident) != _normalized_variant(load.gguf_variant):
                 typer.echo(
-                    f"Switching the Unsloth server from {active_id}:{resident} "
+                    f"Switching the Hyposloth server from {active_id}:{resident} "
                     f"to {requested}:{load.gguf_variant}."
                 )
                 typer.echo("This unloads the current model for every attached session.")
@@ -1599,7 +1599,7 @@ def _resolve_model(
         loaded = _load_model_with_progress(base, key, requested, load, payload)
         if loaded.get("status") == "already_loaded":
             typer.echo(f"Reusing loaded model: {_display_model_spec(requested, load.gguf_variant)}")
-        # Unsloth registers the model under a canonical id (resolved identifier,
+        # Hyposloth registers the model under a canonical id (resolved identifier,
         # casing) that /v1/models echoes but which may differ from the path we
         # passed; match on the id the load reports so we don't silently fall
         # through to models[0] and connect to a different loaded model.
@@ -1623,28 +1623,28 @@ def _resolve_model(
             typer.echo(f"Reusing loaded model: {_display_model_spec(requested, load.gguf_variant)}")
         return match
     if requested:
-        # We asked Unsloth to load it and it didn't surface in /v1/models; don't
+        # We asked Hyposloth to load it and it didn't surface in /v1/models; don't
         # silently hand back an unrelated loaded model.
         _fail(
-            f"Unsloth didn't report '{requested}' as loaded. Double-check the model "
+            f"Hyposloth didn't report '{requested}' as loaded. Double-check the model "
             "id, or load it from the model dropdown in the UI."
         )
     if not models:
         _fail(
-            "No model is loaded in Unsloth. Load one from the model dropdown in "
+            "No model is loaded in Hyposloth. Load one from the model dropdown in "
             "the UI, or pass --model <hf-id-or-path> to load it from here."
         )
     resident = next((m for m in models if m.get("loaded") is not False), None)
     if resident is None:
         _fail(
-            "No model is currently resident in Unsloth. Pass --model <hf-id-or-path> "
+            "No model is currently resident in Hyposloth. Pass --model <hf-id-or-path> "
             "to reload one, or load it from the model dropdown in the UI."
         )
     return resident
 
 
 def _require_gguf_for_codex(base: str, key: str, model_id: str) -> None:
-    # Codex always streams, and Unsloth only streams /v1/responses from llama-server.
+    # Codex always streams, and Hyposloth only streams /v1/responses from llama-server.
     try:
         status = _http_json("GET", f"{base}/api/inference/status", key)
     except urllib.error.HTTPError as exc:
@@ -1744,7 +1744,7 @@ def _merge_codex_config(existing: str, base: str) -> str:
         text += "\n"
     return text + (
         f"{_PROVIDER_HEADER}\n"
-        'name = "Unsloth Studio"\n'
+        'name = "Hyposloth Studio"\n'
         f"base_url = {json.dumps(base + '/v1')}\n"
         f'env_key = "{_CODEX_ENV_KEY}"\n'
         'wire_api = "responses"\n'
@@ -1780,13 +1780,13 @@ def _codex_supports_model_catalog() -> bool:
 
 
 def _codex_model_catalog(model: dict) -> dict:
-    """Return conservative metadata for an Unsloth model unknown to Codex's built-in catalog."""
+    """Return conservative metadata for a Hyposloth model unknown to Codex's built-in catalog."""
     model_id = model["id"]
     window = model.get("context_length") or model.get("max_context_length")
     entry = {
         "slug": model_id,
         "display_name": model_id,
-        "description": "Model served by Unsloth Studio",
+        "description": "Model served by Hyposloth Studio",
         "supported_reasoning_levels": [],
         "shell_type": "default",
         "visibility": "none",
@@ -2139,7 +2139,7 @@ if mode == "plan":
         "hookEventName": "PreToolUse",
         "permissionDecision": "deny",
         "permissionDecisionReason": (
-            "Plan mode is active. Call the read-only Unsloth plan agent "
+            "Plan mode is active. Call the read-only Hyposloth plan agent "
             "(unsloth_plan_agent) instead of unsloth_agent."
         ),
     }}))
@@ -2173,7 +2173,7 @@ def write_claude_subagent_plugin(path: Path, server_env: dict) -> Path:
             "name": "unsloth-local-agent",
             "version": "1.0.0",
             "description": _SUBAGENT_DESCRIPTION,
-            "author": {"name": "Unsloth AI"},
+            "author": {"name": "Hyposloth AI"},
         },
     )
     _write_private_json(
@@ -2239,11 +2239,11 @@ def write_claude_subagent_plugin(path: Path, server_env: dict) -> Path:
     skill.parent.mkdir(parents = True, exist_ok = True, mode = 0o700)
     skill.write_text(
         "---\n"
-        "description: Delegate a task to the local agent powered by Unsloth. Use when the "
-        "user asks to spawn an Unsloth agent or local agent.\n"
+        "description: Delegate a task to the local agent powered by Hyposloth. Use when the "
+        "user asks to spawn a Hyposloth agent or local agent.\n"
         "---\n\n"
-        "Call the Unsloth local agent tool once with the complete task. In plan mode, call "
-        "the read-only Unsloth plan agent instead. Return its result to the user without "
+        "Call the Hyposloth local agent tool once with the complete task. In plan mode, call "
+        "the read-only Hyposloth plan agent instead. Return its result to the user without "
         "claiming that the cloud parent completed the local work.\n",
         encoding = "utf-8",
     )
@@ -2590,7 +2590,7 @@ def _install_command(install_hint: str) -> tuple[list[str], Optional[dict]]:
     if npm is None:
         _fail(
             "npm is required to install this agent, but no native system npm or usable "
-            "Unsloth-managed Node installation was found. Install Node.js with npm, "
+            "Hyposloth-managed Node installation was found. Install Node.js with npm, "
             "then re-run."
         )
     args = shlex.split(install_hint)
@@ -2635,14 +2635,14 @@ def _install_agent(name: str, install_hint: str) -> Optional[str]:
         if pinned_commit:
             warning = (
                 "Security warning: This will download and execute a third-party script "
-                f"from {source} with your privileges. Unsloth pins this content to "
+                f"from {source} with your privileges. Hyposloth pins this content to "
                 f"immutable upstream commit {pinned_commit}, but does not independently "
                 "verify or sandbox it. Continue only if you trust this source and commit."
             )
         else:
             warning = (
                 "Security warning: This will download and execute an unverified third-party "
-                f"script from {source} with your privileges. Unsloth does not pin or verify "
+                f"script from {source} with your privileges. Hyposloth does not pin or verify "
                 "the downloaded content. Continue only if you trust this source."
             )
     else:
@@ -2931,7 +2931,7 @@ def _connect(
     # `--model org/name:QUANT` is shorthand for `--model org/name --gguf-variant QUANT`.
     # Split it before we match/serve so the attach path resolves against the already-loaded
     # `org/name` (listed without the suffix) instead of reloading a `:`-suffixed repo id --
-    # which Unsloth rejects and which would evict a model another session is using.
+    # which Hyposloth rejects and which would evict a model another session is using.
     if model:
         repo, variant = _split_repo_variant(model)
         if variant:
@@ -2972,7 +2972,7 @@ def _run(
     # --no-launch recipes stay intact.
     if launch and clear_screen:
         click.clear()
-    typer.echo(f"Unsloth ready at {base} · model {entry['id']}")
+    typer.echo(f"Hyposloth ready at {base} · model {entry['id']}")
     if not launch:
         env, wsl_env_bridge = _wsl_shim_env(command, env, unset_env, cwd_env)
         _print_env(
@@ -2983,7 +2983,7 @@ def _run(
             cwd_env = cwd_env,
         )
         if _keep_auto_served():
-            typer.echo(f"Unsloth Studio is still running at {base}.")
+            typer.echo(f"Hyposloth Studio is still running at {base}.")
             typer.echo("Stop it with: unsloth studio stop")
         return
     try:
@@ -3002,16 +3002,16 @@ def _run(
     auto_started = _auto_served_server is not None
     kept = _keep_auto_served()
     if auto_started and not kept:
-        typer.echo(f"The auto-started Unsloth server at {base} stopped during the session.")
+        typer.echo(f"The auto-started Hyposloth server at {base} stopped during the session.")
         raise typer.Exit(code = code)
     if code:
         # The server status below must not read as a successful agent session.
         typer.echo(f"The agent exited with code {code}.")
     if is_loopback_url(base):
-        typer.echo(f"Unsloth Studio is still running at {base}.")
+        typer.echo(f"Hyposloth Studio is still running at {base}.")
         typer.echo("Stop it with: unsloth studio stop")
     else:
-        typer.echo(f"The remote Unsloth server is still running at {base}.")
+        typer.echo(f"The remote Hyposloth server is still running at {base}.")
     raise typer.Exit(code = code)
 
 
@@ -3193,7 +3193,7 @@ def _session_config(
     """Yield a private directory for an agent's session config (never the user's own).
 
     launch (default): an ephemeral temp dir removed after the agent process exits, so
-    nothing persists. no-launch: a stable Unsloth-owned dir (the printed recipe is run
+    nothing persists. no-launch: a stable Hyposloth-owned dir (the printed recipe is run
     later on this machine), reused across runs. persist (from --persist): use that same
     stable dir even for a launch, so the agent's session survives the exit and can be
     resumed next time. Either way the user's real ~/.<agent> config is left untouched.
@@ -3236,7 +3236,7 @@ def write_openclaw_config(
         )
         return
     before = json.dumps(config, sort_keys = True)
-    # Unsloth is a generic OpenAI-compatible /v1 endpoint (the vLLM/LM Studio path).
+    # Hyposloth is a generic OpenAI-compatible /v1 endpoint (the vLLM/LM Studio path).
     provider_model = {"id": model["id"], "name": model["id"]}
     window = model.get("context_length") or model.get("max_context_length")
     if window:
@@ -3267,7 +3267,7 @@ def write_openclaw_config(
         workspace_path = str(workspace)
     defaults["workspace"] = workspace_path
     # Per-agent paths override agents.defaults.workspace and OPENCLAW_STATE_DIR. This
-    # config is itself an isolated Unsloth copy, so remove stale explicit paths and let
+    # config is itself an isolated Hyposloth copy, so remove stale explicit paths and let
     # OpenClaw resolve every listed agent beneath the managed defaults/state directory.
     agent_list = agents.get("list")
     if isinstance(agent_list, list):
@@ -3388,7 +3388,7 @@ def write_opencode_config(
         model_entry["limit"] = {"context": window, "output": min(window // 4, 8192)}
     _subdict(config, "provider")[_OPENCODE_PROVIDER] = {
         "npm": "@ai-sdk/openai-compatible",
-        "name": "Unsloth Studio",
+        "name": "Hyposloth Studio",
         "options": {"baseURL": f"{base}/v1", "apiKey": key},
         "models": {model["id"]: model_entry},
     }
@@ -3528,14 +3528,14 @@ def write_pi_config(base: str, key: str, model: dict, path: Path) -> None:
         return
     before = json.dumps(config, sort_keys = True)
     # Pi reads custom providers from ~/.pi/agent/models.json (HOME-relocated for the
-    # session). Unsloth is a generic OpenAI-compatible /v1 endpoint, and the key lives
+    # session). Hyposloth is a generic OpenAI-compatible /v1 endpoint, and the key lives
     # in the config rather than the env (matching openclaw/opencode).
     provider_model = {"id": model["id"]}
     window = model.get("context_length") or model.get("max_context_length")
     if window:
         window = int(window)
         # An unspecified model defaults to contextWindow 128000 / maxTokens 16384,
-        # far larger than a small Unsloth context, so Pi compacts too late and overflows
+        # far larger than a small Hyposloth context, so Pi compacts too late and overflows
         # the server. Pin the real window and a sane output cap (mirrors OpenCode).
         provider_model["contextWindow"] = window
         provider_model["maxTokens"] = min(window // 4, 8192)
@@ -3599,7 +3599,7 @@ def claude(
     persist: bool = _PERSIST_OPTION,
     as_subagent: bool = _AS_SUBAGENT_OPTION,
 ):
-    """Point Claude Code at the running Unsloth server and start it."""
+    """Point Claude Code at the running Hyposloth server and start it."""
     # Route a leading `org/name` positional to --model; forward the rest to the agent.
     model, ctx.args[:] = _consume_positional_model(model, ctx.args)
     install_hint = (
@@ -3653,8 +3653,8 @@ def claude(
                 *ctx.args,
             ]
             typer.echo(
-                "Unsloth is available as a local agent. "
-                "Ask Claude to spawn an Unsloth or local agent."
+                "Hyposloth is available as a local agent. "
+                "Ask Claude to spawn a Hyposloth or local agent."
             )
             _run(
                 base,
@@ -3720,7 +3720,7 @@ def codex(
     persist: bool = _PERSIST_OPTION,
     as_subagent: bool = _AS_SUBAGENT_OPTION,
 ):
-    """Point OpenAI Codex at the running Unsloth server and start it."""
+    """Point OpenAI Codex at the running Hyposloth server and start it."""
     # Route a leading `org/name` positional to --model; forward the rest to the agent.
     model, ctx.args[:] = _consume_positional_model(model, ctx.args)
     install_hint = _npm_install_hint("@openai/codex")
@@ -3771,8 +3771,8 @@ def codex(
                 *ctx.args,
             ]
             typer.echo(
-                "Unsloth is available as a local agent. "
-                "Ask Codex to spawn an Unsloth or local agent."
+                "Hyposloth is available as a local agent. "
+                "Ask Codex to spawn a Hyposloth or local agent."
             )
             _run(
                 base,
@@ -3822,7 +3822,7 @@ def openclaw(
     yolo: bool = _YOLO_OPTION,
     persist: bool = _PERSIST_OPTION,
 ):
-    """Point OpenClaw at the running Unsloth server and start it."""
+    """Point OpenClaw at the running Hyposloth server and start it."""
     # Route a leading `org/name` positional to --model; forward the rest to the agent.
     model, ctx.args[:] = _consume_positional_model(model, ctx.args)
     _reject_as_subagent("openclaw", ctx.args)
@@ -3914,7 +3914,7 @@ def opencode(
     persist: bool = _PERSIST_OPTION,
     as_subagent: bool = _AS_SUBAGENT_OPTION,
 ):
-    """Point OpenCode at the running Unsloth server and start it."""
+    """Point OpenCode at the running Hyposloth server and start it."""
     # Route a leading `org/name` positional to --model; forward the rest to the agent.
     model, ctx.args[:] = _consume_positional_model(model, ctx.args)
     install_hint = _npm_install_hint("opencode-ai")
@@ -3967,7 +3967,7 @@ def opencode(
                 "prompt": _SUBAGENT_INSTRUCTIONS,
             }
             env["OPENCODE_CONFIG_CONTENT"] = json.dumps(inline_config)
-            typer.echo("Unsloth is available as @unsloth and in /models.")
+            typer.echo("Hyposloth is available as @unsloth and in /models.")
             _run(
                 base,
                 subagent_model,
@@ -4005,7 +4005,7 @@ def opencode(
     with _session_config("opencode", launch, persist = persist) as cfg:
         config_path = cfg / "opencode.json"
         # OPENCODE_CONFIG is an overlay (loaded between the user's global and project
-        # configs), so this adds the Unsloth provider/model for the session without
+        # configs), so this adds the Hyposloth provider/model for the session without
         # changing the user's default model. Key lives in the config, not the env.
         session_permission = write_opencode_config(
             base,
@@ -4028,7 +4028,7 @@ def opencode(
         # setting them in the highest-priority inline overlay neutralizes any user allowlist
         # or denylist for the launch. It is session-only: it lives in OPENCODE_CONFIG_CONTENT
         # for this invocation and never touches the user's config files, so their normal
-        # `opencode` is unchanged; only this session is limited to the Unsloth provider.
+        # `opencode` is unchanged; only this session is limited to the Hyposloth provider.
         # small_model is opencode's separate model for lightweight tasks; pin it to the
         # session model too, or a user/project small_model on another (now filtered)
         # provider would resolve a not-found error mid-session. The session serves one
@@ -4073,7 +4073,7 @@ def hermes(
     yolo: bool = _YOLO_OPTION,
     persist: bool = _PERSIST_OPTION,
 ):
-    """Point Hermes (Nous Research) at the running Unsloth server and start it."""
+    """Point Hermes (Nous Research) at the running Hyposloth server and start it."""
     # Route a leading `org/name` positional to --model; forward the rest to the agent.
     model, ctx.args[:] = _consume_positional_model(model, ctx.args)
     _reject_as_subagent("hermes", ctx.args)
@@ -4134,7 +4134,7 @@ def pi(
     persist: bool = _PERSIST_OPTION,
     as_subagent: bool = _AS_SUBAGENT_OPTION,
 ):
-    """Point Pi (coding agent) at the running Unsloth server and start it."""
+    """Point Pi (coding agent) at the running Hyposloth server and start it."""
     # Route a leading `org/name` positional to --model; forward the rest to the agent.
     model, ctx.args[:] = _consume_positional_model(model, ctx.args)
     install_hint = _npm_install_hint(
@@ -4184,8 +4184,8 @@ def pi(
                 *ctx.args,
             ]
             typer.echo(
-                "Unsloth is available as a local agent and in /model. "
-                "Ask Pi to spawn an Unsloth or local agent."
+                "Hyposloth is available as a local agent and in /model. "
+                "Ask Pi to spawn a Hyposloth or local agent."
             )
             _run(
                 base,

@@ -60,7 +60,7 @@ def show_version(value: bool):
 
 
 app = typer.Typer(
-    help = "Command-line interface for Unsloth training, inference, and export.",
+    help = "Command-line interface for Hyposloth training, inference, and export.",
     context_settings = {"help_option_names": ["-h", "--help"]},
 )
 
@@ -85,7 +85,7 @@ def main(
         )
         if _cwd == _system32 or _cwd.startswith(_system32 + _os.sep):
             typer.secho(
-                "Refusing to run Unsloth inside System32 as it will lead to Errors.\n"
+                "Refusing to run Hyposloth inside System32 as it will lead to Errors.\n"
                 "cd to a normal working directory and try again.",
                 fg = "red",
                 err = True,
@@ -98,11 +98,11 @@ app.command()(inference)
 app.command()(chat)
 app.command()(export)
 app.command("list-checkpoints")(list_checkpoints)
-app.add_typer(studio_app, name = "studio", help = "Unsloth Studio commands.")
+app.add_typer(studio_app, name = "studio", help = "Hyposloth Studio commands.")
 app.add_typer(
     start_app,
     name = "start",
-    help = "Start a coding agent (Claude, Codex, OpenClaw, OpenCode, Hermes, Pi) against Unsloth.",
+    help = "Start a coding agent (Claude, Codex, OpenClaw, OpenCode, Hermes, Pi) against Hyposloth.",
 )
 # Backwards-compatible hidden alias: `unsloth connect` routes to `unsloth start`.
 app.add_typer(

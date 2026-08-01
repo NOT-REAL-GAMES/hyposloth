@@ -141,7 +141,7 @@ global DISABLE_COMPILE_MODEL_NAMES
 
 
 def _strip_unsloth_bnb_4bit_suffix(model_name: str) -> str:
-    """Remove Unsloth 4bit suffixes without lowercasing (HF cache dirs are case-sensitive)."""
+    """Remove Hyposloth 4bit suffixes without lowercasing (HF cache dirs are case-sensitive)."""
     s = model_name
     for suffix in ("-unsloth-bnb-4bit", "-bnb-4bit"):
         if len(s) >= len(suffix) and s.lower().endswith(suffix.lower()):
@@ -206,7 +206,7 @@ DISABLE_COMPILE_MODEL_NAMES = [
     "granite,llava_next",  # Granite-vision 3
 ]
 
-# Architectures with gated-deltanet (linear attention) layers. Unsloth bundles the
+# Architectures with gated-deltanet (linear attention) layers. Hyposloth bundles the
 # flash-linear-attention Triton kernels (unsloth_zoo/_vendored/fla), so no install is
 # needed; transformers uses the much slower pure PyTorch path only when they can't be enabled.
 FLA_MODEL_TYPE_PREFIXES = ("qwen3_next", "qwen3_5", "kimi_linear", "olmo_hybrid")
@@ -216,7 +216,7 @@ _fla_advised = False
 def _maybe_advise_fla_install(model_types):
     """One-time note when a gated-deltanet model loads without the fast kernels.
 
-    The kernels ship with Unsloth (no install needed); this fires only when they
+    The kernels ship with Hyposloth (no install needed); this fires only when they
     could not be enabled on this platform (e.g. no CUDA, torch < 2.7 or
     triton < 3.3), i.e. exactly when transformers uses the slow pure PyTorch path.
     """
@@ -239,7 +239,7 @@ def _maybe_advise_fla_install(model_types):
         return
     _fla_advised = True
     print(
-        "Unsloth: This model uses gated-deltanet linear attention layers. Unsloth\n"
+        "Hyposloth: This model uses gated-deltanet linear attention layers. Hyposloth\n"
         "bundles the flash-linear-attention kernels, but they could not be enabled\n"
         "on this setup (they need CUDA with torch >= 2.7 and triton >= 3.3), so\n"
         "transformers will use a slower pure PyTorch path."
@@ -251,7 +251,7 @@ def _fix_rope_inv_freq(model):
 
     v5 inits on meta then replaces all non-persistent buffers with uninitialized
     memory. Vanilla restores inv_freq via _init_weights() (needs original_inv_freq),
-    but Unsloth rotary classes lack that attr, so inv_freq stays corrupted -> wrong
+    but Hyposloth rotary classes lack that attr, so inv_freq stays corrupted -> wrong
     positional encodings and 5-11x higher training loss. Here we recompute inv_freq
     from base/dim, apply scaling, and rebuild cos/sin caches. No-op on v4.
     """
@@ -259,7 +259,7 @@ def _fix_rope_inv_freq(model):
         return model
 
     for name, module in model.named_modules():
-        # Unsloth's LlamaRotaryEmbedding and subclasses (Extended, LinearScaling,
+        # Hyposloth's LlamaRotaryEmbedding and subclasses (Extended, LinearScaling,
         # Granite). Native v5 rotary classes (Gemma3, etc.) have original_inv_freq
         # which v5's _init_weights() uses to restore inv_freq, so they are fine.
         if (
@@ -458,7 +458,7 @@ class FastLanguageModel(FastLlamaModel):
         if fast_inference:
             if importlib.util.find_spec("vllm") is None:
                 raise ImportError(
-                    "Unsloth: Please install vLLM before enabling `fast_inference`!\n"
+                    "Hyposloth: Please install vLLM before enabling `fast_inference`!\n"
                     "You can do this in a terminal via `pip install vllm`"
                 )
             if DEVICE_TYPE_TORCH == "cuda":
@@ -466,8 +466,8 @@ class FastLanguageModel(FastLlamaModel):
                     # [TODO] DGX Spark vLLM breaks
                     if "NVIDIA GB10" in str(torch.cuda.get_device_name(i)).upper():
                         print(
-                            "Unsloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.\n"
-                            "Defaulting to native Unsloth inference."
+                            "Hyposloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.\n"
+                            "Defaulting to native Hyposloth inference."
                         )
                         fast_inference = False
                         break
@@ -499,7 +499,7 @@ class FastLanguageModel(FastLlamaModel):
                 or model_name.lower().endswith("-bnb-4bit")
             ):
                 print(
-                    "Unsloth: `bitsandbytes` is unavailable here - disabling 4bit/8bit. "
+                    "Hyposloth: `bitsandbytes` is unavailable here - disabling 4bit/8bit. "
                     "16bit LoRA and full finetuning still work."
                 )
             # 8bit is bitsandbytes too: leaving either set sends the request on to
@@ -592,7 +592,7 @@ class FastLanguageModel(FastLlamaModel):
             if "architecture" in autoconfig_error:
                 if "qwen3_5" in autoconfig_error:
                     raise ImportError(
-                        f"Unsloth: Your transformers version of {transformers_version} does not support Qwen3.5.\n"
+                        f"Hyposloth: Your transformers version of {transformers_version} does not support Qwen3.5.\n"
                         f"The minimum required version is 5.2.0.\n"
                         f'Try `pip install --upgrade "transformers>=5.2.0"`\n'
                         f"to obtain the latest transformers build, then restart this session."
@@ -629,7 +629,7 @@ class FastLanguageModel(FastLlamaModel):
         # Error out if both LoRA and normal model config exists.
         if both_exist:
             raise RuntimeError(
-                "Unsloth: Your repo has a LoRA adapter and a base model.\n"
+                "Hyposloth: Your repo has a LoRA adapter and a base model.\n"
                 "You have 2 files `config.json` and `adapter_config.json`.\n"
                 "We must only allow one config file.\n"
                 "Please separate the LoRA and base models to 2 repos."
@@ -639,14 +639,14 @@ class FastLanguageModel(FastLlamaModel):
             # Old transformers version
             if "rope_scaling" in error.lower() and not SUPPORTS_LLAMA31:
                 raise ImportError(
-                    f"Unsloth: Your transformers version of {transformers_version} does not support new RoPE scaling methods.\n"
+                    f"Hyposloth: Your transformers version of {transformers_version} does not support new RoPE scaling methods.\n"
                     f"This includes Llama 3.1. The minimum required version is 4.43.2\n"
                     f'Try `pip install --upgrade "transformers>=4.43.2"`\n'
                     f"to obtain the latest transformers build, then restart this session."
                 )
             # Create a combined error message showing both failures
             combined_error = (
-                "Unsloth: Failed to load model. Both AutoConfig and PeftConfig loading failed.\n\n"
+                "Hyposloth: Failed to load model. Both AutoConfig and PeftConfig loading failed.\n\n"
                 f"AutoConfig error: {autoconfig_error}\n\n"
                 f"PeftConfig error: {peft_error}\n\n"
             )
@@ -733,7 +733,7 @@ class FastLanguageModel(FastLlamaModel):
 
             if scaling_type == "llama3" and not SUPPORTS_LLAMA31:
                 raise ImportError(
-                    f"Unsloth: Your transformers version of {transformers_version} does not support Llama 3.1.\n"
+                    f"Hyposloth: Your transformers version of {transformers_version} does not support Llama 3.1.\n"
                     f"The minimum required version is 4.43.2\n"
                     f'Try `pip install --upgrade "transformers>=4.43.2"`\n'
                     f"to obtain the latest transformers build, then restart this session."
@@ -746,7 +746,7 @@ class FastLanguageModel(FastLlamaModel):
         elif model_type == "gemma":
             if not SUPPORTS_GEMMA:
                 raise ImportError(
-                    f"Unsloth: Your transformers version of {transformers_version} does not support Gemma.\n"
+                    f"Hyposloth: Your transformers version of {transformers_version} does not support Gemma.\n"
                     f"The minimum required version is 4.38.\n"
                     f'Try `pip install --upgrade "transformers>=4.38"`\n'
                     f"to obtain the latest transformers build, then restart this session."
@@ -755,7 +755,7 @@ class FastLanguageModel(FastLlamaModel):
         elif model_type == "gemma2":
             if not SUPPORTS_GEMMA2:
                 raise ImportError(
-                    f"Unsloth: Your transformers version of {transformers_version} does not support Gemma2.\n"
+                    f"Hyposloth: Your transformers version of {transformers_version} does not support Gemma2.\n"
                     f"The minimum required version is 4.42.3.\n"
                     f'Try `pip install --upgrade "transformers>=4.42.3"`\n'
                     f"to obtain the latest transformers build, then restart this session."
@@ -763,13 +763,13 @@ class FastLanguageModel(FastLlamaModel):
             # Also check for softcapping support in flash-attn which is faster!
             if is_bfloat16_supported() and not HAS_FLASH_ATTENTION:
                 print(
-                    "Unsloth: If you want to finetune Gemma 2, install flash-attn to make it faster!\n"
+                    "Hyposloth: If you want to finetune Gemma 2, install flash-attn to make it faster!\n"
                     "To install flash-attn, do the below:\n"
                     '\npip install --no-deps --upgrade "flash-attn>=2.6.3"'
                 )
             elif HAS_FLASH_ATTENTION and not HAS_FLASH_ATTENTION_SOFTCAPPING:
                 print(
-                    "Unsloth: If you want to finetune Gemma 2, upgrade flash-attn to version 2.6.3 or higher!\n"
+                    "Hyposloth: If you want to finetune Gemma 2, upgrade flash-attn to version 2.6.3 or higher!\n"
                     "Newer versions support faster and less memory usage kernels for Gemma 2's attention softcapping!\n"
                     "To update flash-attn, do the below:\n"
                     '\npip install --no-deps --upgrade "flash-attn>=2.6.3"'
@@ -781,7 +781,7 @@ class FastLanguageModel(FastLlamaModel):
         elif model_type == "qwen3":  # or model_type == "qwen3_moe":
             if not SUPPORTS_QWEN3 or not SUPPORTS_QWEN3_MOE:
                 raise ImportError(
-                    f"Unsloth: Your transformers version of {transformers_version} does not support Qwen3.\n"
+                    f"Hyposloth: Your transformers version of {transformers_version} does not support Qwen3.\n"
                     f"The minimum required version is 4.50.3.\n"
                     f'Try `pip install --upgrade "transformers>=4.50.3"`\n'
                     f"to obtain the latest transformers build, then restart this session."
@@ -791,7 +791,7 @@ class FastLanguageModel(FastLlamaModel):
         #     dispatch_model = FastFalconH1Model
         #     if not SUPPORTS_FALCON_H1:
         #         raise ImportError(
-        #             f"Unsloth: Your transformers version of {transformers_version} does not support FalconH1.\n"\
+        #             f"Hyposloth: Your transformers version of {transformers_version} does not support FalconH1.\n"\
         #             f"The minimum required version is 4.50.3.\n"\
         #             f'Try `pip install --upgrade "transformers>=4.50.3"`\n'\
         #             f"to obtain the latest transformers build, then restart this session."\
@@ -862,7 +862,7 @@ class FastLanguageModel(FastLlamaModel):
         try:
             patch_compiling_bitsandbytes()
         except Exception as e:
-            print(f"Unsloth: Could not patch bitsandbytes for torch.compile - {e}")
+            print(f"Hyposloth: Could not patch bitsandbytes for torch.compile - {e}")
 
         model, tokenizer = dispatch_model.from_pretrained(
             model_name = model_name,
@@ -1137,11 +1137,11 @@ class FastModel(FastBaseModel):
         try:
             patch_compiling_bitsandbytes()
         except Exception as e:
-            print(f"Unsloth: Could not patch bitsandbytes for torch.compile - {e}")
+            print(f"Hyposloth: Could not patch bitsandbytes for torch.compile - {e}")
 
         if full_finetuning and (load_in_4bit or load_in_8bit):
             print(
-                "Unsloth: You selected full finetuning support, but 4bit / 8bit is enabled - disabling LoRA / QLoRA."
+                "Hyposloth: You selected full finetuning support, but 4bit / 8bit is enabled - disabling LoRA / QLoRA."
             )
             load_in_4bit = False
             load_in_8bit = False
@@ -1175,7 +1175,7 @@ class FastModel(FastBaseModel):
                 or model_name.lower().endswith("-bnb-4bit")
             ):
                 print(
-                    "Unsloth: `bitsandbytes` is unavailable here - disabling 4bit/8bit. "
+                    "Hyposloth: `bitsandbytes` is unavailable here - disabling 4bit/8bit. "
                     "16bit LoRA and full finetuning still work."
                 )
             # 8bit is bitsandbytes too: leaving either set sends the request on to
@@ -1190,7 +1190,7 @@ class FastModel(FastBaseModel):
             >= 2
         ):
             raise RuntimeError(
-                "Unsloth: Can only load in 4bit or 8bit or 16bit, not a combination!\n"
+                "Hyposloth: Can only load in 4bit or 8bit or 16bit, not a combination!\n"
                 "Also, we by default set `load_in_4bit = True`.\n"
                 "If you want 8bit finetuning, set both `load_in_4bit = False` and `load_in_8bit = True`\n"
                 "If you want 16bit LoRA finetuning, set `load_in_16bit = True`"
@@ -1217,7 +1217,7 @@ class FastModel(FastBaseModel):
         if fast_inference:
             if importlib.util.find_spec("vllm") is None:
                 raise ImportError(
-                    "Unsloth: Please install vLLM before enabling `fast_inference`!\n"
+                    "Hyposloth: Please install vLLM before enabling `fast_inference`!\n"
                     "You can do this in a terminal via `pip install vllm`"
                 )
             if DEVICE_TYPE_TORCH == "cuda":
@@ -1225,8 +1225,8 @@ class FastModel(FastBaseModel):
                     # [TODO] DGX Spark vLLM breaks
                     if "NVIDIA GB10" in str(torch.cuda.get_device_name(i)).upper():
                         print(
-                            "Unsloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.\n"
-                            "Defaulting to native Unsloth inference."
+                            "Hyposloth: DGX Spark detected - `fast_inference=True` is currently broken as of January 2026.\n"
+                            "Defaulting to native Hyposloth inference."
                         )
                         fast_inference = False
                         break
@@ -1338,7 +1338,7 @@ class FastModel(FastBaseModel):
             if "architecture" in autoconfig_error:
                 if "qwen3_5" in autoconfig_error:
                     raise ImportError(
-                        f"Unsloth: Your transformers version of {transformers_version} does not support Qwen3.5.\n"
+                        f"Hyposloth: Your transformers version of {transformers_version} does not support Qwen3.5.\n"
                         f"The minimum required version is 5.2.0.\n"
                         f'Try `pip install --upgrade "transformers>=5.2.0"`\n'
                         f"to obtain the latest transformers build, then restart this session."
@@ -1373,7 +1373,7 @@ class FastModel(FastBaseModel):
         # Error out if both LoRA and normal model config exists.
         if both_exist:
             raise RuntimeError(
-                "Unsloth: Your repo has a LoRA adapter and a base model.\n"
+                "Hyposloth: Your repo has a LoRA adapter and a base model.\n"
                 "You have 2 files `config.json` and `adapter_config.json`.\n"
                 "We must only allow one config file.\n"
                 "Please separate the LoRA and base models to 2 repos."
@@ -1383,14 +1383,14 @@ class FastModel(FastBaseModel):
             # Old transformers version
             if "rope_scaling" in error.lower() and not SUPPORTS_LLAMA31:
                 raise ImportError(
-                    f"Unsloth: Your transformers version of {transformers_version} does not support new RoPE scaling methods.\n"
+                    f"Hyposloth: Your transformers version of {transformers_version} does not support new RoPE scaling methods.\n"
                     f"This includes Llama 3.1. The minimum required version is 4.43.2\n"
                     f'Try `pip install --upgrade "transformers>=4.43.2"`\n'
                     f"to obtain the latest transformers build, then restart this session."
                 )
             # Create a combined error message showing both failures
             combined_error = (
-                "Unsloth: Failed to load model. Both AutoConfig and PeftConfig loading failed.\n\n"
+                "Hyposloth: Failed to load model. Both AutoConfig and PeftConfig loading failed.\n\n"
                 f"AutoConfig error: {autoconfig_error}\n\n"
                 f"PeftConfig error: {peft_error}\n\n"
             )
@@ -1414,7 +1414,7 @@ class FastModel(FastBaseModel):
         _maybe_advise_fla_install(model_types)
 
         # ---- Text-diffusion models (e.g. DiffusionGemma) take a transformers-only slow path. ----
-        # These use a custom block-diffusion `generate` and a novel backbone, so we skip Unsloth's
+        # These use a custom block-diffusion `generate` and a novel backbone, so we skip Hyposloth's
         # autoregressive kernel/compile patching and load the unmodified HF model (bit-identical to
         # naive transformers), keeping only 4bit/8bit + PEFT LoRA conveniences.
         if is_diffusion_model_type(model_types):
@@ -1457,21 +1457,21 @@ class FastModel(FastBaseModel):
         )
         # Pixtral
         if "pixtral" in model_types_all and transformers_version < Version("4.49.0"):
-            raise RuntimeError("Unsloth: Pixtral only works on transformers >= 4.49.0." + LATEST)
+            raise RuntimeError("Hyposloth: Pixtral only works on transformers >= 4.49.0." + LATEST)
         # Qwen 2.5
         elif "qwen2_5" in model_types_all and transformers_version < Version("4.49.0"):
-            raise RuntimeError("Unsloth: Qwen 2.5 only works on transformers >= 4.49.0." + LATEST)
+            raise RuntimeError("Hyposloth: Qwen 2.5 only works on transformers >= 4.49.0." + LATEST)
         # Gemma 4 must be before Gemma 3N and Gemma 3
         elif "gemma4" in model_types_all:
             if not SUPPORTS_GEMMA4:
-                raise RuntimeError("Unsloth: Gemma 4 requires transformers >= 5.5.0" + LATEST)
+                raise RuntimeError("Hyposloth: Gemma 4 requires transformers >= 5.5.0" + LATEST)
             os.environ["UNSLOTH_DISABLE_STATIC_GENERATION"] = "1"
             os.environ["UNSLOTH_HIGH_PRECISION_LAYERNORM"] = "1"
         # Gemma 3N must be before Gemma 3
         elif "gemma3n" in model_types_all:
             if transformers_version < Version("4.53.0"):
                 raise RuntimeError(
-                    "Unsloth: Gemma 3N only works on transformers >= 4.53.0" + LATEST
+                    "Hyposloth: Gemma 3N only works on transformers >= 4.53.0" + LATEST
                 )
             os.environ["UNSLOTH_DISABLE_STATIC_GENERATION"] = "1"
             os.environ["UNSLOTH_FORCE_CUSTOM_DTYPE"] = (
@@ -1488,7 +1488,7 @@ class FastModel(FastBaseModel):
         elif "gemma3" in model_types_all:
             if transformers_version < Version("4.50.0.dev0"):
                 raise RuntimeError(
-                    "Unsloth: Gemma 3 only works on transformers >= 4.50.0." + NIGHTLY
+                    "Hyposloth: Gemma 3 only works on transformers >= 4.50.0." + NIGHTLY
                 )
             # Set norms to float32 since anyways they get upcasted to float32
             # common in both gemma-3 and gemma-3n
@@ -1504,7 +1504,7 @@ class FastModel(FastBaseModel):
         # Cohere
         elif "cohere2" in model_types_all and transformers_version < Version("4.50.0.dev0"):
             raise RuntimeError(
-                "Unsloth: Cohere's Command model only works on transformers >= 4.50.0." + NIGHTLY
+                "Hyposloth: Cohere's Command model only works on transformers >= 4.50.0." + NIGHTLY
             )
         # Sesame
         elif "csm" in model_types_all:
@@ -1522,10 +1522,10 @@ class FastModel(FastBaseModel):
             os.environ["UNSLOTH_DISABLE_STATIC_GENERATION"] = "1"
         # OLMo 2
         elif "olmo2" in model_types_all and transformers_version < Version("4.50.0.dev0"):
-            raise RuntimeError("Unsloth: OLMo-2 only works on transformers >= 4.50.0." + NIGHTLY)
+            raise RuntimeError("Hyposloth: OLMo-2 only works on transformers >= 4.50.0." + NIGHTLY)
         # OLMo 3
         elif "olmo3" in model_types_all and transformers_version < Version("4.57.0.dev0"):
-            raise RuntimeError("Unsloth: OLMo-3 only works on transformers >= 4.57.0." + LATEST)
+            raise RuntimeError("Hyposloth: OLMo-3 only works on transformers >= 4.57.0." + LATEST)
         elif "falcon_h1" in model_types_all:
             # Falcon must use float32 Triton ie TRITON_F32_DEFAULT = 'ieee'
             # since Mamba kernels error out on using lower precision
@@ -1587,7 +1587,7 @@ class FastModel(FastBaseModel):
                     os.environ["UNSLOTH_DISABLE_STATIC_GENERATION"] = "1"
                     if transformers_version < Version("4.50.0.dev0"):
                         raise RuntimeError(
-                            f"Unsloth: {check_model_name} only works on transformers >= 4.50.0."
+                            f"Hyposloth: {check_model_name} only works on transformers >= 4.50.0."
                             + NIGHTLY
                         )
                     break
@@ -1995,7 +1995,7 @@ class FastModel(FastBaseModel):
 
         # Apply QAT if specified
         if qat_scheme is not None:
-            print("Unsloth: Applying QAT to mitigate quantization degradation")
+            print("Hyposloth: Applying QAT to mitigate quantization degradation")
             model = FastModel._prepare_for_qat(model, qat_scheme)
 
         # Patch Tiled MLP

@@ -9,7 +9,7 @@
 # This catches regressions in setup.sh's update path that the existing
 # GGUF / wheel jobs would miss because they only invoke install.sh once.
 
-name: Unsloth Update CI
+name: Hyposloth Update CI
 
 on:
   pull_request:
@@ -36,7 +36,7 @@ permissions:
 
 jobs:
   update-idempotency:
-    name: Unsloth Updating Tests
+    name: Hyposloth Updating Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -63,7 +63,7 @@ jobs:
           # post-step then fatal-errors with "Cache folder path is
           # retrieved for pip but doesn't exist on disk".
 
-      - name: Install Unsloth (--local, --no-torch)
+      - name: Install Hyposloth (--local, --no-torch)
         # Pass the workflow token so the llama.cpp prebuilt installer's
         # GitHub-API call to list releases isn't rate-limited (60/hr
         # unauthenticated). Without this, three consecutive install +
@@ -122,7 +122,7 @@ jobs:
           grep -qE "prebuilt up to date and validated|prebuilt installed and validated" logs/update2.log
           echo "second update was clean"
 
-      - name: Boot Unsloth briefly to confirm the install is still usable
+      - name: Boot Hyposloth briefly to confirm the install is still usable
         # If `update --local` accidentally broke the venv or wiped the
         # llama-server binary, the server would fail to start here.
         run: |
@@ -138,13 +138,13 @@ jobs:
             sleep 1
           done
           if ! jq -e '.status == "healthy"' /tmp/health.json 2>/dev/null; then
-            echo "Unsloth failed to come up after `update`"
+            echo "Hyposloth failed to come up after `update`"
             tail -200 logs/studio.log
             kill "$PID" 2>/dev/null || true
             exit 1
           fi
           kill "$PID" 2>/dev/null || true
-          echo "post-update Unsloth /api/health OK"
+          echo "post-update Hyposloth /api/health OK"
 
       - name: A complete install reports itself complete
         run: |
@@ -207,7 +207,7 @@ jobs:
           for p in \
             "$HOME/.unsloth/studio" \
             "$HOME/.local/share/unsloth" \
-            "$HOME/Desktop/Unsloth Studio.desktop" \
+            "$HOME/Desktop/Hyposloth Studio.desktop" \
             "$HOME/.local/bin/unsloth"; do
             if [ -e "$p" ] || [ -L "$p" ]; then
               echo "::error::leak: $p"

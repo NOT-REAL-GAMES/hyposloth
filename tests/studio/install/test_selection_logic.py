@@ -261,13 +261,13 @@ def mock_windows_runtime(monkeypatch, lines):
 
 
 # ===========================================================================
-# Unsloth run.py localhost warning
+# Hyposloth run.py localhost warning
 # ===========================================================================
 
 
 class TestStudioLocalhostIpv6Warning:
     def _prepare_loopback(self, run_module, monkeypatch):
-        # Unsloth confirmed answering on the IPv4 loopback.
+        # Hyposloth confirmed answering on the IPv4 loopback.
         monkeypatch.setattr(
             run_module,
             "_working_local_url",
@@ -318,7 +318,7 @@ class TestStudioLocalhostIpv6Warning:
         assert "http://localhost:8888" in captured.out
 
     def test_ipv6_listener_does_not_suppress_warning(self, monkeypatch):
-        # A process on ::1 is NOT Unsloth (binds 127.0.0.1 only), so the warning must
+        # A process on ::1 is NOT Hyposloth (binds 127.0.0.1 only), so the warning must
         # still fire -- that is exactly when http://localhost opens the wrong service.
         run_module = load_studio_run_module(monkeypatch)
         self._prepare_loopback(run_module, monkeypatch)
@@ -347,7 +347,7 @@ class TestStudioLocalhostIpv6Warning:
         assert run_module._localhost_ipv6_mismatch_url("127.0.0.1", port) is None
 
     def test_ipv4_not_answering_suppresses_warning(self, monkeypatch):
-        # Unsloth not confirmed on 127.0.0.1 -> no warning.
+        # Hyposloth not confirmed on 127.0.0.1 -> no warning.
         run_module = load_studio_run_module(monkeypatch)
         monkeypatch.setattr(run_module, "_working_local_url", lambda port: None)
         self._set_getaddrinfo(monkeypatch, [self._ipv6()])
@@ -3591,7 +3591,7 @@ class TestCpuFallback:
 # ===========================================================================
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason = "bash-only Unsloth installer tests")
+@pytest.mark.skipif(sys.platform == "win32", reason = "bash-only Hyposloth installer tests")
 class TestCudaDriverToolkitMismatchMessage:
     _SETUP_SH = PACKAGE_ROOT / "studio" / "setup.sh"
     _SETUP_PS1 = PACKAGE_ROOT / "studio" / "setup.ps1"
@@ -3717,7 +3717,7 @@ class TestCudaDriverToolkitMismatchMessage:
             env = {"PATH": f"{mock_bin}:{os.environ.get('PATH', '')}"},
         )
         assert "compatible:13.3" in output
-        assert "Unsloth supports CUDA Toolkit" not in output
+        assert "Hyposloth supports CUDA Toolkit" not in output
 
     def test_setup_sh_skips_check_without_nvidia_smi(self, tmp_path):
         empty_bin = tmp_path / "empty-bin"
@@ -3738,7 +3738,7 @@ class TestCudaDriverToolkitMismatchMessage:
         )
         output = self._run_bash(script, env = {"PATH": str(empty_bin)})
         assert "skipped" in output
-        assert "Unsloth supports CUDA Toolkit" not in output
+        assert "Hyposloth supports CUDA Toolkit" not in output
 
     def test_setup_sh_unparsable_nvidia_smi_output_falls_back(self, tmp_path):
         mock_bin = self._fake_nvidia_smi(
@@ -3764,7 +3764,7 @@ class TestCudaDriverToolkitMismatchMessage:
             env = {"PATH": f"{mock_bin}:{os.environ.get('PATH', '')}"},
         )
         assert "fallback:generic" in output
-        assert "Unsloth supports CUDA Toolkit" not in output
+        assert "Hyposloth supports CUDA Toolkit" not in output
 
     def test_setup_sh_cuda_version_gt_compares_numerically(self):
         # 13.9 vs 13.10 is where a lexical compare goes wrong (9 > 1).
@@ -3796,7 +3796,7 @@ class TestCudaDriverToolkitMismatchMessage:
             "or install a CUDA $driverMajor.x toolkit." in source
         )
         assert (
-            "Or let Unsloth use the prebuilt CUDA bundle; it does not need the local toolkit."
+            "Or let Hyposloth use the prebuilt CUDA bundle; it does not need the local toolkit."
         ) in source
         assert (
             "Write-CudaDriverToolkitMismatch -ToolkitVersion $IncompatibleToolkit "
@@ -3915,7 +3915,7 @@ class TestCudaDriverToolkitMismatchMessage:
             env = {"PATH": f"{mock_bin}:{os.environ.get('PATH', '')}"},
         )
         assert "skipped" in output
-        assert "Unsloth supports CUDA Toolkit" not in output
+        assert "Hyposloth supports CUDA Toolkit" not in output
 
     def test_setup_sh_nvcc_below_minimum_is_too_old(self, tmp_path):
         # CUDA toolkit < 12.4 short-circuits to the too_old branch (no mismatch).

@@ -3,7 +3,7 @@
 
 """Per-port PID files, so `unsloth studio stop` can find every server.
 
-Imports run.py directly, so run under the Unsloth venv.
+Imports run.py directly, so run under the Hyposloth venv.
 """
 
 from __future__ import annotations
@@ -469,7 +469,7 @@ def test_our_own_server_on_the_requested_port_aborts_rather_than_falling_back(
 
 
 def test_a_foreign_process_on_the_requested_port_still_falls_back(monkeypatch):
-    # jupyter-lab on 8888 must not stop Unsloth starting on 8889.
+    # jupyter-lab on 8888 must not stop Hyposloth starting on 8889.
     monkeypatch.setattr(run, "_is_port_free", lambda host, p: p != 8888)
 
     assert run._resolve_port("127.0.0.1", 8888) == 8889

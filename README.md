@@ -6,7 +6,7 @@
   </picture></a>
 </h1>
 <h3 align="center" style="margin: 0; margin-top: 0;">
-Unsloth Studio lets you run and train models locally.
+Hyposloth Studio lets you run and train models locally.
 </h3>
 
 <p align="center">
@@ -65,11 +65,11 @@ Unsloth Studio (Beta) lets you run and train text, [audio](https://unsloth.ai/do
 * **Observability**: Monitor training live, track loss and GPU usage and customize graphs.
 * [Multi-GPU](https://unsloth.ai/docs/basics/multi-gpu-training-with-unsloth) training is supported, with major improvements coming soon.
 
-## 🚀 Unsloth Start
+## 🚀 Hyposloth Start
 
 [Unsloth Start](https://unsloth.ai/docs/integrations/unsloth-start) connects [Claude Code](https://unsloth.ai/docs/basics/claude-code), [Codex](https://unsloth.ai/docs/basics/codex) and other agents to local models with one command.
 
-Start Unsloth, load a model, open your project folder, then run:
+Start Hyposloth, load a model, open your project folder, then run:
 
 ```bash
 unsloth start claude
@@ -85,7 +85,7 @@ Replace `claude` with any supported agent:
 | OpenClaw | `unsloth start openclaw` |
 | OpenCode | `unsloth start opencode` |
 
-Claude Code, Codex and OpenCode can keep their current model and use Unsloth as a local
+Claude Code, Codex and OpenCode can keep their current model and use Hyposloth as a local
 subagent:
 
 ```bash
@@ -95,8 +95,8 @@ unsloth start claude --as-subagent --model unsloth/model-GGUF:quant
 ## 📥 Install
 Unsloth can be used in two ways: through **[Unsloth Studio](https://unsloth.ai/docs/new/studio/)**, the web UI, or through **Unsloth Core**, the code-based version. Each has different requirements.
 
-### Unsloth Studio (web UI)
-Unsloth Studio (Beta) works on **Windows, Linux, WSL** and **macOS**.
+### Hyposloth Studio (web UI)
+Hyposloth Studio (Beta) works on **Windows, Linux, WSL** and **macOS**.
 
 * **CPU:** Supported for Chat and Data Recipes currently
 * **NVIDIA:** Training works on RTX 30/40/50, Blackwell, DGX Spark, Station and more
@@ -137,7 +137,7 @@ Re-running the current installer replaces a previously selected CPU bundle when 
 ```bash
 unsloth studio -p 8888
 ```
-For LAN or cloud access, add `-H 0.0.0.0` (raw port only; add `--cloudflare` for a public URL). By default, Unsloth is accessible only locally.
+For LAN or cloud access, add `-H 0.0.0.0` (raw port only; add `--cloudflare` for a public URL). By default, Hyposloth is accessible only locally.
 
 To reach Unsloth over HTTPS, use `unsloth studio --secure`. Unsloth stays bound to localhost and is reached only through a free Cloudflare tunnel, which publishes it at a public `https://*.trycloudflare.com` URL (it fails closed if the tunnel can't start, so the raw port is never exposed). This makes Unsloth reachable from the internet, so anyone with the link and API key can use it and run code: keep your API key private (see Remote access below).
 
@@ -154,7 +154,7 @@ docker run -d -e JUPYTER_PASSWORD="mypassword" \
 #### Developer, Nightly, Uninstall
 To see developer, nightly and uninstallation etc. instructions, see [advanced installation](#-advanced-installation).
 
-### Unsloth Core (code-based)
+### Hyposloth Core (code-based)
 #### Linux, WSL:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -171,7 +171,7 @@ uv venv unsloth_env --python 3.13
 uv pip install unsloth --torch-backend=auto
 ```
 For Windows, `pip install unsloth` works only if you have PyTorch installed. Read our [Windows Guide](https://unsloth.ai/docs/get-started/install/windows-installation).
-You can use the same Docker image as Unsloth Studio.
+You can use the same Docker image as Hyposloth Studio.
 
 #### AMD, Intel:
 For RTX 50x, B200, 6000 GPUs: `uv pip install unsloth --torch-backend=auto`. Read our guides for: [Blackwell](https://unsloth.ai/docs/blog/fine-tuning-llms-with-blackwell-rtx-50-series-and-unsloth) and [DGX Spark](https://unsloth.ai/docs/blog/fine-tuning-llms-with-nvidia-dgx-spark-and-unsloth). <br>
@@ -200,7 +200,7 @@ Read our [guide](https://unsloth.ai/docs/get-started/fine-tuning-llms-guide). Ad
 - See [all our models](https://unsloth.ai/docs/get-started/unsloth-model-catalog) and [all our notebooks](https://unsloth.ai/docs/get-started/unsloth-notebooks)
 - See detailed documentation for Unsloth [here](https://unsloth.ai/docs)
 
-## 🦥 Unsloth News
+## 🦥 Hyposloth News
 - **AMD training**: Train, run RL, chat and deploy on AMD GPUs across Windows, WSL and Linux. [Guide](https://unsloth.ai/docs/basics/amd)
 - **GGUF hardware controls**: Choose GPU/layer placement, offload MoE experts and use multi-GPU or Tensor Parallelism. [#6414](https://github.com/unslothai/unsloth/pull/6414)
 - **Local models for any agent**: Use `unsloth start` with Claude Code, Codex, Hermes, OpenCode, OpenClaw and more through Unsloth's OpenAI- and Anthropic-compatible APIs. [Guide](https://unsloth.ai/docs/basics/api)
@@ -268,7 +268,7 @@ unsloth studio -p 8888
 #### Remote access: `--secure` (HTTPS tunnel) vs raw port
 By default `unsloth studio` binds to `127.0.0.1` (this machine only). To reach it from another device, pick one of:
 
-- `--secure` (recommended): serve **only** through a free Cloudflare HTTPS link. Unsloth stays bound to localhost and the tunnel provides the public URL; it fails closed (does not start) if the tunnel can't come up, so the raw port is never exposed.
+- `--secure` (recommended): serve **only** through a free Cloudflare HTTPS link. Hyposloth stays bound to localhost and the tunnel provides the public URL; it fails closed (does not start) if the tunnel can't come up, so the raw port is never exposed.
 ```bash
 unsloth studio --secure -p 8888
 ```
@@ -278,9 +278,9 @@ unsloth studio -H 0.0.0.0 -p 8888
 ```
 The Cloudflare tunnel is **off by default**: `-H 0.0.0.0` exposes the raw port only, not a public internet URL. Pair the wildcard bind with `--cloudflare` (`unsloth studio -H 0.0.0.0 --cloudflare`) to also publish a public `https://*.trycloudflare.com` link, or prefer `--secure` (above), which keeps the raw port private. `--cloudflare` has no effect on a loopback bind.
 
-On a wildcard bind Unsloth works out the address to share by asking `ifconfig.me` for the public IP, then asks `check-host.net` whether that port is reachable so it can tell you if a firewall is in the way. Both contact a third party. Set `UNSLOTH_STUDIO_DISABLE_PUBLIC_CHECK=1` to skip them; the banner then shows the LAN address and no reachability line.
+On a wildcard bind Hyposloth works out the address to share by asking `ifconfig.me` for the public IP, then asks `check-host.net` whether that port is reachable so it can tell you if a firewall is in the way. Both contact a third party. Set `UNSLOTH_STUDIO_DISABLE_PUBLIC_CHECK=1` to skip them; the banner then shows the LAN address and no reachability line.
 
-The first time Unsloth is published on a public URL (`--secure` or `--cloudflare`) with the auto-generated admin password still in place, it asks for a new admin password in the terminal (masked input with confirmation) before the public link goes up. Without an attached terminal it warns instead and keeps the bootstrap deadline: Unsloth shuts down after `UNSLOTH_STUDIO_BOOTSTRAP_TIMEOUT` (default 1 hour) unless the password is changed in the web UI.
+The first time Hyposloth is published on a public URL (`--secure` or `--cloudflare`) with the auto-generated admin password still in place, it asks for a new admin password in the terminal (masked input with confirmation) before the public link goes up. Without an attached terminal it warns instead and keeps the bootstrap deadline: Hyposloth shuts down after `UNSLOTH_STUDIO_BOOTSTRAP_TIMEOUT` (default 1 hour) unless the password is changed in the web UI.
 
 For headless setups that cannot answer that prompt, set the initial admin password non-interactively with `--password` (only takes effect when no password is set yet; if one already exists it is a hard error, so rotate later with `unsloth studio reset-password`):
 
@@ -292,7 +292,7 @@ printf '%s\n' 'your-strong-password' | unsloth studio --secure --password -   # 
 
 A literal `--password VALUE` is visible in the process list and shell history, so prefer the `UNSLOTH_STUDIO_PASSWORD` env var or `--password -` (stdin) for automation. This applies to any launch (public or a headless `-H 0.0.0.0` bind), and the password is set in the parent before the server binds, so it never reaches a re-executed child process.
 
-Server-side tools (web search, Python and terminal code execution) run as your user and are on by default. Anyone who can reach the server with the API key can run code on this machine, so keep your API key private and pass `--disable-tools` when exposing Unsloth.
+Server-side tools (web search, Python and terminal code execution) run as your user and are on by default. Anyone who can reach the server with the API key can run code on this machine, so keep your API key private and pass `--disable-tools` when exposing Hyposloth.
 
 #### Advanced launch options
 Installer options can be passed as environment variables. On macOS, Linux and WSL place the variable after the pipe so the shell passes it to `sh`; on Windows set it with `$env:` before piping to `iex`.
@@ -305,7 +305,7 @@ curl -fsSL https://unsloth.ai/install.sh | UNSLOTH_NO_TORCH=1 sh
 $env:UNSLOTH_NO_TORCH=1; irm https://unsloth.ai/install.ps1 | iex
 ```
 
-Skip the post-install prompt that starts Unsloth (useful for automated installs):
+Skip the post-install prompt that starts Hyposloth (useful for automated installs):
 ```bash
 curl -fsSL https://unsloth.ai/install.sh | UNSLOTH_SKIP_AUTOSTART=1 sh
 ```
@@ -341,12 +341,12 @@ UNSLOTH_NPM_REGISTRY=https://artifactory.example.com/api/npm/npm/ ./install.sh -
 ```powershell
 $env:UNSLOTH_NPM_REGISTRY='https://artifactory.example.com/api/npm/npm/'; .\install.ps1 --local
 ```
-It is threaded as `--registry` into the Unsloth frontend `npm`/`bun` installs; the supply-chain locks (7-day `min-release-age`, exact version pins) stay in force.
+It is threaded as `--registry` into the Hyposloth frontend `npm`/`bun` installs; the supply-chain locks (7-day `min-release-age`, exact version pins) stay in force.
 
-Cap Unsloth's native CPU thread pools on high-core hosts: `UNSLOTH_CPU_THREADS=8 unsloth studio -p 8888`.
+Cap Hyposloth's native CPU thread pools on high-core hosts: `UNSLOTH_CPU_THREADS=8 unsloth studio -p 8888`.
 
 #### Uninstall
-The recommended way to fully remove Unsloth Studio is the matching uninstall script for your OS. It stops any running servers, removes the install dir, the launcher data dir, the desktop shortcut, and any platform-specific entries (macOS `.app` bundle + Launch Services on Mac; Start Menu, `HKCU\Software\Unsloth` registry key and user `PATH` entries on Windows):
+The recommended way to fully remove Hyposloth Studio is the matching uninstall script for your OS. It stops any running servers, removes the install dir, the launcher data dir, the desktop shortcut, and any platform-specific entries (macOS `.app` bundle + Launch Services on Mac; Start Menu, `HKCU\Software\Hyposloth` registry key and user `PATH` entries on Windows):
 
 * ​ **MacOS, WSL, Linux:** `curl -fsSL https://raw.githubusercontent.com/unslothai/unsloth/main/scripts/uninstall.sh | sh`
 * ​ **Windows (PowerShell):** `irm https://raw.githubusercontent.com/unslothai/unsloth/main/scripts/uninstall.ps1 | iex`
@@ -374,11 +374,11 @@ You can delete old model files either from the bin icon in model search or by re
 
 ### Citation
 
-You can cite the Unsloth repo as follows:
+You can cite the Hyposloth repo as follows:
 ```bibtex
 @software{unsloth,
-  author = {Daniel Han, Michael Han and Unsloth team},
-  title = {Unsloth},
+  author = {Daniel Han, Michael Han and Hyposloth team},
+  title = {Hyposloth},
   url = {https://github.com/unslothai/unsloth},
   year = {2023}
 }
@@ -388,11 +388,11 @@ If you trained a model with 🦥Unsloth, you can use this cool sticker!   <img 
 ### License
 Unsloth uses a dual-licensing model of Apache 2.0 and AGPL-3.0. The core Unsloth package remains licensed under **[Apache 2.0](https://github.com/unslothai/unsloth?tab=Apache-2.0-1-ov-file)**, while certain optional components, such as the Unsloth Studio UI are licensed under the open-source license **[AGPL-3.0](https://github.com/unslothai/unsloth?tab=AGPL-3.0-2-ov-file)**.
 
-This structure helps support ongoing Unsloth development while keeping the project open source and enabling the broader ecosystem to continue growing.
+This structure helps support ongoing Hyposloth development while keeping the project open source and enabling the broader ecosystem to continue growing.
 
 ### Thank You to
 - The [llama.cpp library](https://github.com/ggml-org/llama.cpp) that lets users run and save models with Unsloth
 - The Hugging Face team and their libraries: [transformers](https://github.com/huggingface/transformers) and [TRL](https://github.com/huggingface/trl)
 - The Pytorch and [Torch AO](https://github.com/unslothai/unsloth/pull/3391) team for their contributions
 - NVIDIA for their [NeMo DataDesigner](https://github.com/NVIDIA-NeMo/DataDesigner) library and their contributions
-- And of course for every single person who has contributed or has used Unsloth!
+- And of course for every single person who has contributed or has used Hyposloth!

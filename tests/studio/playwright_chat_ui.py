@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Comprehensive Unsloth chat UI test, run locally + in CI."""
+"""Comprehensive Hyposloth chat UI test, run locally + in CI."""
 
 import json
 import os
@@ -488,7 +488,7 @@ with sync_playwright() as p:
         # pointer events and break Playwright's actionability check.
         reduced_motion = "reduce",
     )
-    # Hard-disable CSS view-transitions: Unsloth's theme toggle + sidebar
+    # Hard-disable CSS view-transitions: Hyposloth's theme toggle + sidebar
     # collapse run startViewTransition() which can leave <html> intercepting
     # pointer events for a beat after each route swap. See _playwright_robust.py.
     install_view_transition_killer(ctx)
@@ -818,7 +818,7 @@ with sync_playwright() as p:
         fail(f"/api/inference/load returned {load_resp['status']}: {load_resp.get('body')!r}")
     info(f"loaded model: {(load_resp['body'] or {}).get('display_name')}")
 
-    # Unsloth caches model state in zustand; reload so the composer picks
+    # Hyposloth caches model state in zustand; reload so the composer picks
     # up the loaded model.
     page.reload()
     composer = page.locator('textarea[aria-label="Message input"]')
@@ -834,7 +834,7 @@ with sync_playwright() as p:
     # (app-sidebar.tsx) -- as stable as anything in the codebase.
     picker_btn = page.locator('[data-tour="chat-model-selector"]').first
     if picker_btn.count() == 0:
-        # Fall back to text-based locators for older Unsloth builds.
+        # Fall back to text-based locators for older Hyposloth builds.
         picker_btn = page.locator(
             'button:has-text("gemma-3-270m"), '
             'button:has-text("Gemma 3"), '
@@ -1308,7 +1308,7 @@ with sync_playwright() as p:
         if len(observed) < 3:
             soft_fail(f"theme toggle ran only {len(observed)} cycle(s), expected 3")
         # Don't strict-fail on both polarities: the runner's
-        # prefers-color-scheme + Unsloth's "system" default can collapse
+        # prefers-color-scheme + Hyposloth's "system" default can collapse
         # to one polarity even when .dark toggles correctly. The 3-cycle
         # completion above is the real invariant.
         if light_seen and dark_seen:
@@ -1872,14 +1872,14 @@ with sync_playwright() as p:
     stop_btn.click()
 
     # Wait for the post-shutdown placeholder body (the component swaps in
-    # "Unsloth Studio has stopped." once /api/shutdown returns ok).
+    # "Hyposloth Studio has stopped." once /api/shutdown returns ok).
     try:
         page.wait_for_function(
-            """() => /Unsloth Studio has stopped/.test(document.body.innerText)""",
+            """() => /Hyposloth Studio has stopped/.test(document.body.innerText)""",
             timeout = 15_000,
         )
         shoot("20-shutdown-placeholder")
-        info("OK 'Unsloth Studio has stopped' placeholder rendered")
+        info("OK 'Hyposloth Studio has stopped' placeholder rendered")
     except Exception as exc:
         info(f"WARN shutdown placeholder didn't render: {exc!r}")
 

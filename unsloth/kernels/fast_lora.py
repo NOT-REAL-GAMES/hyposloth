@@ -662,7 +662,7 @@ IDENTITY_DROPOUT = torch.nn.Identity
 
 @torch._disable_dynamo
 def fast_lora_forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
-    raise NotImplementedError("Unsloth: Currently not supported yet - reshaping done incorrectly")
+    raise NotImplementedError("Hyposloth: Currently not supported yet - reshaping done incorrectly")
     self._check_forward_args(x, *args, **kwargs)
     adapter_names = kwargs.pop("adapter_names", None)
 

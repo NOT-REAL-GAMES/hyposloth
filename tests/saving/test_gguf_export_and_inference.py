@@ -8,7 +8,7 @@ Trains a tiny LoRA to imprint a distinctive phrase, exports a full-model q8_0 GG
     phrase round-trips through HF -> GGUF -> quantize -> inference.
 
 Skipped without CUDA (the export needs a real train + merge). The llama-cli step is skipped
-when no binary is found, because Unsloth's GGUF export only builds `llama-quantize`, not
+when no binary is found, because Hyposloth's GGUF export only builds `llama-quantize`, not
 `llama-cli`. The generation is hard-bounded (byte cap + watchdog kill) because recent
 `llama-cli` builds are conversation-first and otherwise spin on empty stdin.
 """
@@ -197,7 +197,7 @@ def test_gguf_q8_0_export_produces_valid_file(exported_gguf):
 def test_gguf_llama_cli_inference_reflects_finetune(exported_gguf):
     cli = _find_llama_cli()
     if cli is None:
-        pytest.skip("no llama-cli binary (Unsloth's GGUF export only builds llama-quantize)")
+        pytest.skip("no llama-cli binary (Hyposloth's GGUF export only builds llama-quantize)")
     gguf = exported_gguf["gguf"]
     assert gguf is not None, "export did not produce a GGUF"
 
@@ -335,7 +335,7 @@ def test_imatrix_was_downloaded(exported_imatrix_gguf):
 def test_imatrix_iq_inference_runs(exported_imatrix_gguf):
     cli = _find_llama_cli()
     if cli is None:
-        pytest.skip("no llama-cli binary (Unsloth's GGUF export only builds llama-quantize)")
+        pytest.skip("no llama-cli binary (Hyposloth's GGUF export only builds llama-quantize)")
     iq4 = [g for g in exported_imatrix_gguf["ggufs"] if "IQ4_XS" in os.path.basename(g).upper()]
     assert iq4, "no IQ4_XS gguf to run inference on"
     text = _run_llama_capped(cli, iq4[0], exported_imatrix_gguf["prompt"])

@@ -1239,7 +1239,7 @@ export function AppSidebar() {
                       base + (root scale - 1) * 8px. Exact base sizes at 16px. */}
                   <img
                     src="/circle-logo-small.png"
-                    alt="Unsloth"
+                    alt="Hyposloth"
                     className="h-[calc(26px+0.5rem*var(--ui-font-scale,1))] w-[calc(26px+0.5rem*var(--ui-font-scale,1))] shrink-0 rounded-full object-cover"
                   />
                   <span className="truncate font-heading text-[calc(13px+0.5rem*var(--ui-font-scale,1))] font-semibold tracking-[0em] leading-tight text-black dark:text-white dark:tracking-[0.02em]">
@@ -1948,7 +1948,7 @@ export function AppSidebar() {
                       pr on the button reserves room for the settings cog */}
                   <div className="flex min-w-0 flex-1 flex-col gap-px leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-heading text-ui-13p5 tracking-[0.025em] dark:tracking-[0.04em] font-semibold text-nav-fg">{displayTitle}</span>
-                    <span className="truncate text-ui-11p5 tracking-nav text-muted-foreground">Unsloth</span>
+                    <span className="truncate text-ui-11p5 tracking-nav text-muted-foreground">Hyposloth</span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

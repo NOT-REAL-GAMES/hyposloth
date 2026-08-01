@@ -33,7 +33,7 @@ permissions:
 
 jobs:
   api-smoke:
-    name: Unsloth API & Auth Tests
+    name: Hyposloth API & Auth Tests
     runs-on: macos-14
     timeout-minutes: 25
     env:
@@ -83,7 +83,7 @@ jobs:
           path: hf-cache
           key: ${{ runner.os }}-hf-${{ env.GGUF_REPO }}-${{ env.GGUF_VARIANT }}-v2
 
-      - name: Install Unsloth (--local, --no-torch)
+      - name: Install Hyposloth (--local, --no-torch)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Withheld on PR: this step runs checked-out PR code; public GGUF still downloads.
@@ -99,7 +99,7 @@ jobs:
       - name: Install pyjwt for the JWT-expiry forge test
         run: pip install 'pyjwt>=2.6'
 
-      - name: Reset auth + boot Unsloth (API-only)
+      - name: Reset auth + boot Hyposloth (API-only)
         run: |
           # Wipe (not reset-password): the boot below must re-seed a fresh .bootstrap_password.
           rm -rf ~/.unsloth/studio/auth
@@ -130,13 +130,13 @@ jobs:
           echo "STUDIO_NEW_PW=$NEW"  >> "$GITHUB_ENV"
           echo "STUDIO_NEW2_PW=$NEW2" >> "$GITHUB_ENV"
 
-      - name: Run Unsloth API & Auth tests
+      - name: Run Hyposloth API & Auth tests
         env:
           BASE_URL: http://127.0.0.1:18895
           STUDIO_AUTH_DIR: /Users/runner/.unsloth/studio/auth
         run: python tests/studio/studio_api_smoke.py
 
-      - name: Stop Unsloth
+      - name: Stop Hyposloth
         if: always()
         run: |
           kill "${STUDIO_PID}" 2>/dev/null || true

@@ -398,7 +398,7 @@ def _scan_cached_gguf() -> list[dict]:
 
 
 async def list_cached_gguf_response(hf_token: Optional[str] = None):
-    """List GGUF repos downloaded to HF cache, legacy Unsloth cache, and HF default cache."""
+    """List GGUF repos downloaded to HF cache, legacy Hyposloth cache, and HF default cache."""
     try:
         cached = await asyncio.to_thread(_scan_cached_gguf)
         return {"cached": cached}
@@ -687,7 +687,7 @@ def _scan_cached_models() -> list[dict]:
 
 
 async def list_cached_models_response(hf_token: Optional[str] = None):
-    """List non-GGUF model repos downloaded to HF cache, legacy Unsloth cache, and HF default cache."""
+    """List non-GGUF model repos downloaded to HF cache, legacy Hyposloth cache, and HF default cache."""
     try:
         cached = await asyncio.to_thread(_scan_cached_models)
         return {"cached": cached}

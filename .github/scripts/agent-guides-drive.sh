@@ -183,8 +183,8 @@ parse_connect() {
   echo "[$AGENT] connect --no-launch printed:"; cat_redacted "$raw"
   CONNECT_ENV="$(grep -E '^(export |unset )' "$raw" || true)"
   # The launch command is the last non-export, non-status line. start.py
-  # prints "Unsloth <url> · model <id>" and "Updated ..." status lines first.
-  CONNECT_CMD="$(grep -vE '^(export |unset |Unsloth |Updated |Disabled |Warning|Loading)' "$raw" \
+  # prints "Hyposloth <url> · model <id>" and "Updated ..." status lines first.
+  CONNECT_CMD="$(grep -vE '^(export |unset |Hyposloth |Updated |Disabled |Warning|Loading)' "$raw" \
     | grep -E '[^[:space:]]' | tail -1)"
   [ -n "$CONNECT_CMD" ] || guide_fail "could not parse a launch command from connect --no-launch output"
   redact "$raw"
@@ -549,7 +549,7 @@ case "$MODE" in
   # <agent> ...`, the interactive default), not the --no-launch recipe. That
   # path relocates each agent's home to a throwaway temp dir wiped on exit, so
   # a session cannot be resumed -- unless --persist routes it to the stable
-  # Unsloth agents dir instead. We run one headless turn per pass and check
+  # Hyposloth agents dir instead. We run one headless turn per pass and check
   # whether the turn left a session in a persistent store (deterministic, no
   # reliance on the model recalling anything), for a baseline pass and a
   # --persist pass, and assert the expected split for this agent.

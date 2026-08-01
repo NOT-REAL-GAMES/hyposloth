@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 #
-# Unsloth Studio uninstaller for Windows PowerShell. Run -Help for details.
+# Hyposloth Studio uninstaller for Windows PowerShell. Run -Help for details.
 # Custom roots (UNSLOTH_STUDIO_HOME / STUDIO_HOME) come from share\studio.conf.
 #
 # Usage:  irm https://raw.githubusercontent.com/unslothai/unsloth/main/scripts/uninstall.ps1 | iex
@@ -12,13 +12,13 @@ function Uninstall-UnslothStudio {
 
     function _Usage {
         Write-Host @'
-Unsloth Studio uninstaller (Windows PowerShell).
+Hyposloth Studio uninstaller (Windows PowerShell).
 
 Usage:
   irm https://raw.githubusercontent.com/unslothai/unsloth/main/scripts/uninstall.ps1 | iex
   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; .\scripts\uninstall.ps1
 
-Stops running Unsloth Studio servers, then removes the install dir, launcher
+Stops running Hyposloth Studio servers, then removes the install dir, launcher
 data, CLI shim, desktop and Start Menu shortcuts, the user PATH entry and the
 PathBackup registry key. The Hugging Face cache is left in place.
 
@@ -100,7 +100,7 @@ Environment:
         $wslShortcuts = @()
         foreach ($d in $ShortcutDirs) {
             if ($d -and (Test-Path -LiteralPath $d)) {
-                $wslShortcuts += Get-ChildItem -LiteralPath $d -Filter "Unsloth Studio (WSL*.lnk" -ErrorAction SilentlyContinue
+                $wslShortcuts += Get-ChildItem -LiteralPath $d -Filter "Hyposloth Studio (WSL*.lnk" -ErrorAction SilentlyContinue
             }
         }
         if (@($wslShortcuts).Count -eq 0) {
@@ -114,7 +114,7 @@ Environment:
         }
     }
 
-    # A path is an Unsloth-owned root iff one of install.ps1's sentinels exists:
+    # A path is a Hyposloth-owned root iff one of install.ps1's sentinels exists:
     #   <root>\share\studio.conf, <root>\unsloth_studio\.unsloth-studio-owned,
     #   or <root>\bin\unsloth.exe.
     function _IsStudioRoot {
@@ -195,7 +195,7 @@ Environment:
         return $p
     }
 
-    # Discover non-default Unsloth roots from env vars + studio.conf files.
+    # Discover non-default Hyposloth roots from env vars + studio.conf files.
     # Mirrors install.ps1's precedence: UNSLOTH_STUDIO_HOME wins, STUDIO_HOME
     # is ignored when both are set, so uninstalling install A doesn't also
     # delete install B if the user has a stale STUDIO_HOME pointing at B.
@@ -229,16 +229,16 @@ Environment:
             $confRoot = _RootFromConf (Join-Path $expandedEnv "share\studio.conf")
             if ($confRoot) { & $emit $confRoot }
         }
-        # Default-mode conf at LOCALAPPDATA\Unsloth Studio.
+        # Default-mode conf at LOCALAPPDATA\Hyposloth Studio.
         if ($env:LOCALAPPDATA) {
-            $confRoot = _RootFromConf (Join-Path $env:LOCALAPPDATA "Unsloth Studio\studio.conf")
+            $confRoot = _RootFromConf (Join-Path $env:LOCALAPPDATA "Hyposloth Studio\studio.conf")
             if ($confRoot) { & $emit $confRoot }
         }
     }
 
     # Return $true iff the PID's image path lives under one of $KnownRoots.
     # Prevents killing an unrelated process that happens to listen on a stale
-    # Unsloth port.
+    # Hyposloth port.
     function _PidUnderKnownRoot {
         param([int]$Pid_, [string[]]$KnownRoots)
         if (-not $KnownRoots -or $KnownRoots.Count -eq 0) { return $false }
@@ -254,8 +254,8 @@ Environment:
         return $false
     }
 
-    # Stop an Unsloth backend whose port is recorded in <DataDir>\studio.port.
-    # Only kills if the listening PID's exe path is under a known Unsloth root.
+    # Stop a Hyposloth backend whose port is recorded in <DataDir>\studio.port.
+    # Only kills if the listening PID's exe path is under a known Hyposloth root.
     function _StopByPortFile {
         param([string]$PortFile, [string[]]$KnownRoots)
         if (-not (Test-Path -LiteralPath $PortFile -PathType Leaf)) { return }
@@ -359,7 +359,7 @@ Environment:
 
     # Default install root + default data dir.
     $defaultStudioHome = if ($env:USERPROFILE) { Join-Path $env:USERPROFILE ".unsloth\studio" } else { $null }
-    $defaultDataDir = if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "Unsloth Studio" } else { $null }
+    $defaultDataDir = if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "Hyposloth Studio" } else { $null }
     # Default-mode ~/.unsloth holds a SHARED llama.cpp build + .cache that are
     # siblings of studio (not under it), so deleting <studio> misses them -- handle
     # explicitly. No-op in env/custom mode (nested under the custom root, removed
@@ -383,7 +383,7 @@ Environment:
     $knownRoots += $customRoots
 
     # ── Stop running servers ──
-    _Step "Stopping any running Unsloth Studio servers..."
+    _Step "Stopping any running Hyposloth Studio servers..."
     if ($defaultDataDir) {
         _StopByPortFile -PortFile (Join-Path $defaultDataDir "studio.port") -KnownRoots $knownRoots
     }
@@ -403,7 +403,7 @@ Environment:
             continue
         }
         if (-not (_IsStudioRoot $r)) {
-            _Substep "refusing to remove non-Unsloth path: $r" "Yellow"
+            _Substep "refusing to remove non-Hyposloth path: $r" "Yellow"
             continue
         }
         _RemovePath $r
@@ -433,10 +433,10 @@ Environment:
     _Step "Removing desktop and Start Menu shortcuts..."
     try {
         $desktop = [Environment]::GetFolderPath("Desktop")
-        if ($desktop) { _RemovePath (Join-Path $desktop "Unsloth Studio.lnk") }
+        if ($desktop) { _RemovePath (Join-Path $desktop "Hyposloth Studio.lnk") }
     } catch { }
     if ($env:APPDATA) {
-        _RemovePath (Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Unsloth Studio.lnk")
+        _RemovePath (Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Hyposloth Studio.lnk")
     }
     # Invalidate the Win11 Start Menu tile cache so the removed shortcut's tile
     # disappears promptly instead of lingering stale (mirrors install.ps1's
@@ -467,7 +467,7 @@ Environment:
                     $entries = $rawPath -split ';'
                     $kept = New-Object System.Collections.ArrayList
                     $removedAny = $false
-                    # Only remove PATH entries that live inside an Unsloth root we
+                    # Only remove PATH entries that live inside a Hyposloth root we
                     # actually own (default or env-mode). A literal substring
                     # match on `unsloth_studio` would clobber unrelated user
                     # virtualenvs that happen to share the name.
@@ -506,18 +506,18 @@ Environment:
     } catch {
         _Substep "could not update user PATH: $($_.Exception.Message)" "Yellow"
     }
-    # Remove HKCU\Software\Unsloth (PathBackup lives here; install.ps1 owns it).
+    # Remove HKCU\Software\Hyposloth (PathBackup lives here; install.ps1 owns it).
     try {
-        Remove-Item -LiteralPath 'HKCU:\Software\Unsloth' -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath 'HKCU:\Software\Hyposloth' -Recurse -Force -ErrorAction SilentlyContinue
     } catch { }
 
     Write-Host ""
-    Write-Host "Unsloth Studio uninstalled."
+    Write-Host "Hyposloth Studio uninstalled."
     Write-Host "Note: Hugging Face model cache at %USERPROFILE%\.cache\huggingface was left in place."
     Write-Host "Remove it manually with 'Remove-Item -Recurse -Force `"$env:USERPROFILE\.cache\huggingface\hub`"' if desired."
     if (-not $env:UNSLOTH_STUDIO_HOME -and -not $env:STUDIO_HOME) {
         Write-Host ""
-        Write-Host "If you installed Unsloth Studio with UNSLOTH_STUDIO_HOME or STUDIO_HOME"
+        Write-Host "If you installed Hyposloth Studio with UNSLOTH_STUDIO_HOME or STUDIO_HOME"
         Write-Host "pointing at a custom directory, re-run this script with the same variable"
         Write-Host "set to also remove that install tree, e.g.:"
         Write-Host "  `$env:UNSLOTH_STUDIO_HOME = 'C:\your\path'; irm https://raw.githubusercontent.com/unslothai/unsloth/main/scripts/uninstall.ps1 | iex"

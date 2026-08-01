@@ -11,7 +11,7 @@ import {
 } from "../../utils/stats-format";
 import { StatMeter, StatRow, StatsCard } from "./stat-primitives";
 
-/** Left column: the "how you use Unsloth" numbers. */
+/** Left column: the "how you use Hyposloth" numbers. */
 export function ActivityInsightsCard({ stats }: { stats: ProfileStats }) {
   const t = useT();
   const { totals, speed } = stats;

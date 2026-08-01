@@ -1018,7 +1018,7 @@ def test_unsloth_stream_loop_emits_zero_tokens_on_preset_cancel():
 
 
 def test_audio_stream_emits_zero_chunks_on_preset_cancel():
-    # Symmetric to the Unsloth pre-set test: the audio loop must skip
+    # Symmetric to the Hyposloth pre-set test: the audio loop must skip
     # asyncio.to_thread(next, ...) when cancel_event was pre-set via pending-replay.
     cancel_event = threading.Event()
     cancel_event.set()

@@ -106,7 +106,7 @@ function sttModelSize(model: SttModel): string {
 }
 
 /** Source repository shown under a model row. Curated models download from
- * the Unsloth GGUF repos, mirrored by the backend (stt_ggml_sidecar.py). */
+ * the Hyposloth GGUF repos, mirrored by the backend (stt_ggml_sidecar.py). */
 function sttModelSource(model: SttModel): string {
   return isCuratedSttModel(model)
     ? `unslothai/whisper-${model}-GGUF`
@@ -299,7 +299,7 @@ function SttModelPicker({
 }
 
 const TTS_PREVIEW_TEXT =
-  "Hello from Unsloth Studio! This is a preview of the selected voice.";
+  "Hello from Hyposloth Studio! This is a preview of the selected voice.";
 
 function useAudioInputDevices() {
   const t = useT();

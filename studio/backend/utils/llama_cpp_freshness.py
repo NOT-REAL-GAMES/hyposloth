@@ -26,7 +26,7 @@ from utils.prebuilt import freshness_flow as _flow
 
 logger = structlog.get_logger(__name__)
 
-# 3 days matches Unsloth's typical llama.cpp release cadence.
+# 3 days matches Hyposloth's typical llama.cpp release cadence.
 STALENESS_THRESHOLD_DAYS = 3
 
 _INSTALL_MARKER_NAME = "UNSLOTH_PREBUILT_INFO.json"

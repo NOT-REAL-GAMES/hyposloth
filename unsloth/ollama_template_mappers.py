@@ -20,7 +20,7 @@ __all__ = [
 
 OLLAMA_TEMPLATES = {}
 
-# =========================================== Unsloth
+# =========================================== Hyposloth
 
 unsloth_ollama = '''
 FROM {__FILE_LOCATION__}

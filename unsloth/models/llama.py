@@ -892,7 +892,7 @@ def LlamaModel_fast_forward(
     # retrieve input_ids and inputs_embeds
     if input_ids is not None and inputs_embeds is not None:
         raise ValueError(
-            "Unsloth: You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time"
+            "Hyposloth: You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time"
         )
     elif input_ids is not None:
         batch_size, seq_length = input_ids.shape
@@ -900,7 +900,7 @@ def LlamaModel_fast_forward(
         batch_size, seq_length, _ = inputs_embeds.shape
     else:
         raise ValueError(
-            "Unsloth: You have to specify either decoder_input_ids or decoder_inputs_embeds"
+            "Hyposloth: You have to specify either decoder_input_ids or decoder_inputs_embeds"
         )
 
     seq_length_with_past = seq_length
@@ -915,7 +915,7 @@ def LlamaModel_fast_forward(
         if seq_length > self.max_seq_length:
             shape = input_ids.shape if input_ids is not None else inputs_embeds.shape
             logger.warning_once(
-                f"Unsloth: Input IDs of shape {shape} with length {seq_length} > the model's max sequence length of {self.max_seq_length}.\n"
+                f"Hyposloth: Input IDs of shape {shape} with length {seq_length} > the model's max sequence length of {self.max_seq_length}.\n"
                 "We shall truncate it ourselves. It's imperative if you correct this issue first."
             )
         if input_ids is not None:
@@ -1040,7 +1040,7 @@ def LlamaModel_fast_forward(
         use_cache = False
         # if use_cache:
         #     logger.warning_once(
-        #         "Unsloth: `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`"
+        #         "Hyposloth: `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`"
         #     )
         #     use_cache = False
 
@@ -1071,7 +1071,7 @@ def LlamaModel_fast_forward(
             self.GA_mask = False
         elif attention_mask is not None:
             # Fixes https://github.com/unslothai/unsloth/issues/853
-            # Unsloth needs a 2D mask, not a [2, 1, n, n] mask!
+            # Hyposloth needs a 2D mask, not a [2, 1, n, n] mask!
 
             # https://github.com/pytorch/pytorch/issues/103749
             # Need to convert to float and not using bool
@@ -1461,7 +1461,7 @@ def CausalLM_fast_forward(fast_forward_inference):
             logits = self.lm_head(hidden_states[:, -num_logits_to_keep:, :].to(dtype))
         else:
             RETURN_LOGITS = os.environ.get("UNSLOTH_RETURN_LOGITS", "0") == "1"
-            # < 1024 Normal Unsloth uses less VRAM!
+            # < 1024 Normal Hyposloth uses less VRAM!
             if bsz * q_len <= 1024 and not RETURN_LOGITS:
                 # Use unsloth_fused_ce_loss which actually calculates the best chunk size to reduce VRAM usage
                 RETURN_LOGITS = False
@@ -1749,7 +1749,7 @@ def _compute_config_rope_inv_freq(config, rope_scaling):
             except Exception:
                 pass
         logger.warning_once(
-            f"Unsloth: Could not apply RoPE scaling '{rope_type}' from config "
+            f"Hyposloth: Could not apply RoPE scaling '{rope_type}' from config "
             f"({type(exception).__name__}: {exception}); falling back to unscaled RoPE. "
             "Long-context generation may degrade."
         )
@@ -2187,7 +2187,7 @@ def unsloth_fast_generate(self, *args, **kwargs):
                 _ids.shape[-1] + kwargs["max_new_tokens"] > self.config.max_position_embeddings
             ):
                 raise ValueError(
-                    f"Unsloth: input length {_ids.shape[-1]} + max_new_tokens {kwargs['max_new_tokens']} exceeds the maximum sequence length of {self.config.max_position_embeddings}!\n"
+                    f"Hyposloth: input length {_ids.shape[-1]} + max_new_tokens {kwargs['max_new_tokens']} exceeds the maximum sequence length of {self.config.max_position_embeddings}!\n"
                     "You will need to do long context extension by increasing the `max_seq_length` in `FastLanguageModel.from_pretrained`."
                 )
 
@@ -2319,28 +2319,28 @@ class FastLlamaModel:
         if trust_remote_code:
             if fast_inference:
                 raise NotImplementedError(
-                    "Unsloth: Fast inference does not support `trust_remote_code` yet."
+                    "Hyposloth: Fast inference does not support `trust_remote_code` yet."
                 )
             print(
-                "Unsloth: WARNING `trust_remote_code` is True.\n"
+                "Hyposloth: WARNING `trust_remote_code` is True.\n"
                 "Are you certain you want to do remote code execution?"
             )
         if fast_inference:
             if not is_vLLM_available():
-                print("Unsloth: vLLM is not installed! Will use Unsloth inference!")
+                print("Hyposloth: vLLM is not installed! Will use Hyposloth inference!")
                 fast_inference = False
             if DEVICE_TYPE == "cuda":
                 major_version, minor_version = torch.cuda.get_device_capability()
                 if major_version < 7:
                     print(
-                        "Unsloth: vLLM does not work on older GPUs - will switch to Unsloth inference!"
+                        "Hyposloth: vLLM does not work on older GPUs - will switch to Hyposloth inference!"
                     )
                     fast_inference = False
             elif DEVICE_TYPE == "hip":
                 fast_inference = True
             if unsloth_vllm_standby and os.environ.get("UNSLOTH_VLLM_STANDBY", "0") == "0":
                 raise RuntimeError(
-                    "Unsloth: `unsloth_vllm_standby` is True, but  environment variable `UNSLOTH_VLLM_STANDBY` is not set to 1!"
+                    "Hyposloth: `unsloth_vllm_standby` is True, but  environment variable `UNSLOTH_VLLM_STANDBY` is not set to 1!"
                 )
 
         token = hf_login(token)
@@ -2380,12 +2380,12 @@ class FastLlamaModel:
             except:
                 vllm_version = ""
         else:
-            raise ValueError(f"Unsloth: Unsupported device type: {DEVICE_TYPE}")
+            raise ValueError(f"Hyposloth: Unsupported device type: {DEVICE_TYPE}")
 
         max_memory = round(gpu_stats.total_memory / 1024 / 1024 / 1024, 3)
 
         statistics = (
-            f"==((====))==  Unsloth {__version__}: Fast {model_patcher.__name__[4:-5]} patching. Transformers: {transformers_version}.{vllm_version}\n"
+            f"==((====))==  Hyposloth {__version__}: Fast {model_patcher.__name__[4:-5]} patching. Transformers: {transformers_version}.{vllm_version}\n"
             f"   {chr(92)}{chr(92)}   /|    {gpu_stats_name}Num GPUs = {DEVICE_COUNT}. Max memory: {max_memory} GB. Platform: {platform_system}.\n"
             f"O^O/ {chr(92)}_/ {chr(92)}    Torch: {torch.__version__}. {gpu_stats_snippet} Triton: {triton_version}\n"
             f"{chr(92)}        /    Bfloat16 = {str(SUPPORTS_BFLOAT16).upper()}. FA [Xformers = {xformers_version}. FA2 = {HAS_FLASH_ATTENTION}]\n"
@@ -2405,7 +2405,7 @@ class FastLlamaModel:
             old_hf_transfer = "0"
         if old_hf_transfer == "1":
             print(
-                "Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!"
+                "Hyposloth: Fast downloading is enabled - ignore downloading bars which are red colored!"
             )
         if old_hf_transfer != "0":
             os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
@@ -2545,13 +2545,13 @@ class FastLlamaModel:
 
             if fast_inference:
                 raise NotImplementedError(
-                    "Unsloth: Fast inference does not yet work with RoPE Scaling."
+                    "Hyposloth: Fast inference does not yet work with RoPE Scaling."
                 )
 
             linear_scaling, native_type = _extended_rope_scaling(model_config, factor)
             if linear_scaling is not None:
                 logger.warning_once(
-                    f"Unsloth: {model_name} can only handle sequence lengths of at most "
+                    f"Hyposloth: {model_name} can only handle sequence lengths of at most "
                     f"{model_max_seq_length}.\nBut with kaiokendev's RoPE scaling of "
                     f"{round(factor, 3)}, it can be magically be extended to "
                     f"{max_seq_length}!"
@@ -2565,7 +2565,7 @@ class FastLlamaModel:
             else:
                 # Native llama3 scaling already handles long context; just widen the window.
                 logger.warning_once(
-                    f"Unsloth: extending {model_name} to {max_seq_length} using its native "
+                    f"Hyposloth: extending {model_name} to {max_seq_length} using its native "
                     f"{native_type} RoPE scaling."
                 )
 
@@ -2835,7 +2835,7 @@ class FastLlamaModel:
             else:
                 inner_training_loop = Trainer._original_training_loop
         except:
-            raise RuntimeError("Unsloth: Unsuccessfully patched inner_training_loop")
+            raise RuntimeError("Hyposloth: Unsuccessfully patched inner_training_loop")
 
         import transformers.trainer
 
@@ -2860,7 +2860,7 @@ class FastLlamaModel:
         # Cannot use \\ since it will cause a SyntaxWarning in Python 3.12
         # Instead use chr(92) == \\
         debug_info = """debug_info = \\
-        f"==((====))==  Unsloth - 2x faster free finetuning | Num GPUs used = {len(set(p.device for p in model.parameters()))}\\n"\\
+        f"==((====))==  Hyposloth - 2x faster free finetuning | Num GPUs used = {len(set(p.device for p in model.parameters()))}\\n"\\
         f"   {chr(92)}{chr(92)}   /|    Num examples = {num_examples:,} | Num Epochs = {num_train_epochs:,} | Total steps = {max_steps:,}\\n"\\
         f"O^O/ {chr(92)}_/ {chr(92)}    Batch size per device = {self._train_batch_size:,} | Gradient accumulation steps = {args.gradient_accumulation_steps}\\n"\\
         f"{chr(92)}        /    Data Parallel GPUs = {args.world_size} | Total batch size ({self._train_batch_size} x {args.gradient_accumulation_steps} x {args.world_size}) = {total_train_batch_size:,}\\n"\\
@@ -2881,7 +2881,7 @@ class FastLlamaModel:
         debug_info = """n_total_devices = total_train_batch_size // \\
             args.gradient_accumulation_steps // self._train_batch_size
         if n_total_devices > 1:
-            logger.warning_once('Unsloth is running with multi GPUs - the effective batch size is multiplied by ' + str(n_total_devices))
+            logger.warning_once('Hyposloth is running with multi GPUs - the effective batch size is multiplied by ' + str(n_total_devices))
         debug_info ="""
         debug_info = debug_info.split("\n")
         debug_info = "\n".join([debug_info[0]] + [spaces + x[8:] for x in debug_info[1:]])
@@ -2893,7 +2893,7 @@ class FastLlamaModel:
         )
         inner_training_loop = inner_training_loop.replace(
             "train_dataloader = tpu_spmd_dataloader(train_dataloader)",
-            "raise RuntimeError('Unsloth: TPUs are not yet supported!')",
+            "raise RuntimeError('Hyposloth: TPUs are not yet supported!')",
         )
         inner_training_loop = inner_training_loop.replace(
             "_inner_training_loop",
@@ -2953,7 +2953,7 @@ class FastLlamaModel:
                 name = name[: len(name) - len("-bnb-4bit")]
                 model.config.update({"_name_or_path": name})
 
-        # Log Unsloth version for future fastpaths for inference
+        # Log Hyposloth version for future fastpaths for inference
         model.config.update({"unsloth_version": __version__})
 
         # Add save modules
@@ -2972,7 +2972,7 @@ class FastLlamaModel:
 
             internal_model = internal_model.model
         internal_model._saved_temp_tokenizer = tokenizer
-        # Prevent Transformers Trainer from auto-wrapping Unsloth LoRA models in DP.
+        # Prevent Transformers Trainer from auto-wrapping Hyposloth LoRA models in DP.
         _mark_unsloth_disable_data_parallel(model)
 
         # For transformers > 4.47.1, we need to add rotary_emb to all attention layers
@@ -3099,7 +3099,7 @@ class FastLlamaModel:
                 **kwargs,
             )
         if os.environ.get("UNSLOTH_ENABLE_FULL_FINETUNING", "0") == "1":
-            print("Unsloth: Full finetuning is enabled, so .get_peft_model has no effect")
+            print("Hyposloth: Full finetuning is enabled, so .get_peft_model has no effect")
             # Full finetuning still compiles, so a stray pre-train forward can poison the
             # cache; install the detector here too (it is idempotent).
             _unsloth_install_pretrain_detector(model)
@@ -3114,9 +3114,9 @@ class FastLlamaModel:
         )
 
         if type(r) is not int:
-            raise TypeError(f"Unsloth: Rank of {str(r)} must be an integer.")
+            raise TypeError(f"Hyposloth: Rank of {str(r)} must be an integer.")
         if r <= 0:
-            raise TypeError(f"Unsloth: Rank of {str(r)} must be larger than 0.")
+            raise TypeError(f"Hyposloth: Rank of {str(r)} must be larger than 0.")
 
         if isinstance(model, PeftModelForCausalLM) or isinstance(
             model, PeftModelForSequenceClassification
@@ -3177,19 +3177,19 @@ class FastLlamaModel:
 
             if check_all:
                 # Simply pass through!
-                logger.warning("Unsloth: Already have LoRA adapters! We shall skip this step.")
+                logger.warning("Hyposloth: Already have LoRA adapters! We shall skip this step.")
 
                 # Offload!
                 # [TODO] First offload lm_head and embed_tokens to CPU (should be disk!!)
                 if "embed_tokens" in new_target_modules:
-                    print("Unsloth: Training embed_tokens in mixed precision to save VRAM")
+                    print("Hyposloth: Training embed_tokens in mixed precision to save VRAM")
 
                     _offload_frozen_module_for_training(
                         model.get_input_embeddings(), DEVICE_TYPE_TORCH
                     )
 
                 if "lm_head" in new_target_modules:
-                    print("Unsloth: Training lm_head in mixed precision to save VRAM")
+                    print("Hyposloth: Training lm_head in mixed precision to save VRAM")
 
                     _offload_frozen_module_for_training(
                         model.get_output_embeddings(), DEVICE_TYPE_TORCH
@@ -3205,7 +3205,7 @@ class FastLlamaModel:
                 return model
             else:
                 raise TypeError(
-                    "Unsloth: Your model already has LoRA adapters. Your new parameters are different."
+                    "Hyposloth: Your model already has LoRA adapters. Your new parameters are different."
                 )
 
         if loftq_config is None:
@@ -3217,14 +3217,14 @@ class FastLlamaModel:
 
         if lora_dropout != 0:
             logger.warning_once(
-                f"Unsloth: Dropout = 0 is supported for fast patching. You are using dropout = {lora_dropout}.\n"
-                f"Unsloth will patch all other layers, except LoRA matrices, causing a performance hit."
+                f"Hyposloth: Dropout = 0 is supported for fast patching. You are using dropout = {lora_dropout}.\n"
+                f"Hyposloth will patch all other layers, except LoRA matrices, causing a performance hit."
             )
 
         if bias != "none":
             logger.warning_once(
-                f"Unsloth: bias = `none` is supported for fast patching. You are using bias = {bias}.\n"
-                f"Unsloth will patch all other layers, except LoRA matrices, causing a performance hit."
+                f"Hyposloth: bias = `none` is supported for fast patching. You are using bias = {bias}.\n"
+                f"Hyposloth will patch all other layers, except LoRA matrices, causing a performance hit."
             )
 
         if not (
@@ -3234,14 +3234,14 @@ class FastLlamaModel:
             or init_lora_weights == "corda"
         ):
             raise ValueError(
-                'Unsloth: `init_lora_weights` must be either [True, False, "gaussian", "loftq", "corda"].'
+                'Hyposloth: `init_lora_weights` must be either [True, False, "gaussian", "loftq", "corda"].'
             )
 
         if init_lora_weights == "loftq":
             if not SUPPORTS_LOFTQ:
                 import peft
                 raise RuntimeError(
-                    f"Unsloth: Your PEFT version of {peft.__version__} does not support LoftQ init.\n"
+                    f"Hyposloth: Your PEFT version of {peft.__version__} does not support LoftQ init.\n"
                     "Please install PEFT 0.7.2 or higher.\n"
                     "You can also install from source: `pip install git+https://github.com/huggingface/peft.git"
                 )
@@ -3249,14 +3249,14 @@ class FastLlamaModel:
             if loftq_config == {}:
                 from peft import LoftQConfig
                 logger.warning_once(
-                    "Unsloth: init_lora_weights = `loftq` is set, but `loftq_config` is None.\n"
+                    "Hyposloth: init_lora_weights = `loftq` is set, but `loftq_config` is None.\n"
                     "We shall use `loftq_config = LoftQConfig(loftq_bits = 4, loftq_iter = 1)`."
                 )
                 loftq_config = LoftQConfig(loftq_bits = 4, loftq_iter = 1)
 
             if hasattr(model.config, "quantization_config"):
                 raise ValueError(
-                    "Unsloth: You are using `loftq` init, yet `load_in_4bit = True` was set.\n"
+                    "Hyposloth: You are using `loftq` init, yet `load_in_4bit = True` was set.\n"
                     "Reload your model without any quantization by setting `load_in_4bit = False`."
                 )
 
@@ -3266,7 +3266,7 @@ class FastLlamaModel:
                 # We manually check for PEFT
                 import peft
                 raise RuntimeError(
-                    f"Unsloth: Your PEFT version of {peft.__version__} does not support `use_rslora`.\n"
+                    f"Hyposloth: Your PEFT version of {peft.__version__} does not support `use_rslora`.\n"
                     "Please install PEFT 0.7.2 or higher.\n"
                     "You can also install from source: `pip install git+https://github.com/huggingface/peft.git"
                 )
@@ -3294,7 +3294,7 @@ class FastLlamaModel:
         for module in target_modules:
             if module == "embed_tokens":
                 # logger.warning_once(
-                #     "Unsloth: `embed_tokens` should be placed in `modules_to_save` and not `target_modules`. "\
+                #     "Hyposloth: `embed_tokens` should be placed in `modules_to_save` and not `target_modules`. "\
                 #     "Luckily, we shall do it for you!"
                 # )
                 train_embed_tokens = True
@@ -3310,7 +3310,7 @@ class FastLlamaModel:
                 except AssertionError as e:
                     final_modules.append(module)
                     print(
-                        "Unsloth: You added custom modules, but Unsloth hasn't optimized for this.\n"
+                        "Hyposloth: You added custom modules, but Hyposloth hasn't optimized for this.\n"
                         "Beware - your finetuning might be noticeably slower!"
                     )
                 pass
@@ -3323,7 +3323,7 @@ class FastLlamaModel:
             _lm_head_already_trained = train_lm_head or "lm_head" in final_modules
             if not _lm_head_already_trained or not _embed_already_trained:
                 print(
-                    "Unsloth: You added new tokens but did not specify if you wanted to "
+                    "Hyposloth: You added new tokens but did not specify if you wanted to "
                     "train the lm_head and embed_tokens.\nWe must turn it on for you."
                 )
 
@@ -3362,7 +3362,7 @@ class FastLlamaModel:
                     train_embed_tokens = True
                 else:
                     raise TypeError(
-                        f"Unsloth: Module = {module} is not allowed. Only 'lm_head' and 'embed_tokens' is allowed."
+                        f"Hyposloth: Module = {module} is not allowed. Only 'lm_head' and 'embed_tokens' is allowed."
                     )
         if isinstance(modules_to_save, (tuple, list)):
             modules_to_save = list(set(modules_to_save))
@@ -3376,12 +3376,12 @@ class FastLlamaModel:
 
             if modules_to_save is not None:
                 raise NotImplementedError(
-                    "Unsloth: Currently fast inference does not work with training embeddings or lm_head."
+                    "Hyposloth: Currently fast inference does not work with training embeddings or lm_head."
                 )
 
             if bias != "none":
                 raise NotImplementedError(
-                    "Unsloth: Currently fast inference does not work with using biases for LoRA."
+                    "Hyposloth: Currently fast inference does not work with using biases for LoRA."
                 )
 
         # Does not get lora yet, so get name from model, not base model
@@ -3399,7 +3399,7 @@ class FastLlamaModel:
             final_modules.extend(_added)
             if _added:
                 print(
-                    f"Unsloth: Detected MoE model with per-expert Linear experts. "
+                    f"Hyposloth: Detected MoE model with per-expert Linear experts. "
                     f"Enabling LoRA on {len(_added)} expert projection modules."
                 )
                 warn_if_zoo_cannot_merge_moe_experts()
@@ -3444,7 +3444,7 @@ class FastLlamaModel:
 
         if use_gradient_checkpointing == "unsloth":
             if train_embed_tokens:
-                print("Unsloth: Offloading input_embeddings to disk to save VRAM")
+                print("Hyposloth: Offloading input_embeddings to disk to save VRAM")
                 offload_input_embeddings(model, temporary_location)
 
             # Remove old items to save VRAM
@@ -3453,7 +3453,7 @@ class FastLlamaModel:
                 clean_gpu_cache()
 
             if train_lm_head:
-                print("Unsloth: Offloading output_embeddings to disk to save VRAM")
+                print("Hyposloth: Offloading output_embeddings to disk to save VRAM")
                 offload_output_embeddings(model, temporary_location)
 
             # Remove old items to save VRAM
@@ -3467,7 +3467,7 @@ class FastLlamaModel:
 
         # Apply QAT + LoRA if specified
         if qat_scheme is not None:
-            print("Unsloth: Applying QAT to mitigate quantization degradation")
+            print("Hyposloth: Applying QAT to mitigate quantization degradation")
             model = FastLlamaModel._prepare_for_qat(model, qat_scheme)
 
         model._saved_temp_tokenizer = _saved_temp_tokenizer
@@ -3493,7 +3493,7 @@ class FastLlamaModel:
                                 delattr(target_module, "weight")
                             except Exception as exc:
                                 logger.warning_once(
-                                    f"Unsloth: Could not delete existing weight attr during retie on "
+                                    f"Hyposloth: Could not delete existing weight attr during retie on "
                                     f"{type(target_module).__name__}: {exc}"
                                 )
                         target_module.register_parameter("weight", weight)
@@ -3520,11 +3520,11 @@ class FastLlamaModel:
                         )
             except Exception as e:
                 logger.warning_once(
-                    f"Unsloth: Failed to ensure weight tying between embeddings and lm_head: {e}"
+                    f"Hyposloth: Failed to ensure weight tying between embeddings and lm_head: {e}"
                 )
 
         if train_embed_tokens:
-            print("Unsloth: Training embed_tokens in mixed precision to save VRAM")
+            print("Hyposloth: Training embed_tokens in mixed precision to save VRAM")
             assert hasattr(model.get_input_embeddings(), "modules_to_save")
 
             _offload_frozen_module_for_training(
@@ -3532,7 +3532,7 @@ class FastLlamaModel:
             )
 
         if train_lm_head:
-            print("Unsloth: Training lm_head in mixed precision to save VRAM")
+            print("Hyposloth: Training lm_head in mixed precision to save VRAM")
             assert hasattr(model.get_output_embeddings(), "modules_to_save")
 
             _offload_frozen_module_for_training(
@@ -3547,7 +3547,7 @@ class FastLlamaModel:
             internal_model = internal_model.model
         if hasattr(internal_model, "_saved_temp_tokenizer"):
             internal_model._saved_temp_tokenizer.padding_side = "right"
-        # Prevent Transformers Trainer from auto-wrapping Unsloth LoRA models in DP.
+        # Prevent Transformers Trainer from auto-wrapping Hyposloth LoRA models in DP.
         _mark_unsloth_disable_data_parallel(model)
 
         # Clear deleted GPU items
@@ -3586,7 +3586,7 @@ class FastLlamaModel:
         if not isinstance(model, PeftModelForCausalLM) and not isinstance(
             model, PeftModelForSequenceClassification
         ):
-            raise TypeError("Unsloth: Your model needs to call `.get_peft_model` first!")
+            raise TypeError("Hyposloth: Your model needs to call `.get_peft_model` first!")
 
         # Get activation function
         model_type = model.config.model_type
@@ -3612,7 +3612,7 @@ class FastLlamaModel:
         elif model_type == "qwen3moe":
             apply_lora_mlp = apply_lora_mlp_swiglu
         else:
-            raise NotImplementedError(f"Unsloth: {model_type} is not yet implemented!")
+            raise NotImplementedError(f"Hyposloth: {model_type} is not yet implemented!")
 
         model = prepare_model_for_kbit_training(
             model,
@@ -3636,7 +3636,7 @@ class FastLlamaModel:
         from transformers.trainer import Trainer
 
         if Trainer._inner_training_loop.__name__ != "_fast_inner_training_loop":
-            raise RuntimeError("Unsloth: Unsuccessfully patched Trainer! Please file a bug report!")
+            raise RuntimeError("Hyposloth: Unsuccessfully patched Trainer! Please file a bug report!")
 
         # Fix loftq issues
         # loftq_config must not = None, but rather {}
@@ -3702,7 +3702,7 @@ class FastLlamaModel:
                         n_mlp += 1
                     else:
                         logger.warning_once(
-                            "Not an error, but Unsloth cannot patch MLP layers with our manual autograd engine since either LoRA adapters\n"
+                            "Not an error, but Hyposloth cannot patch MLP layers with our manual autograd engine since either LoRA adapters\n"
                             "are not enabled or a bias term (like in Qwen) is used."
                         )
 
@@ -3728,7 +3728,7 @@ class FastLlamaModel:
                         n_qkv += 1
                     else:
                         logger.warning_once(
-                            "Not an error, but Unsloth cannot patch Attention layers with our manual autograd engine since either LoRA adapters\n"
+                            "Not an error, but Hyposloth cannot patch Attention layers with our manual autograd engine since either LoRA adapters\n"
                             "are not enabled or a bias term (like in Qwen) is used."
                         )
 
@@ -3743,12 +3743,12 @@ class FastLlamaModel:
                     n_o += 1
                 else:
                     logger.warning_once(
-                        "Not an error, but Unsloth cannot patch O projection layer with our manual autograd engine since either LoRA adapters\n"
+                        "Not an error, but Hyposloth cannot patch O projection layer with our manual autograd engine since either LoRA adapters\n"
                         "are not enabled or a bias term (like in Qwen) is used."
                     )
 
         logger.warning_once(
-            f"Unsloth {__version__} patched {len(model.model.model.layers)} layers with "
+            f"Hyposloth {__version__} patched {len(model.model.model.layers)} layers with "
             f"{n_qkv} QKV layers, {n_o} O layers and {n_mlp} MLP layers.",
         )
         patch_saving_functions(model)
@@ -3800,7 +3800,7 @@ class FastLlamaModel:
     def for_inference(model):
         if not hasattr(model, "parameters"):
             raise TypeError(
-                "Unsloth: I think you're passing a tokenizer, not the model to for_inference!"
+                "Hyposloth: I think you're passing a tokenizer, not the model to for_inference!"
             )
 
         def _for_inference(m):
@@ -3849,7 +3849,7 @@ class FastLlamaModel:
     def for_training(model, use_gradient_checkpointing = True):
         if not hasattr(model, "parameters"):
             raise TypeError(
-                "Unsloth: I think you're passing a tokenizer, not the model to for_training!"
+                "Hyposloth: I think you're passing a tokenizer, not the model to for_training!"
             )
 
         # Delete all fast inference loras

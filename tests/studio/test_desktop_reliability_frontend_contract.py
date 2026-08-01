@@ -175,7 +175,7 @@ def test_desktop_startup_waits_for_auth_without_intermediate_handoff():
     source = APP_PROVIDER.read_text(encoding = "utf-8")
 
     assert 'const showApp = status === "running" && desktopAuthReady;' in source
-    assert "Preparing Unsloth" not in source
+    assert "Preparing Hyposloth" not in source
     assert "Signing in to desktop session" not in source
     assert "desktopBooting" not in source
     assert "showInteractiveApp" not in source

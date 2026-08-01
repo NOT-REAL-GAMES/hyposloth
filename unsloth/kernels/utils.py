@@ -152,7 +152,7 @@ except Exception:
 
 def _bnb_required(*args, **kwargs):
     raise RuntimeError(
-        "Unsloth: 4bit QLoRA needs `bitsandbytes`, which is not installed. "
+        "Hyposloth: 4bit QLoRA needs `bitsandbytes`, which is not installed. "
         "16bit LoRA and full finetuning work without it."
     )
 
@@ -306,7 +306,7 @@ if importlib.util.find_spec("torchao") is not None:
         import torchao
         if Version(torchao.__version__) >= Version("0.15.0"):
             print(
-                f"Unsloth: `from torchao.quantization import Float8Tensor` failed on version={torchao.__version__}"
+                f"Hyposloth: `from torchao.quantization import Float8Tensor` failed on version={torchao.__version__}"
             )
         Float8Tensor = type(None)
 else:

@@ -33,7 +33,7 @@ store.set(
 );
 store.set(
   "unsloth_load_settings",
-  JSON.stringify({ "Unsloth/Repo-GGUF::Q4_K_M": { contextLength: 8192 } }),
+  JSON.stringify({ "Hyposloth/Repo-GGUF::Q4_K_M": { contextLength: 8192 } }),
 );
 
 const { listPerModelConfigs, resolveInitialConfig, savePerModelConfig } =
@@ -234,7 +234,7 @@ test("importing the legacy load settings never doubles up a model", () => {
 
 test("two spellings of one model id keep a single stored record", () => {
   store.clear();
-  savePerModelConfig("Unsloth/Repo-GGUF", "Q4_K_M", config(4096));
+  savePerModelConfig("Hyposloth/Repo-GGUF", "Q4_K_M", config(4096));
   savePerModelConfig("unsloth/repo-gguf", "q4_k_m", config(32768, "q8_0"));
 
   assert.deepEqual(storedKeys(), [REPO_KEY]);
@@ -243,7 +243,7 @@ test("two spellings of one model id keep a single stored record", () => {
   assert.equal(listed[0]?.config.maxSeqLength, 32768);
   // What the picker applies and the only thing the backfill can see agree.
   assert.equal(
-    resolveInitialConfig("Unsloth/Repo-GGUF", "Q4_K_M").config.maxSeqLength,
+    resolveInitialConfig("Hyposloth/Repo-GGUF", "Q4_K_M").config.maxSeqLength,
     32768,
   );
 });

@@ -4,7 +4,7 @@
 """
 Integration tests for the external providers API.
 
-Requires a running Unsloth Studio server. Configure via env vars:
+Requires a running Hyposloth Studio server. Configure via env vars:
 
     export STUDIO_TEST_URL="http://localhost:8888"   # default
     export STUDIO_TEST_USER="unsloth"                # default
@@ -38,11 +38,11 @@ BASE_URL = os.getenv("STUDIO_TEST_URL", "http://localhost:8000")
 USERNAME = os.getenv("STUDIO_TEST_USER", "unsloth")
 PASSWORD = os.getenv("STUDIO_TEST_PASSWORD", "")
 
-# Skip the whole module when no live Unsloth server / bootstrap password is
+# Skip the whole module when no live Hyposloth server / bootstrap password is
 # available (e.g. on CI) so pytest discovery does not error out.
 pytestmark = pytest.mark.skipif(
     not PASSWORD,
-    reason = "Integration test requires a running Unsloth server; set STUDIO_TEST_PASSWORD to enable.",
+    reason = "Integration test requires a running Hyposloth server; set STUDIO_TEST_PASSWORD to enable.",
 )
 
 # provider_type → (env var name, model for inference test)

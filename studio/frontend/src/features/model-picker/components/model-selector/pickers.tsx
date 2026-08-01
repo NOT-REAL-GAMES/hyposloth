@@ -131,7 +131,7 @@ function dedupe(values: string[]): string[] {
   return [...new Set(values.filter(Boolean))];
 }
 
-/** Repos published by Unsloth; the rest group under the "Other models" section. */
+/** Repos published by Hyposloth; the rest group under the "Other models" section. */
 function isUnslothRepoId(repoId: string): boolean {
   return repoId.toLowerCase().startsWith("unsloth/");
 }
@@ -1234,7 +1234,7 @@ const LOCAL_SORT_OPTIONS: HubOption<LocalSortKey>[] = [
   { value: "downloaded", label: "Downloaded" },
 ];
 
-// Format filter dropdown for the Unsloth listing. Plain labels are reused in
+// Format filter dropdown for the Hyposloth listing. Plain labels are reused in
 // the empty-state copy below.
 const FORMAT_FILTER_LABELS: Record<FormatFilter, string> = {
   all: "All",
@@ -1427,7 +1427,7 @@ export function HubModelPicker({
   // same sort drives the search results so the dropdown works while searching.
   const [recommendedSort, setRecommendedSort] =
     useState<RecommendedSortKey>("trendingScore");
-  // "recommended" surfaces the most recently created Unsloth repos.
+  // "recommended" surfaces the most recently created Hyposloth repos.
   const recommendedSortBy: HfSortKey =
     recommendedSort === "recommended" ? "createdAt" : recommendedSort;
   const {
@@ -1544,7 +1544,7 @@ export function HubModelPicker({
   const [fineTunedCollapsed, setFineTunedCollapsed] = useState(false);
   const [lmStudioCollapsed, setLmStudioCollapsed] = useState(false);
   const [localDirCollapsed, setLocalDirCollapsed] = useState(false);
-  // The Fine-tuned section header; the train icon on the Unsloth header scrolls
+  // The Fine-tuned section header; the train icon on the Hyposloth header scrolls
   // here so users can jump to their trained models.
   const fineTunedSectionRef = useRef<HTMLDivElement>(null);
   const scrollToFineTuned = useCallback(() => {
@@ -1560,7 +1560,7 @@ export function HubModelPicker({
       });
     });
   }, []);
-  // The Other models header; the directions icon on the Unsloth header scrolls
+  // The Other models header; the directions icon on the Hyposloth header scrolls
   // here.
   const otherModelsSectionRef = useRef<HTMLDivElement>(null);
   const scrollToOtherModels = useCallback(() => {
@@ -1574,7 +1574,7 @@ export function HubModelPicker({
       });
     });
   }, []);
-  // The Custom Folders header; the folder icon on the Unsloth header scrolls
+  // The Custom Folders header; the folder icon on the Hyposloth header scrolls
   // here instead of opening the browse popup.
   const customFolderSectionRef = useRef<HTMLDivElement>(null);
   const scrollToCustomFolders = useCallback(() => {
@@ -1795,7 +1795,7 @@ export function HubModelPicker({
   const deviceType = usePlatformStore((s) => s.deviceType);
   const isMac = deviceType === "mac";
 
-  // Drop models Unsloth can't run for chat (diffusion / image / video / etc.)
+  // Drop models Hyposloth can't run for chat (diffusion / image / video / etc.)
   // using the Hub's classifier on the tags the listing already carries.
   const isChatSupported = useCallback(
     (r: HfModelResult) =>
@@ -1836,18 +1836,18 @@ export function HubModelPicker({
   // Independent sort for each local section's inline dropdown.
   const [downloadedSort, setDownloadedSort] = useState<LocalSortKey>("recent");
   const [customSort, setCustomSort] = useState<LocalSortKey>("recent");
-  // Format filter toggle for the Unsloth listing.
+  // Format filter toggle for the Hyposloth listing.
   const [formatFilter, setFormatFilter] = useState<FormatFilter>("all");
 
   // Recommended suggests GGUF anywhere; on Mac also MLX and safetensors. The
   // "recommended" sort also drops models too big for the device. Already-
   // downloaded models stay visible (badged), never hidden.
   const recommendedRows = useMemo(() => {
-    // Never list mobile-targeted builds in the Unsloth section.
+    // Never list mobile-targeted builds in the Hyposloth section.
     let rows = recommendedSearch.results
       .filter((r) => !isHiddenModelId(r.id))
       .filter((r) => !isMobileVariant(r.id));
-    // Drop models Unsloth can't run for chat (diffusion / image / video / etc.).
+    // Drop models Hyposloth can't run for chat (diffusion / image / video / etc.).
     rows = rows.filter(isChatSupported);
     // With no explicit format, show the device-recommended formats (GGUF, plus
     // MLX on Mac). When the user picks a format, honor it instead so Safetensors
@@ -1989,7 +1989,7 @@ export function HubModelPicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lmStudioModels, downloadedSort, formatFilter, loadTimes, localQuery],
   );
-  // Local ./models entries. Chat-only Unsloth runs GGUF (any host) and MLX (Mac
+  // Local ./models entries. Chat-only Hyposloth runs GGUF (any host) and MLX (Mac
   // only), so raw checkpoints there are hidden (mirrors the cached non-GGUF
   // rule). An MLX build a Mac user dropped in ./models stays selectable.
   const sortedLocalDir = useMemo(
@@ -2085,9 +2085,9 @@ export function HubModelPicker({
   // logic must use this (not visibleCachedModels) or the picker can go blank.
   const visibleCachedModelRows = chatOnly ? [] : visibleCachedModels;
 
-  // Pinned entries surface in their own section above the Unsloth heading.
+  // Pinned entries surface in their own section above the Hyposloth heading.
   // GGUF quants pin individually and their repo stays listed below; non-GGUF
-  // repos pin whole and leave the Unsloth / Other models groups.
+  // repos pin whole and leave the Hyposloth / Other models groups.
   const pinnedIds = usePinnedModelsStore((s) => s.pinned);
   const togglePinned = usePinnedModelsStore((s) => s.togglePinned);
   const pinnedSet = useMemo(() => new Set(pinnedIds), [pinnedIds]);
@@ -2204,7 +2204,7 @@ export function HubModelPicker({
     return rows;
   }, [pinnedIds, pinnedQuants, pinnedCachedModelRows]);
 
-  // Split downloaded models so non-Unsloth repos get their own "Other models"
+  // Split downloaded models so non-Hyposloth repos get their own "Other models"
   // section above Fine-tuned.
   const unslothCachedGguf = useMemo(
     () => visibleCachedGguf.filter((c) => isUnslothRepoId(c.repo_id)),
@@ -2284,7 +2284,7 @@ export function HubModelPicker({
   );
 
   const hfIds = useMemo(() => {
-    // Only the Unsloth tab searches the HF listing, and only Unsloth models.
+    // Only the Hyposloth tab searches the HF listing, and only Hyposloth models.
     if (!showHfSection || section !== "recommended") return [];
     return (
       results
@@ -2329,7 +2329,7 @@ export function HubModelPicker({
   const hubOptionKeys = useMemo(() => {
     const keys: string[] = [];
 
-    // Pinned rows sit above the Unsloth heading on the On Device tab.
+    // Pinned rows sit above the Hyposloth heading on the On Device tab.
     if (
       section === "downloaded" &&
       cachedReady &&
@@ -2345,7 +2345,7 @@ export function HubModelPicker({
       );
     }
 
-    // Downloaded (Unsloth) rows (query-filtered) on the On Device tab only.
+    // Downloaded (Hyposloth) rows (query-filtered) on the On Device tab only.
     if (
       section === "downloaded" &&
       cachedReady &&
@@ -2364,7 +2364,7 @@ export function HubModelPicker({
       );
     }
 
-    // Unsloth-tab search keys (curated matches + HF unsloth results).
+    // Hyposloth-tab search keys (curated matches + HF unsloth results).
     if (showHfSection && section === "recommended") {
       keys.push(
         ...filteredRecommendedIds.map((id) =>
@@ -2375,7 +2375,7 @@ export function HubModelPicker({
       return keys;
     }
 
-    // Other (non-Unsloth) downloaded rows sit just above Fine-tuned.
+    // Other (non-Hyposloth) downloaded rows sit just above Fine-tuned.
     if (
       section === "downloaded" &&
       cachedReady &&
@@ -2602,7 +2602,7 @@ export function HubModelPicker({
     [onSelect, isKnownGgufRepo, downloadedSet],
   );
 
-  // On Device owns the downloaded and custom-folder models; the Unsloth tab
+  // On Device owns the downloaded and custom-folder models; the Hyposloth tab
   // searches the HF listing (below). Both filter locally by the query.
   const showDownloaded = section === "downloaded";
   const showCustom = section === "downloaded";
@@ -2666,14 +2666,14 @@ export function HubModelPicker({
     </span>
   );
   // On Device / Custom rows are already on disk, so the device-fit filter
-  // only applies to the Unsloth listing.
+  // only applies to the Hyposloth listing.
   const sectionSortDropdown =
     section === "recommended" ? (
       <HubOptionMenu
         value={recommendedSort}
         options={RECOMMENDED_SORT_OPTIONS}
         onValueChange={setRecommendedSort}
-        ariaLabel="Sort Unsloth models"
+        ariaLabel="Sort Hyposloth models"
         align="end"
         className={sortTriggerClassName}
         contentClassName={sortMenuContentClassName}
@@ -2753,7 +2753,7 @@ export function HubModelPicker({
   // The Connected layout uses a wider box, so it drops the search inset to keep
   // Search Hub on the last dropdown's edge while the right gap matches the left.
   const hasConnected = externalModels.length > 0;
-  // The Other models section and its shortcut only show with non-Unsloth downloads.
+  // The Other models section and its shortcut only show with non-Hyposloth downloads.
   const hasOtherModels =
     otherCachedGguf.length > 0 || otherCachedModelRows.length > 0;
 
@@ -2874,7 +2874,7 @@ export function HubModelPicker({
     );
   };
 
-  // Shared row renderers so Downloaded (Unsloth) and Other models render alike.
+  // Shared row renderers so Downloaded (Hyposloth) and Other models render alike.
   const renderDownloadedGgufRow = (c: (typeof visibleCachedGguf)[number]) => {
     const optionKey = makeModelOptionKey("downloaded-gguf", c.repo_id);
     const isSelected = value === c.repo_id;
@@ -3049,7 +3049,7 @@ export function HubModelPicker({
               placeholder={
                 section === "downloaded"
                   ? "Search local models"
-                  : "Search Unsloth models"
+                  : "Search Hyposloth models"
               }
               data-model-picker-search-input={true}
               className="field-soft h-9 border-0 pl-8 pr-8"
@@ -3199,7 +3199,7 @@ export function HubModelPicker({
                   </div>
                 ) : null}
 
-                {/* Pinned quants and models sit above the Unsloth heading so
+                {/* Pinned quants and models sit above the Hyposloth heading so
               favorites are always first. Filtered by the query like the
               sections below. */}
                 {showDownloaded && pinnedRows.length > 0 ? (
@@ -3222,7 +3222,7 @@ export function HubModelPicker({
                   </>
                 ) : null}
 
-                {/* Downloaded (Unsloth) stays visible (filtered) while searching. */}
+                {/* Downloaded (Hyposloth) stays visible (filtered) while searching. */}
                 {showDownloaded &&
                 (unslothCachedGguf.length > 0 ||
                   unslothCachedModelRows.length > 0) ? (
@@ -3252,7 +3252,7 @@ export function HubModelPicker({
                                 side="bottom"
                                 className="tooltip-compact"
                               >
-                                Other non-Unsloth models
+                                Other non-Hyposloth models
                               </TooltipContent>
                             </Tooltip>
                           ) : null}
@@ -3302,8 +3302,8 @@ export function HubModelPicker({
                       }
                     >
                       {/* When other providers (LM Studio/Ollama) also show here, name
-                    this group "Unsloth" so the two are easy to tell apart. */}
-                      {sortedLmStudio.length > 0 ? "Unsloth" : "Downloaded"}
+                    this group "Hyposloth" so the two are easy to tell apart. */}
+                      {sortedLmStudio.length > 0 ? "Hyposloth" : "Downloaded"}
                     </ListLabel>
                     {!downloadedCollapsed &&
                       unslothCachedGguf.map(renderDownloadedGgufRow)}
@@ -3312,7 +3312,7 @@ export function HubModelPicker({
                   </>
                 ) : null}
 
-                {/* Other models: non-Unsloth downloads, grouped just above
+                {/* Other models: non-Hyposloth downloads, grouped just above
               Fine-tuned. Shown only when such models exist. */}
                 {showDownloaded && hasOtherModels ? (
                   <div ref={otherModelsSectionRef}>
@@ -4197,7 +4197,7 @@ export function HubModelPicker({
                     {hfIds.length === 0 && !isLoading ? (
                       filteredRecommendedIds.length === 0 ? (
                         <div className="px-2.5 py-2 text-xs text-muted-foreground">
-                          No matching Unsloth models.
+                          No matching Hyposloth models.
                         </div>
                       ) : null
                     ) : (

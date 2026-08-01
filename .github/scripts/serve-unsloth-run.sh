@@ -15,7 +15,7 @@
 #
 # Why a helper and not inline YAML
 # --------------------------------
-#  * Every `unsloth run` invocation here is the *Unsloth server* under test.
+#  * Every `unsloth run` invocation here is the *Hyposloth server* under test.
 #    A failure to come up healthy is class (a) "server/API regression" and
 #    must be reported with a distinct `::error::` BEFORE any agent runs.
 #  * The banner is the documented contract a human copies from. We parse the
@@ -79,7 +79,7 @@ emit() {
 }
 
 server_fail() {
-  echo "::error::Unsloth server/API regression: $*" >&2
+  echo "::error::Hyposloth server/API regression: $*" >&2
   echo "---- last 200 lines of $SERVER_LOG ----" >&2
   tail -200 "$SERVER_LOG" 2>/dev/null || true
   exit 1

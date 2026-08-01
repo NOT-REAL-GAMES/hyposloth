@@ -139,7 +139,7 @@ class LoadRequest(BaseModel):
     gpu_memory_mode: Literal["auto", "manual"] = Field(
         "auto",
         description = (
-            "GPU memory strategy for GGUF models. 'auto' (default): Unsloth "
+            "GPU memory strategy for GGUF models. 'auto' (default): Hyposloth "
             "selects GPUs and caps context to fit VRAM. 'manual': you own the "
             "offload. Leave gpu_layers at -1 (Auto) to hand memory management to "
             "llama.cpp's --fit (no device masking, no context auto-reduce, no "
@@ -201,7 +201,7 @@ class LoadRequest(BaseModel):
         description = (
             "Extra arguments forwarded verbatim to llama-server for GGUF models. "
             "One token per list entry, e.g. ['--top-k', '20', '--seed', '42']. "
-            "Unsloth-managed flags (model identity, port, context length, GPU placement, "
+            "Hyposloth-managed flags (model identity, port, context length, GPU placement, "
             "auth, UI/server mode) are rejected. Ignored for non-GGUF models."
         ),
     )
@@ -314,13 +314,13 @@ class TransformersUpgradeInfo(BaseModel):
     )
     supported_in_pypi: bool = Field(
         False,
-        description = "True if the latest PyPI release ships this model_type; Unsloth can "
+        description = "True if the latest PyPI release ships this model_type; Hyposloth can "
         "install it into a persistent sidecar after user consent.",
     )
     supported_in_main: bool = Field(
         False,
         description = "True if transformers GitHub main ships this model_type (dev-only; "
-        "not installable through Unsloth yet).",
+        "not installable through Hyposloth yet).",
     )
 
 
@@ -847,7 +847,7 @@ class ImageContentPart(BaseModel):
 class InputDocumentContentPart(BaseModel):
     """Document (PDF / file) content part in a multimodal message.
 
-    Unsloth-normalised shape (file_data or file_url, plus optional filename/media_type).
+    Hyposloth-normalised shape (file_data or file_url, plus optional filename/media_type).
     Mapped onto Anthropic ``document`` / OpenAI ``input_file`` for vision providers;
     dropped for non-vision providers.
     """
@@ -1003,7 +1003,7 @@ class ThinkingConfig(BaseModel):
     """Anthropic-compatible thinking/reasoning configuration.
     Use type='disabled' to turn off thinking, or type='enabled' to turn it on.
     Only type is read; extra fields (e.g. budget_tokens) are ignored, since
-    Unsloth sets provider thinking budgets itself.
+    Hyposloth sets provider thinking budgets itself.
     """
 
     type: Literal["disabled", "enabled"] = "disabled"
@@ -1062,7 +1062,7 @@ class ChatCompletionRequest(BaseModel):
         None,
         description = (
             "OpenAI function-tool definitions. When provided without `enable_tools=true`, "
-            "Unsloth forwards the tools to the backend so the model returns structured "
+            "Hyposloth forwards the tools to the backend so the model returns structured "
             "tool_calls for the client to execute (standard OpenAI function calling)."
         ),
     )
@@ -1102,7 +1102,7 @@ class ChatCompletionRequest(BaseModel):
         description = 'Streaming options, e.g. {"include_usage": true} to emit a final usage chunk.',
     )
 
-    # ── Unsloth extensions (ignored by standard OpenAI clients) ──
+    # ── Hyposloth extensions (ignored by standard OpenAI clients) ──
     top_k: int = Field(20, ge = -1, le = 100, description = "[x-unsloth] Top-k sampling")
     min_p: float = Field(0.01, ge = 0.0, le = 1.0, description = "[x-unsloth] Min-p sampling threshold")
     repetition_penalty: float = Field(
@@ -1479,7 +1479,7 @@ class ChatCompletionRequest(BaseModel):
             # "ask" rather than let the loop apply the "auto" default, which would
             # silently weaken that opt-in to high-risk calls only. Unlike the "ask"
             # branch below this only sets permission_mode, which is inert unless
-            # Unsloth's own tool loop runs, so it needs no enable_tools/mcp gate --
+            # Hyposloth's own tool loop runs, so it needs no enable_tools/mcp gate --
             # deliberate, since a process-wide --enable-tools policy can force the
             # loop when the request sets neither flag. A bare unset request
             # (confirm_tool_calls is None) still defaults to auto.
@@ -1491,7 +1491,7 @@ class ChatCompletionRequest(BaseModel):
             and (self.enable_tools is True or bool(self.mcp_enabled))
         ):
             # "Ask" gates every call, so a direct API caller that omits the legacy
-            # confirm flag must still hit the confirmation gate for Unsloth's own
+            # confirm flag must still hit the confirmation gate for Hyposloth's own
             # tool loop. An explicit confirm_tool_calls=False wins over the mode
             # (mirrors _permission_mode_confirm and the Anthropic pre-switch guard),
             # so only self-enable when the flag is unset. Only self-enable when that
@@ -1499,7 +1499,7 @@ class ChatCompletionRequest(BaseModel):
             # (enable_tools / mcp_enabled) -- the router enters the loop on those
             # signals, not on enabled_tools alone (which merely filters which tools
             # run). A plain client-tool passthrough (client-supplied `tools` that
-            # Unsloth does not execute) must route verbatim, and external-provider
+            # Hyposloth does not execute) must route verbatim, and external-provider
             # routing rejects confirm_tool_calls with tools, so skip the fold there.
             #
             # "auto" is deliberately NOT folded: it only prompts for a call the

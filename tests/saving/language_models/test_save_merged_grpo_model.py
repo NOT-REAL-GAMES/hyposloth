@@ -181,7 +181,7 @@ def training_run(result_queue):
         start_tag = "<SOLUTION>",
         end_tag = "</SOLUTION>",
     ):
-        """Extract answer from Unsloth SOLUTION tags"""
+        """Extract answer from Hyposloth SOLUTION tags"""
         pattern = re.escape(start_tag) + r"(.*?)" + re.escape(end_tag)
         matches = re.findall(pattern, text, re.DOTALL)
 

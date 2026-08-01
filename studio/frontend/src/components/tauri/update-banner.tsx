@@ -145,7 +145,7 @@ export function UpdateBanner({
               />
               <div className="min-w-0">
                 <p className="font-heading text-base font-medium text-foreground">
-                  {showFailure ? "App update failed" : "New Unsloth version"}
+                  {showFailure ? "App update failed" : "New Hyposloth version"}
                 </p>
                 {showFailure ? null : (
                   <p className="mt-0.5 text-xs text-muted-foreground">

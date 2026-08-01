@@ -272,7 +272,7 @@ function makeMapModel(
   };
 }
 
-/** Unsloth results pulled up-front before yielding general results. */
+/** Hyposloth results pulled up-front before yielding general results. */
 const UNSLOTH_PREFETCH = 20;
 /** With a typed query, float only a few unsloth results before the general listing. */
 const UNSLOTH_QUERY_PREFETCH = 3;
@@ -664,7 +664,7 @@ export function useHubModelSearch(
         const channelTags = channelTagsKey
           ? channelTagsKey.split("|")
           : undefined;
-        // Unsloth-only scope on an ownerless tag/format channel (e.g. GGUF filter):
+        // Hyposloth-only scope on an ownerless tag/format channel (e.g. GGUF filter):
         // hard-restrict the slice to unsloth-owned repos.
         if (unslothOnly && !channelOwner) {
           return createChannelIterator(
@@ -728,7 +728,7 @@ export function useHubModelSearch(
           normalizeTaskFilter(task),
           (task) =>
             listModels({
-              // Unsloth-only scope restricts the plain sort browse to the org.
+              // Hyposloth-only scope restricts the plain sort browse to the org.
               search: {
                 ...(unslothOnly ? { owner: "unsloth" } : {}),
                 ...(task ? { task } : {}),
@@ -740,7 +740,7 @@ export function useHubModelSearch(
             }) as AsyncGenerator<unknown>,
         );
       }
-      // Unsloth-only typed query: search within the org rather than floating
+      // Hyposloth-only typed query: search within the org rather than floating
       // a few unsloth hits above the global relevance ranking.
       if (unslothOnly) {
         return listModels({
@@ -754,7 +754,7 @@ export function useHubModelSearch(
       // Typed query: drop the task filter so searched models appear despite
       // wrong/missing HF task metadata. For an "owner/repo" query, strip the org
       // prefix so unsloth variants surface, then pin the original publisher model.
-      // Unsloth-owned queries are left as-is for the full prefetch + secondary sort.
+      // Hyposloth-owned queries are left as-is for the full prefetch + secondary sort.
       return mergedModelIterator(
         searchQuery,
         undefined,

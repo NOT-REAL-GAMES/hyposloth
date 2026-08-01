@@ -82,7 +82,7 @@ def spawn_worker(
     env["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
     env["HF_HUB_DISABLE_TELEMETRY"] = "1"
     env["HF_HUB_DISABLE_XET"] = "0" if use_xet else "1"
-    # No token in Unsloth settings: fall back to the backend's own HF_TOKEN so
+    # No token in Hyposloth settings: fall back to the backend's own HF_TOKEN so
     # private repos stay downloadable (needed while inkling repos are private).
     # Not for a repo an API caller named: that would lend them the owner's identity.
     if not hf_token and allow_ambient_token:

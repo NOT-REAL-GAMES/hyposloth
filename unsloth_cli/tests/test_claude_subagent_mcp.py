@@ -34,7 +34,7 @@ def test_protocol_lists_and_calls_local_agent():
     listed = bridge._response({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
     tool = listed["result"]["tools"][0]
     assert tool["name"] == "unsloth_agent"
-    assert "spawn an Unsloth or local agent" in tool["description"]
+    assert "spawn a Hyposloth or local agent" in tool["description"]
     assert tool["inputSchema"]["required"] == ["task"]
     assert tool["_meta"]["anthropic/maxResultSizeChars"] == 100_000
 

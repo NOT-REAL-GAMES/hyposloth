@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Clean up the Unsloth compiled cache directory.
+"""Clean up the Hyposloth compiled cache directory.
 
 unsloth_compiled_cache (created by unsloth_zoo/compiler.py during
 FastModel.from_pretrained) holds model-type-specific compiled files. Clear it
@@ -63,7 +63,7 @@ def clear_unsloth_compiled_cache(preserve_patterns: Optional[List[str]] = None) 
 
     Args:
         preserve_patterns: glob patterns for files to keep
-                           (e.g., ["Unsloth*Trainer.py"]). If None or empty,
+                           (e.g., ["Hyposloth*Trainer.py"]). If None or empty,
                            the entire cache directory is deleted (legacy behavior).
     """
     for cache_dir in _CACHE_DIRS:

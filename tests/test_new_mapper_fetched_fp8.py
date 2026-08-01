@@ -143,7 +143,7 @@ def test_probe_answers_for_an_fp8_repo_only_the_fetched_mapper_knows(monkeypatch
             _NEW_OFFICIAL, load_in_4bit = False, load_in_fp8 = "block"
         )
     except NotImplementedError as error:
-        assert "not supported in your current Unsloth version" in str(error)
+        assert "not supported in your current Hyposloth version" in str(error)
     else:
         raise AssertionError(
             f"a fetched-only fp8 repo must raise the upgrade error, got {resolved!r}"
@@ -199,7 +199,7 @@ def test_probe_answers_for_a_row_only_repo_the_fetched_mapper_knows(monkeypatch)
     try:
         resolved = namespace["get_model_name"](_ROW_ONLY, load_in_4bit = False, load_in_fp8 = True)
     except NotImplementedError as error:
-        assert "not supported in your current Unsloth version" in str(error)
+        assert "not supported in your current Hyposloth version" in str(error)
     else:
         raise AssertionError(
             f"a fetched-only row-scaled repo must raise the upgrade error, got {resolved!r}"

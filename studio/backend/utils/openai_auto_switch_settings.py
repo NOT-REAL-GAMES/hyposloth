@@ -462,7 +462,7 @@ def model_override_load_kwargs(override: dict[str, Any], *, is_gguf: bool) -> di
         # settings page has no control for flags, so a save carries the stored ones over
         # (routes/settings.py) while writing the field just edited, and a legacy or
         # API-authored entry can start out that way. Sending both explicitly puts the flag
-        # after Unsloth's own on the command line, where llama.cpp's last-wins parse hands it
+        # after Hyposloth's own on the command line, where llama.cpp's last-wins parse hands it
         # the load, so a stale "--ctx-size 8192" would quietly outrank a freshly saved 32768.
         # The /load route strips exactly these groups off inherited extras
         # (_resolve_inherited_extra_args); the stripper is imported rather than mirrored so

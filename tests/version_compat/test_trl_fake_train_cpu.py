@@ -1,17 +1,17 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team.
-"""Fake CPU training runs for the Unsloth-patched SFT / GRPO / DPO trainers.
+"""Fake CPU training runs for the Hyposloth-patched SFT / GRPO / DPO trainers.
 
 The patch-run canary (test_trl_grpo_fake_run.py) only compiles + inspects the
 generated trainer source. This goes one layer deeper: it actually runs
 `trainer.train()` for a couple of steps on a CPU-only runner, under the CUDA
-spoof, wrapping a plain (tiny, random-weight) HF model in the Unsloth-patched
+spoof, wrapping a plain (tiny, random-weight) HF model in the Hyposloth-patched
 trainer. That exercises the real train() loop at runtime -- data collation,
 generation (GRPO), the injected `_get_per_token_logps_and_entropies`, loss,
 backward, optimizer -- so a TRL or transformers change that breaks the loop
 (not just the source structure) surfaces here. No GPU, no meaningful numerics.
 
-What it does NOT cover: Unsloth's Triton/GPU-optimized model kernels (the
+What it does NOT cover: Hyposloth's Triton/GPU-optimized model kernels (the
 FastLanguageModel fast path) cannot run on CPU, so this validates the
 trainer-transform + orchestration layer with a standard forward, not the
 optimized kernels.
@@ -22,7 +22,7 @@ from __future__ import annotations
 import os
 
 # CPU-only: no torch.compile / dynamo (it reaches into the CUDA accelerator), no
-# Unsloth kernel compile, no mixed precision. Must be set before torch/unsloth.
+# Hyposloth kernel compile, no mixed precision. Must be set before torch/unsloth.
 os.environ.setdefault("UNSLOTH_COMPILE_DISABLE", "1")
 os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 os.environ.setdefault("TORCH_COMPILE_DISABLE", "1")
@@ -153,7 +153,7 @@ except Exception:
     pass
 
 
-# Dense (non-MoE) tiny model on purpose: MoE models route through Unsloth's
+# Dense (non-MoE) tiny model on purpose: MoE models route through Hyposloth's
 # grouped_gemm Triton kernel, which is CUDA-only and cannot run on a CPU runner.
 _MODEL = "hf-internal-testing/tiny-random-LlamaForCausalLM"
 
@@ -167,7 +167,7 @@ def _guard_finite_logits(model):
     non-finite logits, so ``torch.multinomial`` inside ``generate()``
     intermittently raises "probability tensor contains either `inf`, `nan` or
     element < 0". That is a well-known nondeterministic sampling failure, not an
-    Unsloth/TRL regression: the Trainer already fixes the seed, but CPU reduction
+    Hyposloth/TRL regression: the Trainer already fixes the seed, but CPU reduction
     order is not bit-reproducible, so the blow-up still surfaces every so often.
 
     Sanitize the logits to a finite, bounded range (out of place, so autograd
@@ -201,7 +201,7 @@ def _load_plain():
         pytest.skip(f"could not fetch {_MODEL} (network/hub): {str(e)[:150]}")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    # Unsloth's GRPO path calls model.for_training()/for_inference() (added by
+    # Hyposloth's GRPO path calls model.for_training()/for_inference() (added by
     # FastLanguageModel). A plain HF model lacks them; supply minimal train/eval
     # equivalents so the loop proceeds without the optimized wrapper.
     if not hasattr(model, "for_training"):
@@ -217,7 +217,7 @@ def _require_stack():
     if importlib.util.find_spec("unsloth") is None or importlib.util.find_spec("trl") is None:
         pytest.skip("unsloth or trl not installed")
     # A real import failure is a regression we want to surface, so do not guard it.
-    import unsloth  # noqa: F401  -- patches TRL trainers to the Unsloth variants
+    import unsloth  # noqa: F401  -- patches TRL trainers to the Hyposloth variants
 
     # `import unsloth` reinstalls the real torch.compile (overwriting the eager
     # passthrough set at module load), so the GRPO hot path (chunked_selective_

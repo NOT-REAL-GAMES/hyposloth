@@ -2,7 +2,7 @@
 // Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
 /**
- * A relative link in CHANGELOG.md means "somewhere in the Unsloth repository",
+ * A relative link in CHANGELOG.md means "somewhere in the Hyposloth repository",
  * but inside Studio it would resolve against Studio's own origin. Rewriting to
  * absolute repository URLs makes them behave the way GitHub renders the file.
  */

@@ -89,12 +89,12 @@ del torchvision_compatibility_check
 del fix_diffusers_warnings
 del fix_huggingface_hub
 
-# Unsloth patches these libraries at import time; if imported first, the
+# Hyposloth patches these libraries at import time; if imported first, the
 # unoptimized versions run, risking OOM or slower training.
 if already_imported:
     # stacklevel=2 points the warning at the user's import line
     warnings.warn(
-        f"WARNING: Unsloth should be imported before [{', '.join(already_imported)}] "
+        f"WARNING: Hyposloth should be imported before [{', '.join(already_imported)}] "
         f"to ensure all optimizations are applied. Your code may run slower or encounter "
         f"memory issues without these optimizations.\n\n"
         f"Please restructure your imports with 'import unsloth' at the top of your file.",
@@ -127,7 +127,7 @@ try:
     unsloth_zoo_version = importlib_version("unsloth_zoo")
     if Version(unsloth_zoo_version) < Version("2026.5.2"):
         print(
-            "Unsloth: Please update Unsloth and Unsloth-Zoo to the latest version!\n"
+            "Hyposloth: Please update Hyposloth and Hyposloth-Zoo to the latest version!\n"
             "Do this via `pip install --upgrade --force-reinstall --no-cache-dir --no-deps unsloth unsloth_zoo`"
         )
         # if os.environ.get("UNSLOTH_DISABLE_AUTO_UPDATES", "0") == "0":
@@ -137,11 +137,11 @@ try:
         #         try:
         #             os.system("pip install --upgrade --no-cache-dir --no-deps --user unsloth_zoo")
         #         except:
-        #             raise ImportError("Unsloth: Please update unsloth_zoo via `pip install --upgrade --no-cache-dir --no-deps unsloth_zoo`")
+        #             raise ImportError("Hyposloth: Please update unsloth_zoo via `pip install --upgrade --no-cache-dir --no-deps unsloth_zoo`")
     import unsloth_zoo
 except PackageNotFoundError:
     raise ImportError(
-        f"Unsloth: Please install unsloth_zoo via `pip install unsloth_zoo` then retry!"
+        f"Hyposloth: Please install unsloth_zoo via `pip install unsloth_zoo` then retry!"
     )
 except:
     raise
@@ -310,7 +310,7 @@ if DEVICE_TYPE == "cuda":
         import bitsandbytes.functional as bnb_functional
     except:
         print(
-            "Unsloth: `bitsandbytes` is not installed - 4bit QLoRA unallowed, but 16bit and full finetuning works!"
+            "Hyposloth: `bitsandbytes` is not installed - 4bit QLoRA unallowed, but 16bit and full finetuning works!"
         )
         bnb = None
         bnb_functional = None
@@ -319,7 +319,7 @@ if DEVICE_TYPE == "cuda":
         libcuda_dirs()
     except:
         if hasattr(os, "geteuid") and os.geteuid() == 0:
-            warnings.warn("Unsloth: Running `ldconfig /usr/lib64-nvidia` to link CUDA.")
+            warnings.warn("Hyposloth: Running `ldconfig /usr/lib64-nvidia` to link CUDA.")
 
             if os.path.exists("/usr/lib64-nvidia"):
                 os.system("ldconfig /usr/lib64-nvidia")
@@ -361,19 +361,19 @@ if DEVICE_TYPE == "cuda":
                 libcuda_dirs()
             except:
                 warnings.warn(
-                    "Unsloth: CUDA is not linked properly.\n"
+                    "Hyposloth: CUDA is not linked properly.\n"
                     "Try running `python -m bitsandbytes` then `python -m xformers.info`\n"
                     "We tried running `ldconfig /usr/lib64-nvidia` ourselves, but it didn't work.\n"
-                    "You need to run in your terminal `sudo ldconfig /usr/lib64-nvidia` yourself, then import Unsloth.\n"
+                    "You need to run in your terminal `sudo ldconfig /usr/lib64-nvidia` yourself, then import Hyposloth.\n"
                     "Also try `sudo ldconfig /usr/local/cuda-xx.x` - find the latest cuda version.\n"
-                    "Unsloth will still run for now, but maybe it might crash - let's hope it works!"
+                    "Hyposloth will still run for now, but maybe it might crash - let's hope it works!"
                 )
         elif bnb is not None:
             warnings.warn(
-                "Unsloth: CUDA is not linked properly.\n"
-                "You need to run in your terminal `sudo ldconfig /usr/lib64-nvidia` yourself, then import Unsloth.\n"
+                "Hyposloth: CUDA is not linked properly.\n"
+                "You need to run in your terminal `sudo ldconfig /usr/lib64-nvidia` yourself, then import Hyposloth.\n"
                 "Also try `sudo ldconfig /usr/local/cuda-xx.x` - find the latest cuda version.\n"
-                "Unsloth will still run for now, but maybe it might crash - let's hope it works!"
+                "Hyposloth will still run for now, but maybe it might crash - let's hope it works!"
             )
     del libcuda_dirs
 elif DEVICE_TYPE == "hip":
@@ -386,7 +386,7 @@ elif DEVICE_TYPE == "xpu":
         import bitsandbytes as bnb
     except Exception:
         print(
-            "Unsloth: `bitsandbytes` is not installed - 4bit QLoRA unallowed, but 16bit and full finetuning works!"
+            "Hyposloth: `bitsandbytes` is not installed - 4bit QLoRA unallowed, but 16bit and full finetuning works!"
         )
         bnb = None
 

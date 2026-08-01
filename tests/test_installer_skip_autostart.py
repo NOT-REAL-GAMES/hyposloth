@@ -64,9 +64,9 @@ def test_posix_skip_autostart_bypasses_only_the_interactive_prompt():
     source = INSTALL_SH.read_text(encoding = "utf-8")
     gate = 'if [ "$_SKIP_AUTOSTART" != true ] && [ -t 1 ]; then'
     assert gate in source
-    assert source.index(gate) < source.index("Start Unsloth Studio now? [Y/n]")
-    assert source.count("Start Unsloth Studio now? [Y/n]") == 1
-    assert source.index("Start Unsloth Studio now? [Y/n]") < source.index(
+    assert source.index(gate) < source.index("Start Hyposloth Studio now? [Y/n]")
+    assert source.count("Start Hyposloth Studio now? [Y/n]") == 1
+    assert source.index("Start Hyposloth Studio now? [Y/n]") < source.index(
         'step "launch" "manual commands:"'
     )
     assert "export UNSLOTH_SKIP_AUTOSTART=1" in source
@@ -113,9 +113,9 @@ def test_windows_skip_autostart_bypasses_only_the_interactive_prompt():
         "[Environment]::UserInteractive -and (-not [Console]::IsInputRedirected)"
     )
     assert gate in source
-    assert source.index(gate) < source.index("Start Unsloth Studio now? [Y/n]")
-    assert source.count("Start Unsloth Studio now? [Y/n]") == 1
-    assert source.index("Start Unsloth Studio now? [Y/n]") < source.index(
+    assert source.index(gate) < source.index("Start Hyposloth Studio now? [Y/n]")
+    assert source.count("Start Hyposloth Studio now? [Y/n]") == 1
+    assert source.index("Start Hyposloth Studio now? [Y/n]") < source.index(
         'step "launch" "manual commands:"'
     )
 

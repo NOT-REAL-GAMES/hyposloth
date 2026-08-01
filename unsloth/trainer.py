@@ -320,7 +320,7 @@ def _chunked_loss_bypasses_forward(config) -> bool:
     return getattr(config, "loss_type", None) in (None, "chunked_nll")
 
 
-# Unsloth gradient accumulation fix:
+# Hyposloth gradient accumulation fix:
 from transformers import __version__ as transformers_version, ProcessorMixin
 
 if Version(transformers_version) > Version("4.45.2"):
@@ -333,12 +333,12 @@ else:
     def unsloth_train(trainer, *args, **kwargs):
         if len(args) != 0 or len(kwargs) != 0:
             raise RuntimeError(
-                "Unsloth: Our custom gradient accumulation fixed trainer does not support other arguments.\n"
+                "Hyposloth: Our custom gradient accumulation fixed trainer does not support other arguments.\n"
                 "If you want to use our fix inside of HF, please update `transformers` to the latest version via:\n"
                 "`pip uninstall transformers -y && pip install --upgrade --no-cache-dir transformers`"
             )
         print(
-            "Unsloth: Using our custom gradient accumulation fixed trainer, which is not feature complete.\n"
+            "Hyposloth: Using our custom gradient accumulation fixed trainer, which is not feature complete.\n"
             "If you want to use our fix inside of HF, please update `transformers` to the latest version via:\n"
             "`pip uninstall transformers -y && pip install --upgrade --no-cache-dir transformers`"
         )
@@ -409,7 +409,7 @@ def _create_unsloth_optimizer(
             partial_name = name[: -len(".modules_to_save.default.weight")]
             partial_name = partial_name[partial_name.rfind(".") + 1 :]
             print(
-                f"Unsloth: Setting lr = {embedding_lr:.2e} instead of {lr:.2e} for {partial_name}."
+                f"Hyposloth: Setting lr = {embedding_lr:.2e} instead of {lr:.2e} for {partial_name}."
             )
             param_groups["embeddings"][name] = param
         else:
@@ -508,7 +508,7 @@ class UnslothTrainer(SFTTrainer):
                         partial_name = name[: -len(".modules_to_save.default.weight")]
                         partial_name = partial_name[partial_name.rfind(".") + 1 :]
                         print(
-                            f"Unsloth: Setting lr = {embedding_lr:.2e} instead of {lr:.2e} for {partial_name}."
+                            f"Hyposloth: Setting lr = {embedding_lr:.2e} instead of {lr:.2e} for {partial_name}."
                         )
                         embed_params.append(p)
                     else:
@@ -547,7 +547,7 @@ class UnslothTrainer(SFTTrainer):
         n_galore = sum(len(g["params"]) for g in param_groups if "rank" in g)
         n_other = sum(len(g["params"]) for g in param_groups if "rank" not in g)
         print(
-            f"🦥 Unsloth: Q-GaLore enabled — "
+            f"🦥 Hyposloth: Q-GaLore enabled — "
             f"{n_galore} GaLore params (rank={config.rank}), "
             f"{n_other} standard params."
         )
@@ -773,13 +773,13 @@ def _patch_sft_trainer_auto_packing(trl_module):
                 # compute_metrics, preprocess_logits_for_metrics, for_inference() and the
                 # user can all set it, so name the flag and not a setter.
                 reason = "UNSLOTH_RETURN_LOGITS=1"
-            logger.warning(f"Unsloth: packing=True ignored ({reason}).")
+            logger.warning(f"Hyposloth: packing=True ignored ({reason}).")
 
         packing_active = False
         if _should_pack(config_arg) and not blocked:
             configure_sample_packing(config_arg)
             packing_active = True
-            logger.info("Unsloth: Sample packing enabled for SFTTrainer instance.")
+            logger.info("Hyposloth: Sample packing enabled for SFTTrainer instance.")
 
         # Resolve padding_free: None (default) = auto-enable unless env-disabled or packing
         auto_padding_free_active = False
@@ -790,14 +790,14 @@ def _patch_sft_trainer_auto_packing(trl_module):
             elif _should_auto_padding_free(config_arg):
                 configure_padding_free(config_arg)
                 auto_padding_free_active = True
-                logger.info("Unsloth: Padding-free batching auto-enabled for SFTTrainer instance.")
+                logger.info("Hyposloth: Padding-free batching auto-enabled for SFTTrainer instance.")
 
         try:
             original_init(self, *args, **kwargs)
         except ValueError as exc:
             if packing_active and _should_skip_auto_packing_error(exc):
                 logger.info(
-                    "Unsloth: Auto sample packing failed because trainer reported an incompatible setup (%s).",
+                    "Hyposloth: Auto sample packing failed because trainer reported an incompatible setup (%s).",
                     exc,
                 )
                 _disable_sample_packing(config_arg)
@@ -817,13 +817,13 @@ def _patch_sft_trainer_auto_packing(trl_module):
 
         if not blocked and trainer_packing and (packing_active or _should_pack(trainer_args)):
             enable_sample_packing(self.model, self)
-            print("🦥 Unsloth: Packing enabled - training is >2x faster and uses less VRAM!")
+            print("🦥 Hyposloth: Packing enabled - training is >2x faster and uses less VRAM!")
         elif not blocked and trainer_padding_free:
             enable_padding_free_metadata(self.model, self)
             message = (
-                "🦥 Unsloth: Padding-free auto-enabled, enabling faster training."
+                "🦥 Hyposloth: Padding-free auto-enabled, enabling faster training."
                 if auto_padding_free_active
-                else "🦥 Unsloth: Padding-free enabled, enabling faster training."
+                else "🦥 Hyposloth: Padding-free enabled, enabling faster training."
             )
             print(message)
 

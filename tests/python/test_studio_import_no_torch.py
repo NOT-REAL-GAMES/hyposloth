@@ -1,4 +1,4 @@
-"""Sandbox tests: Unsloth dataset modules load/run in isolated no-torch venvs."""
+"""Sandbox tests: Hyposloth dataset modules load/run in isolated no-torch venvs."""
 
 from __future__ import annotations
 

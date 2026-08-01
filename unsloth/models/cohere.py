@@ -39,7 +39,7 @@ except:
     transformers_version = Version(transformers_version)
     if not transformers_version >= Version("4.42"):
         raise ImportError(
-            f"Unsloth: Your transformers version of {transformers_version} does not support Cohere.\n"
+            f"Hyposloth: Your transformers version of {transformers_version} does not support Cohere.\n"
             f"The minimum required version is 4.42.3.\n"
             f'Try `pip install --upgrade "transformers>=4.42.3"`\n'
             f"to obtain the latest transformers build, then restart this session."

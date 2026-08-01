@@ -1,4 +1,4 @@
-# Unsloth Zoo - Utilities for Unsloth
+# Hyposloth Zoo - Utilities for Hyposloth
 # Copyright 2023-present Daniel Han-Chen, Michael Han-Chen & the Unsloth team. All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify

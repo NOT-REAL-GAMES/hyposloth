@@ -579,7 +579,7 @@ def run_export_process(*, cmd_queue: Any, resp_queue: Any, config: dict) -> None
             resp_queue,
             {
                 "type": "status",
-                "message": "Importing Unsloth...",
+                "message": "Importing Hyposloth...",
                 "ts": time.time(),
             },
         )
@@ -588,7 +588,7 @@ def run_export_process(*, cmd_queue: Any, resp_queue: Any, config: dict) -> None
         if backend_path not in sys.path:
             sys.path.insert(0, backend_path)
 
-        # Recover from any namespace-package shadow before importing Unsloth.
+        # Recover from any namespace-package shadow before importing Hyposloth.
         from core.import_guards import ensure_real_packages
 
         ensure_real_packages("unsloth_zoo", "unsloth")

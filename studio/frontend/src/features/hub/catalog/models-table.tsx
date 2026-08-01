@@ -388,7 +388,7 @@ function VerifiedOwner({ owner }: { owner: string }) {
       <span className="truncate">{owner}</span>
       {owner.toLowerCase() === "unsloth" && (
         <span
-          aria-label="Verified Unsloth"
+          aria-label="Verified Hyposloth"
           className="hub-verified-badge size-3.5 shrink-0 text-verified"
         />
       )}

@@ -68,15 +68,15 @@ def get_device_type():
     # Check torch.accelerator
     if hasattr(torch, "accelerator"):
         if not torch.accelerator.is_available():
-            raise NotImplementedError("Unsloth cannot find any torch accelerator? You need a GPU.")
+            raise NotImplementedError("Hyposloth cannot find any torch accelerator? You need a GPU.")
         accelerator = str(torch.accelerator.current_accelerator())
         if accelerator in ("cuda", "xpu", "hip"):
             raise RuntimeError(
-                f"Unsloth: Weirdly `torch.cuda.is_available()`, `torch.xpu.is_available()` and `is_hip` all failed.\n"
+                f"Hyposloth: Weirdly `torch.cuda.is_available()`, `torch.xpu.is_available()` and `is_hip` all failed.\n"
                 f"But `torch.accelerator.current_accelerator()` works with it being = `{accelerator}`\n"
                 f"Please reinstall torch - it's most likely broken :("
             )
-    raise NotImplementedError("Unsloth currently only works on NVIDIA, AMD and Intel GPUs.")
+    raise NotImplementedError("Hyposloth currently only works on NVIDIA, AMD and Intel GPUs.")
 
 
 DEVICE_TYPE: str = get_device_type()
@@ -146,7 +146,7 @@ if DEVICE_TYPE == "hip":
         os.environ.setdefault("TORCH_COMPILE_DISABLE", "1")
         os.environ.setdefault("UNSLOTH_COMPILE_DISABLE", "1")
         print(
-            "Unsloth: gfx906 (MI50 / Radeon VII) detected - torch.compile disabled "
+            "Hyposloth: gfx906 (MI50 / Radeon VII) detected - torch.compile disabled "
             "(community-maintained legacy GCN path)."
         )
 if DEVICE_TYPE == "hip":
@@ -154,7 +154,7 @@ if DEVICE_TYPE == "hip":
         import bitsandbytes
     except:
         print(
-            "Unsloth: `bitsandbytes` is not installed - 4bit QLoRA unallowed, but 16bit and full finetuning works."
+            "Hyposloth: `bitsandbytes` is not installed - 4bit QLoRA unallowed, but 16bit and full finetuning works."
         )
         ALLOW_PREQUANTIZED_MODELS = False
         ALLOW_BITSANDBYTES = False
@@ -169,7 +169,7 @@ if DEVICE_TYPE == "hip":
                 ALLOW_PREQUANTIZED_MODELS = not ROCM_WARP_SIZE_64
             except Exception as e:
                 print(
-                    "Unsloth: Checking `from bitsandbytes.cextension import ROCM_WARP_SIZE_64` had error = \n"
+                    "Hyposloth: Checking `from bitsandbytes.cextension import ROCM_WARP_SIZE_64` had error = \n"
                     f"{str(e)}\n"
                     "4bit QLoRA disabled for now, but 16bit and full finetuning works."
                 )

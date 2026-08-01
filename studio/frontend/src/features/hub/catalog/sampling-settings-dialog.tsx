@@ -379,7 +379,7 @@ export function SamplingSettingsButton({ className }: { className?: string }) {
               />
               <ToggleRow
                 label="Auto-healing tool calls"
-                info="Unsloth auto-fixes broken tool calls so inference output is never broken."
+                info="Hyposloth auto-fixes broken tool calls so inference output is never broken."
                 checked={autoHealToolCalls}
                 onCheckedChange={setAutoHealToolCalls}
               />

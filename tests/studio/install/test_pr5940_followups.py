@@ -420,7 +420,7 @@ def test_ps_installers_gate_amd_smi_on_windows():
         assert (
             "UNSLOTH_SETUP_PYTHON" in text
         ), f"{ps.name} venv-internal check must seed the venv root from UNSLOTH_SETUP_PYTHON"
-        # A custom Unsloth home moves the venv off the default path; it must be
+        # A custom Hyposloth home moves the venv off the default path; it must be
         # seeded too or its hipInfo escapes the filter and reopens the gate.
         assert (
             "UNSLOTH_STUDIO_HOME" in text
@@ -429,7 +429,7 @@ def test_ps_installers_gate_amd_smi_on_windows():
 
 @pytest.mark.parametrize("ps", [_INSTALL_PS1, _SETUP_PS1], ids = ["install.ps1", "setup.ps1"])
 def test_ps_venv_probe_expands_tilde_for_custom_studio_home(ps):
-    # The probe seeds the venv root from a custom Unsloth home; a ~\studio form
+    # The probe seeds the venv root from a custom Hyposloth home; a ~\studio form
     # must expand to USERPROFILE like the canonical resolver, else GetFullPath
     # keeps the literal ~ (cwd-relative) and the hipInfo escapes the filter.
     text = ps.read_text(encoding = "utf-8")
@@ -439,7 +439,7 @@ def test_ps_venv_probe_expands_tilde_for_custom_studio_home(ps):
     block = text[i:j]
     assert "USERPROFILE" in block and ".Substring(1)" in block, (
         f"{ps.name}: the venv-internal probe must expand a leading ~ in the custom "
-        "Unsloth home before seeding the venv root (mirroring the canonical resolver)"
+        "Hyposloth home before seeding the venv root (mirroring the canonical resolver)"
     )
     # The ~ expansion must be guarded on a non-empty USERPROFILE; otherwise
     # Join-Path $env:USERPROFILE throws on a service/SYSTEM account with no profile,
@@ -731,8 +731,8 @@ def test_install_sh_wsl_reroute_propagates_tauri_need_sudo_exit():
 
 
 def test_uninstall_sh_preserves_shared_icon_for_surviving_shortcut():
-    # %LOCALAPPDATA%\Unsloth Studio\unsloth.ico is shared with the native install
-    # and other WSL distros; both removal paths must keep it while any "Unsloth
+    # %LOCALAPPDATA%\Hyposloth Studio\unsloth.ico is shared with the native install
+    # and other WSL distros; both removal paths must keep it while any "Hyposloth
     # Studio*.lnk" survives (reciprocal of uninstall.ps1's
     # _RemoveDataDirKeepingWslIcon), not delete it unconditionally.
     text = (PACKAGE_ROOT / "scripts" / "uninstall.sh").read_text(encoding = "utf-8")
@@ -741,7 +741,7 @@ def test_uninstall_sh_preserves_shared_icon_for_surviving_shortcut():
         "shortcut-in-use check, not delete unconditionally"
     )
     assert "iconInUse" in text, (
-        "uninstall.sh powershell-interop path must keep the icon when an Unsloth "
+        "uninstall.sh powershell-interop path must keep the icon when a Hyposloth "
         "shortcut still uses it"
     )
     # An empty $env:LOCALAPPDATA (service/SYSTEM account) makes Join-Path throw and

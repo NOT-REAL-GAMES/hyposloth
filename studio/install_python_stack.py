@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Cross-platform Python dependency installer for Unsloth Studio.
+"""Cross-platform Python dependency installer for Hyposloth Studio.
 
 Called by setup.sh (Linux/WSL) and setup.ps1 (Windows) after the venv is
 activated. Expects `pip` and `python` on PATH to point at the venv.
@@ -1015,8 +1015,8 @@ def _bitsandbytes_installed() -> bool:
         return False
 
 
-_BNB_ROCM_SITECUSTOMIZE_BEGIN = "# BEGIN Unsloth BNB_ROCM_VERSION"
-_BNB_ROCM_SITECUSTOMIZE_END = "# END Unsloth BNB_ROCM_VERSION"
+_BNB_ROCM_SITECUSTOMIZE_BEGIN = "# BEGIN Hyposloth BNB_ROCM_VERSION"
+_BNB_ROCM_SITECUSTOMIZE_END = "# END Hyposloth BNB_ROCM_VERSION"
 _BNB_ROCM_VERSION_SOURCE_ENV = "UNSLOTH_BNB_ROCM_VERSION_SOURCE"
 _BNB_ROCM_VERSION_SOURCE_SITECUSTOMIZE = "sitecustomize"
 _BNB_ROCM_VERSION_SOURCE_DETECTED = "detected"
@@ -1318,7 +1318,7 @@ def _install_bnb_windows_rocm() -> bool:
     # via PATH for this process and every child python (import checks, precompile):
     # bitsandbytes runs hipinfo.exe at import to detect the GPU arch and logs a scary
     # (harmless) ERROR + WARNING when it is missing. Scripts is on PATH only for an
-    # activated venv, which neither Unsloth nor the installer's children ever do.
+    # activated venv, which neither Hyposloth nor the installer's children ever do.
     _scripts_dir = os.path.dirname(sys.executable)
     if os.path.isfile(os.path.join(_scripts_dir, "hipInfo.exe")) and not shutil.which(
         "hipinfo.exe"
@@ -3216,7 +3216,7 @@ def install_python_stack() -> int:
         _progress("dependency overrides (skipped, no torch)")
     elif _rocm_windows_torch_installed or _installed_torch_is_windows_rocm():
         # No working Windows ROCm torchao build: it imports an absent c10d backend
-        # and crashes transformers.quantizers. Unsloth stubs it at runtime, so
+        # and crashes transformers.quantizers. Hyposloth stubs it at runtime, so
         # installing it only ships a package that crashes on import -- skip it.
         _progress("dependency overrides (skipped, Windows ROCm)")
         _safe_print("   Windows ROCm -- skipping torchao (no working build; stubbed at runtime)")
@@ -3274,7 +3274,7 @@ def install_python_stack() -> int:
     #     "https://raw.githubusercontent.com/unslothai/unsloth/refs/heads/main/unsloth/save.py",
     # )
 
-    # 8. Unsloth dependencies
+    # 8. Hyposloth dependencies
     _progress("studio deps")
     pip_install(
         "Installing studio dependencies",

@@ -154,13 +154,13 @@ _suggest_npm_registry() {
     printf '\n' >&2
     step "frontend" "registry.npmjs.org looks blocked (corporate firewall/proxy?)" "$C_WARN" >&2
     if [ -n "$_mirror" ]; then
-        substep "Unsloth pins the public npm registry; your mirror is being ignored." >&2
+        substep "Hyposloth pins the public npm registry; your mirror is being ignored." >&2
         substep "Detected a registry in your npm config:" >&2
         substep "  $_mirror" >&2
-        substep "Re-run pointing Unsloth at it:" >&2
+        substep "Re-run pointing Hyposloth at it:" >&2
         substep "  UNSLOTH_NPM_REGISTRY=$_mirror ./install.sh --local" >&2
     else
-        substep "If you use a private mirror/proxy, point Unsloth at it and re-run:" >&2
+        substep "If you use a private mirror/proxy, point Hyposloth at it and re-run:" >&2
         substep "  UNSLOTH_NPM_REGISTRY=https://your-mirror.example/api/npm/ ./install.sh --local" >&2
     fi
     substep "(min-release-age and save-exact stay enforced.)" >&2
@@ -458,7 +458,7 @@ _print_cuda_driver_toolkit_mismatch() {
     local _driver_major=${_driver_version%%.*}
     substep "CUDA Toolkit $_toolkit_version is a major-version mismatch: toolkit major $_toolkit_major exceeds driver CUDA major $_driver_major ($_driver_version)." "$C_WARN"
     substep "Update the NVIDIA GPU driver to run CUDA Toolkit $_toolkit_version, or install a CUDA $_driver_major.x toolkit." "$C_WARN"
-    substep "Or let Unsloth use the prebuilt CUDA bundle; it does not need the local toolkit." "$C_WARN"
+    substep "Or let Hyposloth use the prebuilt CUDA bundle; it does not need the local toolkit." "$C_WARN"
 }
 
 print_llama_error_log() {
@@ -518,7 +518,7 @@ print_installed_llama_prebuilt_release() {
 
 # ── Banner ──
 echo ""
-printf "  ${C_TITLE}%s${C_RST}\n" "🦥 Unsloth Studio Setup"
+printf "  ${C_TITLE}%s${C_RST}\n" "🦥 Hyposloth Studio Setup"
 printf "  ${C_DIM}%s${C_RST}\n" "$RULE"
 verbose_substep "verbose diagnostics enabled"
 _LLAMA_ONLY="${UNSLOTH_STUDIO_LLAMA_ONLY:-0}"
@@ -597,7 +597,7 @@ _STUDIO_HOME_IS_CUSTOM=false
 if [ "$_studio_home_canon" != "$_LEGACY_STUDIO_HOME" ]; then
     _STUDIO_HOME_IS_CUSTOM=true
 fi
-# Directory-local evidence Unsloth created "$1": only prebuilt-installer metadata
+# Directory-local evidence Hyposloth created "$1": only prebuilt-installer metadata
 # counts (UNSLOTH_PREBUILT_INFO.json for llama.cpp, UNSLOTH_NODE_PREBUILT_INFO.json
 # for Node, UNSLOTH_WHISPER_PREBUILT_INFO.json for whisper.cpp), all written only
 # by our installers. Mirrors the setup.ps1 Node guard. A markerless source build
@@ -617,9 +617,9 @@ _assert_studio_owned_or_absent() {
             : > "$_aso_dir/$_STUDIO_OWNED_MARKER" 2>/dev/null || true
             return 0
         fi
-        echo "ERROR: $_aso_dir already exists and is not marked as an Unsloth-owned $_aso_label." >&2
+        echo "ERROR: $_aso_dir already exists and is not marked as a Hyposloth-owned $_aso_label." >&2
         echo "       Move it aside or choose an empty UNSLOTH_STUDIO_HOME before re-running." >&2
-        setup_fail 1 "$_aso_label path is not an Unsloth-owned install: $_aso_dir"
+        setup_fail 1 "$_aso_label path is not a Hyposloth-owned install: $_aso_dir"
     fi
 }
 
@@ -653,7 +653,7 @@ if [ "$_NEED_FRONTEND_BUILD" = false ] && [ ! -d "$_OXC_DIR" ]; then
 else
 
 # ── Node (isolated; never touches the system Node/npm) ──
-# Unsloth's frontend (Vite 8) needs Node ^20.19 || >=22.12 || >=23 and npm >= 11.
+# Hyposloth's frontend (Vite 8) needs Node ^20.19 || >=22.12 || >=23 and npm >= 11.
 # Three sources:
 #   system  -- system Node + npm already satisfy both; used read-only.
 #   bundled -- install a pinned isolated Node under $UNSLOTH_HOME/node, build-only.
@@ -734,10 +734,10 @@ elif [ "$NODE_SOURCE" = bundled ]; then
     fi
     set -e
     if [ "$_NODE_STATUS" -eq 3 ]; then
-        step "node" "install blocked by another active Unsloth install" "$C_ERR"
+        step "node" "install blocked by another active Hyposloth install" "$C_ERR"
         sed 's/^/   | /' "$_NODE_LOG" >&2; rm -f "$_NODE_LOG"
-        substep "close other Unsloth installs and retry"
-        setup_fail 3 "Node install is blocked by another active Unsloth install"
+        substep "close other Hyposloth installs and retry"
+        setup_fail 3 "Node install is blocked by another active Hyposloth install"
     elif [ "$_NODE_STATUS" -ne 0 ]; then
         step "node" "isolated Node install failed" "$C_ERR"
         sed 's/^/   | /' "$_NODE_LOG" >&2; rm -f "$_NODE_LOG"
@@ -760,8 +760,8 @@ elif [ "$NODE_SOURCE" = bundled ]; then
 else
     _FRONTEND_SKIP=true
     step "frontend" "skipped (no suitable Node; system left untouched)" "$C_WARN"
-    substep "found Node='${_SYS_NODE_VER:-none}' npm='${_SYS_NPM_VER:-none}'; Unsloth needs Node >=20.19/22.12/23 and npm >= 11"
-    substep "install a suitable Node + npm, or unset UNSLOTH_SKIP_NODE_INSTALL to let Unsloth manage an isolated Node"
+    substep "found Node='${_SYS_NODE_VER:-none}' npm='${_SYS_NPM_VER:-none}'; Hyposloth needs Node >=20.19/22.12/23 and npm >= 11"
+    substep "install a suitable Node + npm, or unset UNSLOTH_SKIP_NODE_INSTALL to let Hyposloth manage an isolated Node"
 fi
 verbose_substep "node source: $NODE_SOURCE (sys node=${_SYS_NODE_VER:-none} npm=${_SYS_NPM_VER:-none}) dir=$NODE_DIR"
 
@@ -941,11 +941,11 @@ _remove_agent_instruction_files \
 _COLAB_NO_VENV=false
 if [ ! -x "$VENV_DIR/bin/python" ]; then
     if [ "$IS_COLAB" = true ]; then
-        # On Colab there is no Unsloth venv -- install backend deps into system Python.
+        # On Colab there is no Hyposloth venv -- install backend deps into system Python.
         # Strip all version constraints so pip keeps Colab's pre-installed
         # packages (huggingface-hub, datasets, transformers) and only pulls
         # in genuinely missing ones (structlog, fastapi, etc.).
-        substep "Colab detected, installing Unsloth backend dependencies..."
+        substep "Colab detected, installing Hyposloth backend dependencies..."
         _COLAB_REQS_TMP="$(mktemp)"
         sed 's/[><=!~;].*//' "$SCRIPT_DIR/backend/requirements/studio.txt" \
             | grep -v '^#' | grep -v '^$' > "$_COLAB_REQS_TMP"
@@ -1386,7 +1386,7 @@ _link_local_llama_quantize_shim() {
 }
 
 # Accept any layout LlamaCppBackend._layout_candidates() resolves so the flag
-# never rejects a tree Unsloth could actually run: a root-level llama-server (a
+# never rejects a tree Hyposloth could actually run: a root-level llama-server (a
 # `make` build or a flat-extracted release) or the CMake build/bin/llama-server.
 _has_local_llama_server() {
     [ -x "$1/llama-server" ] || [ -x "$1/build/bin/llama-server" ]
@@ -1430,13 +1430,13 @@ if [ -n "${UNSLOTH_LOCAL_LLAMA_CPP_DIR:-}" ]; then
         # Reusing disables BOTH the prebuilt download and the source build, so the
         # linked tree must already contain a runnable llama-server in one of the
         # layouts the backend resolves (root-level or build/bin/). Fail clearly
-        # rather than link an unbuilt or wrong-platform checkout and leave Unsloth
+        # rather than link an unbuilt or wrong-platform checkout and leave Hyposloth
         # with no usable binary.
         if ! _has_local_llama_server "$_RESOLVED_LOCAL"; then
             step "llama.cpp" "no llama-server under $_RESOLVED_LOCAL (looked for ./llama-server and ./build/bin/llama-server) -- build llama.cpp there first, or drop --with-llama-cpp-dir" "$C_ERR"
             setup_fail 1 "No llama-server was found under $_RESOLVED_LOCAL"
         fi
-        # A stale link from a previous --with-llama-cpp-dir run isn't Unsloth-owned
+        # A stale link from a previous --with-llama-cpp-dir run isn't Hyposloth-owned
         # content; drop it before the ownership check so re-runs stay idempotent
         # for a custom UNSLOTH_STUDIO_HOME (the assert would otherwise follow the
         # link into the user's dir and reject it as unowned).
@@ -1564,7 +1564,7 @@ else
         if [ -d "$LLAMA_CPP_DIR" ]; then
             substep "existing install was restored"
         fi
-        substep "close Unsloth or other llama.cpp users and retry"
+        substep "close Hyposloth or other llama.cpp users and retry"
         setup_fail 3 "llama.cpp install is blocked by an active llama.cpp process"
     elif [ "$_PREBUILT_STATUS" -eq 4 ]; then
         step "llama.cpp" "not enough disk space to install llama.cpp" "$C_WARN"
@@ -2140,7 +2140,7 @@ else
                 ln -sf build/bin/llama-quantize "$LLAMA_CPP_DIR/llama-quantize"
             fi
             # DiffusionGemma visual server, if it was built (PR #24423): link next to
-            # llama-server so Unsloth serves DiffusionGemma GGUFs without DG_VISUAL_BIN.
+            # llama-server so Hyposloth serves DiffusionGemma GGUFs without DG_VISUAL_BIN.
             if [ -f "$LLAMA_CPP_DIR/build/bin/llama-diffusion-gemma-visual-server" ]; then
                 ln -sf build/bin/llama-diffusion-gemma-visual-server "$LLAMA_CPP_DIR/llama-diffusion-gemma-visual-server"
             fi
@@ -2304,9 +2304,9 @@ elif [ "$IS_COLAB" = true ]; then
     echo ""
     printf "  ${C_DIM}%s${C_RST}\n" "$RULE"
     if [ "$_LLAMA_CPP_DEGRADED" = true ]; then
-        printf "  ${C_WARN}%s${C_RST}\n" "Unsloth Studio Setup Complete (limited: llama.cpp unavailable)"
+        printf "  ${C_WARN}%s${C_RST}\n" "Hyposloth Studio Setup Complete (limited: llama.cpp unavailable)"
     else
-        printf "  ${C_TITLE}%s${C_RST}\n" "Unsloth Studio Setup Complete"
+        printf "  ${C_TITLE}%s${C_RST}\n" "Hyposloth Studio Setup Complete"
     fi
     printf "  ${C_DIM}%s${C_RST}\n" "$RULE"
     substep "from colab import start"
@@ -2314,9 +2314,9 @@ elif [ "$IS_COLAB" = true ]; then
 else
     printf "  ${C_DIM}%s${C_RST}\n" "$RULE"
     if [ "$_LLAMA_CPP_DEGRADED" = true ]; then
-        printf "  ${C_WARN}%s${C_RST}\n" "Unsloth Studio Installed (limited: llama.cpp unavailable)"
+        printf "  ${C_WARN}%s${C_RST}\n" "Hyposloth Studio Installed (limited: llama.cpp unavailable)"
     else
-        printf "  ${C_TITLE}%s${C_RST}\n" "Unsloth Studio Installed"
+        printf "  ${C_TITLE}%s${C_RST}\n" "Hyposloth Studio Installed"
     fi
     printf "  ${C_DIM}%s${C_RST}\n" "$RULE"
     if [ "$_LLAMA_CPP_DEGRADED" = true ]; then
@@ -2332,7 +2332,7 @@ echo ""
 # When called from install.sh (SKIP_STUDIO_BASE=1), exit non-zero so the
 # installer can report the GGUF failure after finishing PATH/shortcut setup.
 # When called directly via 'unsloth studio update', keep the install
-# successful -- the footer above already reports the limitation and Unsloth
+# successful -- the footer above already reports the limitation and Hyposloth
 # is still usable for non-GGUF workflows.
 if [ "$_LLAMA_CPP_DEGRADED" = true ] && [ "${SKIP_STUDIO_BASE:-0}" = "1" ]; then
     setup_fail 1 "llama.cpp setup did not produce a usable server"

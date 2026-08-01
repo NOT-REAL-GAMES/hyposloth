@@ -9,7 +9,7 @@ from typing import Optional
 
 from fastapi import Header
 
-HUB_HF_TOKEN_HEADER = "X-Unsloth-HF-Token"
+HUB_HF_TOKEN_HEADER = "X-Hyposloth-HF-Token"
 HUB_HF_TOKEN_MAX_LENGTH = 512
 
 

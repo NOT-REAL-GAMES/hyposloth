@@ -46,7 +46,7 @@ export function SplashScreen({
           }}
         >
           <h1 className="text-2xl font-semibold tracking-tight">
-            Unsloth Studio
+            Hyposloth Studio
           </h1>
           <p className="text-sm text-muted-foreground">Train and run LLMs locally</p>
         </motion.div>

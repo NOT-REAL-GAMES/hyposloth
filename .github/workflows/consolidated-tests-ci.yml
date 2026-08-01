@@ -1217,7 +1217,7 @@ jobs:
         #      <x>_config OR an inline *Config.
         #   4. Dynamic count: enumerate every canonical trainer that
         #      imports cleanly, run patch_trl_rl_trainers(), assert
-        #      every one ends up Unsloth-prefixed in-place. Floor matches
+        #      every one ends up Hyposloth-prefixed in-place. Floor matches
         #      the cohort sizes from the version sweep:
         #        TRL 0.22-0.23 -> 18 canonical trainers
         #        TRL 0.24-0.28 -> 15 canonical trainers
@@ -1489,7 +1489,7 @@ jobs:
               )
 
 
-          # ---- Dynamic patch coverage: count + verify Unsloth-prefixed ----
+          # ---- Dynamic patch coverage: count + verify Hyposloth-prefixed ----
 
           def _enumerate_canonical_trainer_classes():
               """Walk trl.trainer/*_trainer.py on disk (the source of
@@ -1547,7 +1547,7 @@ jobs:
 
 
           def _is_unsloth_patched(cls) -> bool:
-              return getattr(cls, "__name__", "").startswith("Unsloth")
+              return getattr(cls, "__name__", "").startswith("Hyposloth")
 
 
           def test_unsloth_patches_every_canonical_trainer_in_this_trl_version():
@@ -1585,7 +1585,7 @@ jobs:
               for tf, n in unpatched:
                   print(f"  UNPATCHED {tf}: {n}")
               # Hard contract: every canonical trainer that imports
-              # cleanly must end up Unsloth-prefixed after the umbrella
+              # cleanly must end up Hyposloth-prefixed after the umbrella
               # patch. If a trainer was discoverable BEFORE the patch but
               # is missing from `after`, that is a separate (rare) issue
               # we surface as failure.
@@ -1613,12 +1613,12 @@ jobs:
               `_patch_trl_rl_trainers` (rl.py:677-702) detects
               `trl.experimental` in the trainer source and resolves to
               the parent class -- so patching the canonical entry should
-              also Unsloth-prefix the experimental class via in-module
+              also Hyposloth-prefix the experimental class via in-module
               setattr.
 
               Verify by walking trl.experimental.* AST for every *Trainer
               class, then checking whether it (or any class with the same
-              name in the experimental package) carries the Unsloth
+              name in the experimental package) carries the Hyposloth
               prefix after the umbrella patch."""
               from unsloth.models.rl import patch_trl_rl_trainers
               patch_trl_rl_trainers()
@@ -1670,7 +1670,7 @@ jobs:
                           found.append((pkg_name, cls_name))
                           print(f"  PATCHED   trl.experimental.{pkg_name}.{cls_name}")
                       else:
-                          # Not Unsloth-prefixed: either unsloth chose
+                          # Not Hyposloth-prefixed: either unsloth chose
                           # not to patch this surface (e.g. the canonical
                           # thin-wrapper module did not exist) or the
                           # patch silently failed. Record both
@@ -1679,7 +1679,7 @@ jobs:
                           # canonical test enforces the hard contract.
                           print(
                               f"  NOT-PATCHED trl.experimental.{pkg_name}."
-                              f"{cls_name} (no Unsloth-prefix on the "
+                              f"{cls_name} (no Hyposloth-prefix on the "
                               "experimental surface)"
                           )
               total_experimental = sum(len(cs) for _, cs in experimental_pkgs)
@@ -2236,7 +2236,7 @@ jobs:
         # "no ubuntu-x64 prebuilt asset" when ggml-org's release-asset
         # naming drifted (the regex `bin-ubuntu-x64.*\.zip$` no longer
         # matched their current asset names). The build path is the same
-        # one Unsloth users hit in production via `model.save_pretrained_gguf`.
+        # one Hyposloth users hit in production via `model.save_pretrained_gguf`.
         #
         # We do NOT hard-require `llama-cli` specifically: upstream
         # ggml-org/llama.cpp moved the cli/server/ui targets behind the
@@ -2267,7 +2267,7 @@ jobs:
           # Apply the same CPU spoof the pytest shims use BEFORE any
           # unsloth_zoo import: unsloth_zoo/__init__.py calls
           # device_type.get_device_type() at module load and raises
-          # `NotImplementedError: Unsloth cannot find any torch
+          # `NotImplementedError: Hyposloth cannot find any torch
           # accelerator` on a GPU-less runner. The spoof flips
           # torch.cuda.is_available() to True so the device probe takes
           # the cuda branch; we never actually run CUDA tensor ops in
@@ -2280,7 +2280,7 @@ jobs:
               LLAMA_CPP_DEFAULT_DIR,
               LLAMA_CPP_TARGETS,
           )
-          print(f"Unsloth llama.cpp default dir: {LLAMA_CPP_DEFAULT_DIR}")
+          print(f"Hyposloth llama.cpp default dir: {LLAMA_CPP_DEFAULT_DIR}")
           print(f"Build targets: {LLAMA_CPP_TARGETS}")
           # install_llama_cpp returns (quantizer_path, converter_script_path).
           # The quantizer's directory is the `llama.cpp` install root, which

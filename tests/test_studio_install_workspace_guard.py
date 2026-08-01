@@ -1,4 +1,4 @@
-"""install.sh/install.ps1 must refuse to rm -rf an existing Unsloth venv in env-mode without a sentinel."""
+"""install.sh/install.ps1 must refuse to rm -rf an existing Hyposloth venv in env-mode without a sentinel."""
 
 from __future__ import annotations
 
@@ -85,7 +85,7 @@ def test_env_mode_blocks_unsloth_studio_without_sentinels(tmp_path):
         "env-mode without sentinels must refuse to rm -rf $VENV_DIR; "
         f"stdout={res.stdout!r} stderr={res.stderr!r}"
     )
-    assert "does not look like an Unsloth Studio install" in res.stderr
+    assert "does not look like a Hyposloth Studio install" in res.stderr
     assert (studio_home / "unsloth_studio" / "bin" / "python").is_file()
 
 
@@ -124,7 +124,7 @@ def test_install_ps1_has_matching_env_mode_guard():
     ), "install.ps1 must gate Remove-Item $VenvDir on env-mode"
     assert "share\\studio.conf" in block, "install.ps1 guard must check share\\studio.conf sentinel"
     assert "bin\\unsloth.exe" in block, "install.ps1 guard must check bin\\unsloth.exe sentinel"
-    assert "Refusing to delete non-Unsloth venv" in block
+    assert "Refusing to delete non-Hyposloth venv" in block
 
 
 def test_setup_ps1_has_writability_probe():
@@ -157,7 +157,7 @@ def test_env_mode_blocks_when_bin_unsloth_is_a_directory(tmp_path):
         capture_output = True,
     )
     assert res.returncode != 0, (
-        "directory at bin/unsloth must NOT satisfy the Unsloth sentinel; "
+        "directory at bin/unsloth must NOT satisfy the Hyposloth sentinel; "
         f"stdout={res.stdout!r} stderr={res.stderr!r}"
     )
     assert (venv / "important.txt").is_file(), "unrelated workspace data must survive"
@@ -202,7 +202,7 @@ def test_install_ps1_sentinel_uses_pathtype_leaf():
 
 
 def test_setup_ps1_stale_venv_has_env_mode_guard():
-    """setup.ps1 stale-venv branch must gate Remove-Item $VenvDir on a custom-root Unsloth sentinel."""
+    """setup.ps1 stale-venv branch must gate Remove-Item $VenvDir on a custom-root Hyposloth sentinel."""
     src = SETUP_PS1.read_text(encoding = "utf-8")
     idx = src.index("Stale venv detected")
     block = src[idx : idx + 1500]
@@ -439,7 +439,7 @@ def test_check_health_accepts_matching_studio_root_id():
     expected_id = "a" * 64
     rc = _run_check_health(
         expected_id,
-        f'{{"status":"healthy","service":"Unsloth UI Backend","studio_root_id":"{expected_id}"}}',
+        f'{{"status":"healthy","service":"Hyposloth UI Backend","studio_root_id":"{expected_id}"}}',
     )
     assert rc == 0, f"matching studio_root_id must allow attach (rc={rc})"
 
@@ -450,7 +450,7 @@ def test_check_health_rejects_mismatched_studio_root_id():
     other_id = "b" * 64
     rc = _run_check_health(
         expected_id,
-        f'{{"status":"healthy","service":"Unsloth UI Backend","studio_root_id":"{other_id}"}}',
+        f'{{"status":"healthy","service":"Hyposloth UI Backend","studio_root_id":"{other_id}"}}',
     )
     assert rc != 0, "mismatched studio_root_id must reject attach (workspace isolation)"
 
@@ -460,18 +460,18 @@ def test_check_health_rejects_missing_studio_root_id_field():
     expected_id = "a" * 64
     rc = _run_check_health(
         expected_id,
-        '{"status":"healthy","service":"Unsloth UI Backend"}',
+        '{"status":"healthy","service":"Hyposloth UI Backend"}',
     )
     assert rc != 0, "missing studio_root_id field must reject attach"
 
 
 def test_check_health_no_baked_id_accepts_any_healthy_backend():
-    """Empty _EXPECTED_STUDIO_ROOT_ID falls back to legacy contract: accept any healthy Unsloth backend."""
+    """Empty _EXPECTED_STUDIO_ROOT_ID falls back to legacy contract: accept any healthy Hyposloth backend."""
     rc = _run_check_health(
         "",
-        '{"status":"healthy","service":"Unsloth UI Backend","studio_root_id":"deadbeef"}',
+        '{"status":"healthy","service":"Hyposloth UI Backend","studio_root_id":"deadbeef"}',
     )
-    assert rc == 0, "no baked id → accept any healthy Unsloth backend"
+    assert rc == 0, "no baked id → accept any healthy Hyposloth backend"
 
 
 def test_check_health_rejects_non_unsloth_service():
@@ -479,7 +479,7 @@ def test_check_health_rejects_non_unsloth_service():
         "",
         '{"status":"healthy","service":"Other UI Backend"}',
     )
-    assert rc != 0, "non-Unsloth service must be rejected"
+    assert rc != 0, "non-Hyposloth service must be rejected"
 
 
 def test_check_health_handles_arbitrary_id_token():
@@ -487,7 +487,7 @@ def test_check_health_handles_arbitrary_id_token():
     expected_id = "f0" + ("ed" * 31)  # 64 hex chars, not derived from any path
     rc = _run_check_health(
         expected_id,
-        f'{{"status":"healthy","service":"Unsloth UI Backend","studio_root_id":"{expected_id}"}}',
+        f'{{"status":"healthy","service":"Hyposloth UI Backend","studio_root_id":"{expected_id}"}}',
     )
     assert rc == 0, "arbitrary 64-hex install id must round-trip cleanly (no JSON escape issue)"
 

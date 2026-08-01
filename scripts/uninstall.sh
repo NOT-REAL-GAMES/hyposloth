@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 #
-# Unsloth Studio uninstaller (macOS / Linux / WSL). Run --help for details.
+# Hyposloth Studio uninstaller (macOS / Linux / WSL). Run --help for details.
 # Custom roots (UNSLOTH_STUDIO_HOME / STUDIO_HOME) come from studio.conf.
 #
 # Usage: curl -fsSL https://raw.githubusercontent.com/unslothai/unsloth/main/scripts/uninstall.sh | sh
@@ -11,18 +11,18 @@ set -e
 
 _usage() {
     cat <<'EOF'
-Unsloth Studio uninstaller (macOS / Linux / WSL).
+Hyposloth Studio uninstaller (macOS / Linux / WSL).
 
 Usage:
   curl -fsSL https://raw.githubusercontent.com/unslothai/unsloth/main/scripts/uninstall.sh | sh
   sh scripts/uninstall.sh
 
-Stops running Unsloth Studio servers, then removes the install dir, launcher
+Stops running Hyposloth Studio servers, then removes the install dir, launcher
 data dir, CLI shim, desktop shortcut, macOS .app bundle and Launch Services
 entry. The Hugging Face cache at ~/.cache/huggingface is left in place.
 
 On WSL it also removes this distro's Windows-side shortcuts under /mnt/*/Users,
-strips the Unsloth block from ~/.bashrc, and uses sudo to delete
+strips the Hyposloth block from ~/.bashrc, and uses sudo to delete
 /etc/profile.d/unsloth-rocm-wsl.sh.
 
 Options:
@@ -40,7 +40,7 @@ Environment:
 EOF
 }
 
-# Stop an Unsloth server via its PID file (written by install.sh's _spawn_terminal).
+# Stop a Hyposloth server via its PID file (written by install.sh's _spawn_terminal).
 _kill_pid_file() {
     _pid_file="$1"
     [ -f "$_pid_file" ] || return 0
@@ -75,7 +75,7 @@ _pkill_studio() {
     command -v pkill >/dev/null 2>&1 || return 0
 
     # Scope fallback patterns to the install roots we are removing so a
-    # different Unsloth install (different UNSLOTH_STUDIO_HOME) is not touched.
+    # different Hyposloth install (different UNSLOTH_STUDIO_HOME) is not touched.
     _kill_roots="$HOME/.unsloth/studio"
     _roots_from_conf=$(_custom_studio_roots 2>/dev/null || true)
     [ -n "$_roots_from_conf" ] && _kill_roots="$_kill_roots
@@ -117,7 +117,7 @@ _remove_path() {
     fi
 }
 
-# Accept as Unsloth root only if Unsloth sentinels exist (matches install.sh's
+# Accept as Hyposloth root only if Hyposloth sentinels exist (matches install.sh's
 # env-mode ownership guard at install.sh:1358-1361). A bare unsloth_studio/
 # directory is NOT enough -- require the install-time owner marker so a user
 # directory that happens to contain a folder named "unsloth_studio" is safe.
@@ -203,8 +203,8 @@ _custom_studio_roots() {
     _from_conf "$HOME/.local/share/unsloth/studio.conf"
 }
 
-# Remove $HOME/.local/bin/unsloth only if it's an Unsloth-managed symlink.
-# Unsloth's install.sh writes this as a symlink into the studio venv
+# Remove $HOME/.local/bin/unsloth only if it's a Hyposloth-managed symlink.
+# Hyposloth's install.sh writes this as a symlink into the studio venv
 # (install.sh: `ln -sfn "$VENV_DIR/bin/unsloth" "$_shim_path"`). A
 # pip-installed `unsloth` CLI is a regular file — leave it alone to avoid
 # wiping an unrelated install.
@@ -236,7 +236,7 @@ _unsloth_uninstall_main() {
     _is_wsl=0
     [ "$_os" = "Linux" ] && grep -qi microsoft /proc/version 2>/dev/null && _is_wsl=1
 
-    echo "Stopping any running Unsloth Studio servers..."
+    echo "Stopping any running Hyposloth Studio servers..."
     _pkill_studio
 
     echo "Removing data and install directories..."
@@ -247,7 +247,7 @@ _unsloth_uninstall_main() {
             continue
         fi
         if ! _is_studio_root "$_custom_root"; then
-            echo "  refusing to remove non-Unsloth path: $_custom_root" >&2
+            echo "  refusing to remove non-Hyposloth path: $_custom_root" >&2
             continue
         fi
         _remove_path "$_custom_root"
@@ -275,13 +275,13 @@ _unsloth_uninstall_main() {
     # Drop ~/.unsloth only if now empty (rmdir refuses non-empty, so user content is kept).
     rmdir "$HOME/.unsloth" 2>/dev/null || true
     _remove_path "$HOME/.local/share/unsloth"
-    # CLI shim: only the symlink Unsloth created, never a pip-installed file.
+    # CLI shim: only the symlink Hyposloth created, never a pip-installed file.
     _remove_cli_shim
 
     echo "Removing desktop shortcut and launcher lock..."
-    # install.sh creates Desktop/Unsloth Studio as a symlink. If the user has an
+    # install.sh creates Desktop/Hyposloth Studio as a symlink. If the user has an
     # unrelated regular directory by that name, leave it alone.
-    _desktop_link="$HOME/Desktop/Unsloth Studio"
+    _desktop_link="$HOME/Desktop/Hyposloth Studio"
     if [ -L "$_desktop_link" ] || [ ! -e "$_desktop_link" ]; then
         _remove_path "$_desktop_link"
     else
@@ -297,20 +297,20 @@ _unsloth_uninstall_main() {
     case "$_os" in
         Darwin)
             echo "Removing macOS .app bundle and Launch Services entry..."
-            _remove_path "$HOME/Applications/Unsloth Studio.app"
+            _remove_path "$HOME/Applications/Hyposloth Studio.app"
             _lsr="/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
             if [ -x "$_lsr" ]; then
-                "$_lsr" -u "$HOME/Applications/Unsloth Studio.app" 2>/dev/null || true
+                "$_lsr" -u "$HOME/Applications/Hyposloth Studio.app" 2>/dev/null || true
             fi
             ;;
         Linux)
             if [ "$_is_wsl" = "1" ]; then
                 echo "Removing WSL Windows-side shortcuts..."
-                # install.sh creates per-distro 'Unsloth Studio (WSL - <distro>).lnk'
+                # install.sh creates per-distro 'Hyposloth Studio (WSL - <distro>).lnk'
                 # on the Windows Desktop + Start Menu via powershell.exe. Scope removal
                 # to THIS distro (passed as $args[0]) so a multi-distro install keeps the
                 # other distros' launchers; the TARGET=wsl.exe check still spares a
-                # native install's "Unsloth Studio.lnk". Prefer powershell.exe; test it
+                # native install's "Hyposloth Studio.lnk". Prefer powershell.exe; test it
                 # can EXECUTE (`command -v` succeeds even with interop OFF -- .exe then
                 # fails "Exec format error", common on systemd-enabled distros).
                 _wsl_distro="${WSL_DISTRO_NAME:-}"
@@ -330,7 +330,7 @@ _unsloth_uninstall_main() {
                         $ws = New-Object -ComObject WScript.Shell;
                         foreach ($d in $dirs) {
                             if (-not $d -or -not (Test-Path -LiteralPath $d)) { continue }
-                            Get-ChildItem -LiteralPath $d -Filter "Unsloth Studio*.lnk" -ErrorAction SilentlyContinue | ForEach-Object {
+                            Get-ChildItem -LiteralPath $d -Filter "Hyposloth Studio*.lnk" -ErrorAction SilentlyContinue | ForEach-Object {
                                 try {
                                     $sc = $ws.CreateShortcut($_.FullName);
                                     if ("$($sc.TargetPath) $($sc.Arguments)" -notmatch "wsl\.exe") { return }
@@ -338,7 +338,7 @@ _unsloth_uninstall_main() {
                                     # name for this distro or its -d "<distro>" argument
                                     # so launchers for other distros are not removed.
                                     if ($distro) {
-                                        $nameMatch = ($_.Name -eq "Unsloth Studio (WSL - $distro).lnk");
+                                        $nameMatch = ($_.Name -eq "Hyposloth Studio (WSL - $distro).lnk");
                                         $argMatch  = ($sc.Arguments -match ("-d\s+`"?" + [regex]::Escape($distro) + "`"?"));
                                         if (-not ($nameMatch -or $argMatch)) { return }
                                     }
@@ -346,29 +346,29 @@ _unsloth_uninstall_main() {
                                 } catch { }
                             }
                         }
-                        # Keep the shared icon while any Unsloth shortcut still uses it (native
+                        # Keep the shared icon while any Hyposloth shortcut still uses it (native
                         # install or another WSL distro); drop it only with the last one.
                         $iconInUse = $false;
                         foreach ($d in $dirs) {
                             if (-not $d -or -not (Test-Path -LiteralPath $d)) { continue }
-                            if (Get-ChildItem -LiteralPath $d -Filter "Unsloth Studio*.lnk" -ErrorAction SilentlyContinue) { $iconInUse = $true; break }
+                            if (Get-ChildItem -LiteralPath $d -Filter "Hyposloth Studio*.lnk" -ErrorAction SilentlyContinue) { $iconInUse = $true; break }
                         }
                         # Guard LOCALAPPDATA: empty on a service/SYSTEM account makes
                         # Join-Path throw, aborting the icon cleanup (mirror uninstall.ps1).
                         if (-not [string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
-                            $iconDir = Join-Path $env:LOCALAPPDATA "Unsloth Studio";
+                            $iconDir = Join-Path $env:LOCALAPPDATA "Hyposloth Studio";
                             $ico = Join-Path $iconDir "unsloth.ico";
                             if ((-not $iconInUse) -and (Test-Path -LiteralPath $ico)) { Remove-Item -LiteralPath $ico -Force -ErrorAction SilentlyContinue }
                             if ((Test-Path -LiteralPath $iconDir) -and -not (Get-ChildItem -LiteralPath $iconDir -Force -ErrorAction SilentlyContinue)) { Remove-Item -LiteralPath $iconDir -Recurse -Force -ErrorAction SilentlyContinue }
                         }' >/dev/null 2>&1 || true
                 fi
-                # Remove $1's shared unsloth.ico only if no Unsloth shortcut (native install
+                # Remove $1's shared unsloth.ico only if no Hyposloth shortcut (native install
                 # or another WSL distro) still uses it, then drop the dir if empty. Reciprocal
                 # of uninstall.ps1's _RemoveDataDirKeepingWslIcon (keeps the icon for a
                 # surviving WSL shortcut when the native side is removed).
                 _drop_shared_icon_if_unused() {
                     _du="$1"
-                    _icodir="$_du/AppData/Local/Unsloth Studio"
+                    _icodir="$_du/AppData/Local/Hyposloth Studio"
                     _icon_in_use=0
                     for _sd in \
                         "$_du/Desktop" \
@@ -376,7 +376,7 @@ _unsloth_uninstall_main() {
                         "$_du"/OneDrive*/Desktop \
                         "$_du/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"; do
                         [ -d "$_sd" ] || continue
-                        for _any in "$_sd"/"Unsloth Studio"*.lnk; do
+                        for _any in "$_sd"/"Hyposloth Studio"*.lnk; do
                             [ -e "$_any" ] && { _icon_in_use=1; break; }
                         done
                         [ "$_icon_in_use" = "1" ] && break
@@ -387,8 +387,8 @@ _unsloth_uninstall_main() {
                     [ -d "$_icodir" ] && rmdir "$_icodir" 2>/dev/null || true
                 }
                 # Fallback when powershell.exe can't run (interop disabled): remove WSL .lnk
-                # files via drvfs. The "Unsloth Studio (WSL..." name is WSL-specific, so a
-                # native install's "Unsloth Studio.lnk" never matches.
+                # files via drvfs. The "Hyposloth Studio (WSL..." name is WSL-specific, so a
+                # native install's "Hyposloth Studio.lnk" never matches.
                 if [ "$_ps_ran" = "0" ]; then
                     for _drive in /mnt/c /mnt/d /mnt/e; do
                         [ -d "$_drive/Users" ] || continue
@@ -402,11 +402,11 @@ _unsloth_uninstall_main() {
                                 [ -d "$_scdir" ] || continue
                                 if [ -n "$_wsl_distro" ]; then
                                     # Exact per-distro name (no glob) so other distros survive.
-                                    _lnk="$_scdir/Unsloth Studio (WSL - ${_wsl_distro}).lnk"
+                                    _lnk="$_scdir/Hyposloth Studio (WSL - ${_wsl_distro}).lnk"
                                     [ -e "$_lnk" ] && rm -f "$_lnk" 2>/dev/null && echo "  removed: $_lnk" || true
                                 else
                                     # Distro unknown: fall back to the broad WSL prefix.
-                                    for _lnk in "$_scdir"/"Unsloth Studio (WSL"*.lnk; do
+                                    for _lnk in "$_scdir"/"Hyposloth Studio (WSL"*.lnk; do
                                         [ -e "$_lnk" ] && rm -f "$_lnk" 2>/dev/null && echo "  removed: $_lnk" || true
                                     done
                                 fi
@@ -417,16 +417,16 @@ _unsloth_uninstall_main() {
                     done
                 fi
                 # ── ROCm-on-WSL config (install_rocm_wsl_strixhalo.sh) ──
-                # Remove Unsloth's own ROCDXG config (the env it persisted). The system
+                # Remove Hyposloth's own ROCDXG config (the env it persisted). The system
                 # ROCm userspace is a shared prereq (like CUDA) and is LEFT IN PLACE by
                 # default; set UNSLOTH_UNINSTALL_ROCM=1 to remove it too.
                 echo "Removing ROCm-on-WSL config..."
                 _sudo=""
                 if [ "$_uid" != "0" ] && command -v sudo >/dev/null 2>&1; then _sudo="sudo"; fi
                 $_sudo rm -f /etc/profile.d/unsloth-rocm-wsl.sh 2>/dev/null || true
-                if [ -f "$HOME/.bashrc" ] && grep -q "Unsloth ROCm-on-WSL" "$HOME/.bashrc" 2>/dev/null; then
+                if [ -f "$HOME/.bashrc" ] && grep -q "Hyposloth ROCm-on-WSL" "$HOME/.bashrc" 2>/dev/null; then
                     _bk=$(mktemp 2>/dev/null || echo "$HOME/.bashrc.unsloth.tmp")
-                    if sed '/# >>> Unsloth ROCm-on-WSL/,/# <<< Unsloth ROCm-on-WSL/d' "$HOME/.bashrc" > "$_bk" 2>/dev/null; then
+                    if sed '/# >>> Hyposloth ROCm-on-WSL/,/# <<< Hyposloth ROCm-on-WSL/d' "$HOME/.bashrc" > "$_bk" 2>/dev/null; then
                         cat "$_bk" > "$HOME/.bashrc" 2>/dev/null || true
                         echo "  cleaned ROCm-on-WSL block from ~/.bashrc"
                     fi
@@ -453,7 +453,7 @@ _unsloth_uninstall_main() {
     esac
 
     echo ""
-    echo "Unsloth Studio uninstalled."
+    echo "Hyposloth Studio uninstalled."
     echo "Note: Hugging Face model cache at ~/.cache/huggingface was left in place."
     echo "Remove it manually with 'rm -rf ~/.cache/huggingface/hub' if desired."
     # Env-mode installs leave no breadcrumb in $HOME, so a custom root can
@@ -461,7 +461,7 @@ _unsloth_uninstall_main() {
     # neither var is set so the bare `curl | sh` flow doesn't silently miss.
     if [ -z "${UNSLOTH_STUDIO_HOME:-}" ] && [ -z "${STUDIO_HOME:-}" ]; then
         echo ""
-        echo "If you installed Unsloth Studio with UNSLOTH_STUDIO_HOME or STUDIO_HOME"
+        echo "If you installed Hyposloth Studio with UNSLOTH_STUDIO_HOME or STUDIO_HOME"
         echo "pointing at a custom directory, re-run this script with the same variable"
         echo "set to also remove that install tree, e.g.:"
         echo "  UNSLOTH_STUDIO_HOME=/your/path sh -c \"\$(curl -fsSL https://raw.githubusercontent.com/unslothai/unsloth/main/scripts/uninstall.sh)\""

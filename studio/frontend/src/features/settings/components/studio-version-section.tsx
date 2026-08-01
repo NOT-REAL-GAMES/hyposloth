@@ -63,7 +63,7 @@ async function fetchStudioVersions(): Promise<StudioVersions> {
   }
 }
 
-// Shared "Unsloth" version block, shown in both General and About. The About
+// Shared "Hyposloth" version block, shown in both General and About. The About
 // tab passes llamaCppVersion to surface the installed llama.cpp build alongside
 // the version rows; General omits it, so the row only shows on About.
 export function StudioVersionSection({
@@ -90,7 +90,7 @@ export function StudioVersionSection({
   }, []);
 
   return (
-    <SettingsSection title="Unsloth">
+    <SettingsSection title="Hyposloth">
       <SettingsRow label={t("settings.about.studioVersion")}>
         <code className="font-mono text-xs text-muted-foreground">
           {studioVersion}

@@ -24,7 +24,7 @@ export const hi = {
   shell: {
     beta: "BETA",
     brand: "unsloth",
-    product: "Unsloth Studio",
+    product: "Hyposloth Studio",
     accountMenu: "{name} खाता मेनू",
     updateAvailable: "अपडेट उपलब्ध है",
     resize: {
@@ -33,7 +33,7 @@ export const hi = {
       drag: "आकार बदलने के लिए खींचें",
     },
     aria: {
-      home: "Unsloth होम",
+      home: "Hyposloth होम",
       closeSidebar: "साइडबार बंद करें",
       openSidebar: "साइडबार खोलें",
       resizeSidebar: "साइडबार का आकार बदलें या छोटा करें",
@@ -99,7 +99,7 @@ export const hi = {
     title: "सेटिंग्स",
     dialog: {
       title: "सेटिंग्स",
-      description: "अपनी Unsloth प्राथमिकताएं प्रबंधित करें।",
+      description: "अपनी Hyposloth प्राथमिकताएं प्रबंधित करें।",
       closeAriaLabel: "सेटिंग्स बंद करें",
     },
     tabs: {
@@ -114,7 +114,7 @@ export const hi = {
     },
     general: {
       title: "सामान्य",
-      description: "Unsloth के लिए वैश्विक प्राथमिकताएं।",
+      description: "Hyposloth के लिए वैश्विक प्राथमिकताएं।",
       account: "खाता",
       huggingFaceToken: "Hugging Face टोकन",
       huggingFaceTokenDescription:
@@ -123,7 +123,7 @@ export const hi = {
       showToken: "token दिखाएं",
       tokenValidated: "Token सत्यापित",
       password: "पासवर्ड",
-      passwordDescription: "इस Unsloth खाते के लिए पासवर्ड बदलें।",
+      passwordDescription: "इस Hyposloth खाते के लिए पासवर्ड बदलें।",
       passwordDialog: {
         trigger: "पासवर्ड बदलें",
         title: "पासवर्ड बदलें",
@@ -240,16 +240,16 @@ export const hi = {
         action: "प्राथमिकताएं रीसेट करें",
         confirmTitle: "सभी स्थानीय प्राथमिकताएं रीसेट करें?",
         confirmDescription:
-          "केवल-स्थानीय प्राथमिकताएं साफ़ करता है और Unsloth को फिर से लोड करता है। चैट, API एक्सेस, और DB-समर्थित सेटिंग्स बनी रहती हैं।",
+          "केवल-स्थानीय प्राथमिकताएं साफ़ करता है और Hyposloth को फिर से लोड करता है। चैट, API एक्सेस, और DB-समर्थित सेटिंग्स बनी रहती हैं।",
         confirmAction: "रीसेट करें और फिर से लोड करें",
       },
     },
     profile: {
       title: "प्रोफ़ाइल",
-      description: "Unsloth में आपकी प्रोफ़ाइल कैसे दिखती है।",
+      description: "Hyposloth में आपकी प्रोफ़ाइल कैसे दिखती है।",
       changePicture: "प्रोफ़ाइल चित्र बदलें",
       displayName: "प्रदर्शन नाम",
-      nickname: "Unsloth आपको क्या कहकर बुलाए?",
+      nickname: "Hyposloth आपको क्या कहकर बुलाए?",
       nicknamePlaceholder: "उपनाम",
       nicknameSaved: "पसंदीदा नाम सहेजा गया",
       avatarShape: "प्रोफ़ाइल चित्र आकार",
@@ -269,7 +269,7 @@ export const hi = {
     },
     appearance: {
       title: "रूप-रंग",
-      description: "इस डिवाइस पर Unsloth Studio कैसा दिखता है।",
+      description: "इस डिवाइस पर Hyposloth Studio कैसा दिखता है।",
       theme: {
         title: "थीम",
         label: "रंग योजना",
@@ -281,7 +281,7 @@ export const hi = {
       language: {
         title: "भाषा",
         label: "प्रदर्शन भाषा",
-        description: "Unsloth द्वारा उपयोग की जाने वाली भाषा।",
+        description: "Hyposloth द्वारा उपयोग की जाने वाली भाषा।",
         autoDetect: "स्वतः पहचान",
       },
       layout: {
@@ -293,7 +293,7 @@ export const hi = {
     },
     resources: {
       title: "सिस्टम",
-      description: "इस Unsloth सर्वर के हार्डवेयर और स्टोरेज की निगरानी करें।",
+      description: "इस Hyposloth सर्वर के हार्डवेयर और स्टोरेज की निगरानी करें।",
       liveUpdates: "लाइव अपडेट",
       floatingWindow: "फ्लोटिंग विंडो",
       disableOverlay: "ओवरले अक्षम करें",
@@ -422,7 +422,7 @@ export const hi = {
     },
     apiKeys: {
       title: "API",
-      description: "OpenAI-संगत API के माध्यम से Unsloth तक पहुंचें।",
+      description: "OpenAI-संगत API के माध्यम से Hyposloth तक पहुंचें।",
       readDocs: "API दस्तावेज़ पढ़ें",
       noAccess: "अभी तक कोई API एक्सेस नहीं।",
       accessTokens: "एक्सेस token",
@@ -450,7 +450,7 @@ export const hi = {
       osWindows: "Windows",
       secureHttps: "सुरक्षित HTTPS",
       secureHttpsHint:
-        "0.0.0.0 पोर्ट अभी भी विश्व स्तर पर पहुंच योग्य है। पूर्ण सुरक्षा के लिए, केवल इस HTTPS लिंक को उजागर करने के लिए Unsloth Studio को --secure के साथ लॉन्च करें।",
+        "0.0.0.0 पोर्ट अभी भी विश्व स्तर पर पहुंच योग्य है। पूर्ण सुरक्षा के लिए, केवल इस HTTPS लिंक को उजागर करने के लिए Hyposloth Studio को --secure के साथ लॉन्च करें।",
       copyTunnelUrl: "टनल URL कॉपी करें",
       copySnippet: "स्निपेट कॉपी करें",
       copy: "कॉपी करें",
@@ -486,7 +486,7 @@ export const hi = {
     about: {
       title: "परिचय",
       description: "दस्तावेज़, रिलीज़ नोट्स, प्रतिक्रिया, और बिल्ड जानकारी।",
-      studioVersion: "Unsloth संस्करण",
+      studioVersion: "Hyposloth संस्करण",
       packageVersion: "पैकेज संस्करण",
       llamaCppVersion: "llama.cpp संस्करण",
       hardware: "हार्डवेयर",
@@ -502,27 +502,27 @@ export const hi = {
       reportIssue: "समस्या रिपोर्ट करें",
       license: {
         sectionTitle: "लाइसेंस",
-        studioLabel: "Unsloth Studio",
+        studioLabel: "Hyposloth Studio",
         studioLicense: "AGPL-3.0",
         studioDescription: "GNU AGPL v3.0 के तहत ओपन सोर्स।",
-        libraryLabel: "Unsloth Core",
+        libraryLabel: "Hyposloth Core",
         libraryLicense: "Apache-2.0",
         libraryDescription: "Apache 2.0 के तहत लाइसेंस प्राप्त।",
       },
       dangerZone: "खतरनाक क्षेत्र",
-      shutDownStudio: "Unsloth Studio शट डाउन करें",
+      shutDownStudio: "Hyposloth Studio शट डाउन करें",
       shutDownStudioDescription:
-        "Unsloth सर्वर को रोकता है और आपके सत्र को समाप्त करता है।",
+        "Hyposloth सर्वर को रोकता है और आपके सत्र को समाप्त करता है।",
       shutDown: "शट डाउन करें",
       update: {
-        title: "Unsloth Studio अपडेट करें",
+        title: "Hyposloth Studio अपडेट करें",
         commandText: "{label} टेक्स्ट",
         copied: "कॉपी किया गया",
         copyCommand: "कमांड कॉपी करें",
         commandCopied: "{label} कॉपी किया गया",
         copyNamedCommand: "{label} कॉपी करें",
-        checkingInstall: "जांच रहे हैं कि Unsloth कैसे इंस्टॉल किया गया था...",
-        installIntro: "Unsloth इंस्टॉल या अपडेट करने के लिए:",
+        checkingInstall: "जांच रहे हैं कि Hyposloth कैसे इंस्टॉल किया गया था...",
+        installIntro: "Hyposloth इंस्टॉल या अपडेट करने के लिए:",
         localUpdateHeading: "स्थानीय अपडेट",
         installCommandUnix: "macOS/Linux इंस्टॉल कमांड",
         installCommandWindows: "Windows इंस्टॉल कमांड",
@@ -536,11 +536,11 @@ export const hi = {
           "सोर्स या VCS पैकेज इंस्टॉल का पता चला। मूल स्थानीय पथ या Git URL से पुनः इंस्टॉल करें।",
         repoCheckoutFallback:
           "यदि आपके पास अभी भी रेपो checkout है, तो उससे स्थानीय इंस्टॉलर चलाएं:",
-        restartAfterUpdate: "अपडेट करने के बाद Unsloth को पुनः आरंभ करें।",
+        restartAfterUpdate: "अपडेट करने के बाद Hyposloth को पुनः आरंभ करें।",
         desktopManaged:
           "डेस्कटॉप ऐप अपने बंडल किए गए बैकएंड को अपडेट रखता है और नया संस्करण उपलब्ध होने पर संकेत देगा।",
         unknownInstall:
-          "यह पता नहीं लगाया जा सका कि Unsloth कैसे इंस्टॉल किया गया था। इंस्टॉलर या PyPI इंस्टॉल के लिए, ऊपर दिए गए कमांड का उपयोग करें।",
+          "यह पता नहीं लगाया जा सका कि Hyposloth कैसे इंस्टॉल किया गया था। इंस्टॉलर या PyPI इंस्टॉल के लिए, ऊपर दिए गए कमांड का उपयोग करें।",
         localCheckout:
           "स्थानीय checkout इंस्टॉल के लिए, उस checkout से स्थानीय इंस्टॉलर चलाएं:",
         docs: "इंस्टॉल दस्तावेज़:",

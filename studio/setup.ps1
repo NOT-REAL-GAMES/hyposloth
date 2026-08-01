@@ -3,9 +3,9 @@
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 <#
 .SYNOPSIS
-    Full environment setup for Unsloth Studio on Windows (bundled version).
+    Full environment setup for Hyposloth Studio on Windows (bundled version).
 .DESCRIPTION
-    Uses an isolated, Unsloth-managed Node.js for the frontend build when the
+    Uses an isolated, Hyposloth-managed Node.js for the frontend build when the
     system Node/npm do not meet requirements (never modifies the system Node).
     When running from pip install: skips frontend build (already bundled). When
     running from git repo: full setup including frontend build.
@@ -168,10 +168,10 @@ function Add-ToUserPath {
                 $matchIndices.Count -eq 1 -and $matchIndices[0] -eq 0) {
                 return $false
             }
-            # One-time backup under HKCU\Software\Unsloth\PathBackup
+            # One-time backup under HKCU\Software\Hyposloth\PathBackup
             if ($rawPath) {
                 try {
-                    $backupKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Unsloth')
+                    $backupKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Hyposloth')
                     try {
                         $existingBackup = $backupKey.GetValue('PathBackup', $null)
                         if (-not $existingBackup) {
@@ -340,7 +340,7 @@ function Write-CudaDriverToolkitMismatch {
     $driverMajor = $DriverMaxCuda.Split('.')[0]
     substep "CUDA Toolkit $ToolkitVersion is a major-version mismatch: toolkit major $toolkitMajor exceeds driver CUDA major $driverMajor ($DriverMaxCuda)." $Color
     substep "Update the NVIDIA GPU driver to run CUDA Toolkit $ToolkitVersion, or install a CUDA $driverMajor.x toolkit." $Color
-    substep "Or let Unsloth use the prebuilt CUDA bundle; it does not need the local toolkit." $Color
+    substep "Or let Hyposloth use the prebuilt CUDA bundle; it does not need the local toolkit." $Color
 }
 
 # Detect CUDA Compute Capability via nvidia-smi.
@@ -1172,13 +1172,13 @@ function Show-NpmRegistryHint {
     Write-Host ""
     step "frontend" "registry.npmjs.org looks blocked (corporate firewall/proxy?)" "Yellow"
     if ($mirror) {
-        substep "Unsloth pins the public npm registry; your mirror is being ignored."
+        substep "Hyposloth pins the public npm registry; your mirror is being ignored."
         substep "Detected a registry in your npm config:"
         substep "  $mirror"
-        substep "Re-run pointing Unsloth at it:"
+        substep "Re-run pointing Hyposloth at it:"
         substep "  `$env:UNSLOTH_NPM_REGISTRY='$mirror'; .\install.ps1 --local"
     } else {
-        substep "If you use a private mirror/proxy, point Unsloth at it and re-run:"
+        substep "If you use a private mirror/proxy, point Hyposloth at it and re-run:"
         substep "  `$env:UNSLOTH_NPM_REGISTRY='https://your-mirror.example/api/npm/'; .\install.ps1 --local"
     }
     substep "(min-release-age and save-exact stay enforced.)"
@@ -1189,14 +1189,14 @@ function Show-NpmRegistryHint {
 # ─────────────────────────────────────────────
 Write-Host ""
 if ($script:StudioVtOk -and -not $env:NO_COLOR) {
-    Write-Host ("  " + (Get-StudioAnsi Title) + [char]::ConvertFromUtf32(0x1F9A5) + " Unsloth Studio Setup" + (Get-StudioAnsi Reset))
+    Write-Host ("  " + (Get-StudioAnsi Title) + [char]::ConvertFromUtf32(0x1F9A5) + " Hyposloth Studio Setup" + (Get-StudioAnsi Reset))
     Write-Host ("  {0}{1}{2}" -f (Get-StudioAnsi Dim), $Rule, (Get-StudioAnsi Reset))
 } else {
-    Write-Host ("  " + [char]::ConvertFromUtf32(0x1F9A5) + " Unsloth Studio Setup") -ForegroundColor Green
+    Write-Host ("  " + [char]::ConvertFromUtf32(0x1F9A5) + " Hyposloth Studio Setup") -ForegroundColor Green
     Write-Host "  $Rule" -ForegroundColor DarkGray
 }
 
-# Back up User PATH under HKCU\Software\Unsloth before any modifications.
+# Back up User PATH under HKCU\Software\Hyposloth before any modifications.
 try {
     $envKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $false)
     if ($envKey) {
@@ -1206,7 +1206,7 @@ try {
             $envKey.Close()
         }
         if ($rawPath) {
-            $backupKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Unsloth')
+            $backupKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Hyposloth')
             try {
                 $existingBackup = $backupKey.GetValue('PathBackup', $null)
                 if (-not $existingBackup) {
@@ -1305,7 +1305,7 @@ if (-not $HasNvidiaSmi) {
 }
 # ── Helper: run amd-smi without triggering a UAC elevation prompt ──
 # amd-smi on Windows auto-elevates to read GPU/APU memory, surfacing a confusing
-# DiskPart UAC prompt mid-install (Unsloth backend amd.py hits the same). RunAsInvoker
+# DiskPart UAC prompt mid-install (Hyposloth backend amd.py hits the same). RunAsInvoker
 # forces it (and helpers it spawns) to run un-elevated; on failure the WMI name ->
 # gfx fallback still resolves the arch.
 function Invoke-AmdSmiNoElevate {
@@ -1367,7 +1367,7 @@ if (-not $HasNvidiaSmi) {
         if ([string]::IsNullOrWhiteSpace($HipinfoPath)) { return $false }
         # VenvDir/VIRTUAL_ENV can be unset this early (the update flow probes before
         # VenvDir is set), so also derive the venv from the setup python + default
-        # Unsloth home, else the venv hipInfo isn't caught.
+        # Hyposloth home, else the venv hipInfo isn't caught.
         $venvRoots = @()
         if ($env:VIRTUAL_ENV) { $venvRoots += $env:VIRTUAL_ENV }
         $vd = Get-Variable -Name VenvDir -ValueOnly -ErrorAction SilentlyContinue
@@ -1376,7 +1376,7 @@ if (-not $HasNvidiaSmi) {
             try { $venvRoots += (Split-Path -Parent (Split-Path -Parent $env:UNSLOTH_SETUP_PYTHON)) } catch {}
         }
         if ($env:USERPROFILE) { $venvRoots += (Join-Path $env:USERPROFILE ".unsloth\studio\unsloth_studio") }
-        # A custom Unsloth home (UNSLOTH_STUDIO_HOME / STUDIO_HOME alias) moves the
+        # A custom Hyposloth home (UNSLOTH_STUDIO_HOME / STUDIO_HOME alias) moves the
         # venv off the default path; seed it too or its hipInfo escapes the filter.
         $studioHomeEnv = if (-not [string]::IsNullOrWhiteSpace($env:UNSLOTH_STUDIO_HOME)) { $env:UNSLOTH_STUDIO_HOME.Trim() } elseif (-not [string]::IsNullOrWhiteSpace($env:STUDIO_HOME)) { $env:STUDIO_HOME.Trim() } else { $null }
         if ($studioHomeEnv) {
@@ -1755,7 +1755,7 @@ if (-not $HasGit) {
             Exit-SetupFailure "Git is required for --local / source-build installs but could not be installed"
         }
         step "git" "not found (not required)" "Yellow"
-        substep "Unsloth installs prebuilt binaries and wheels, so git is not needed."
+        substep "Hyposloth installs prebuilt binaries and wheels, so git is not needed."
         substep "Install it only for --local/source installs: https://git-scm.com/download/win"
     } else {
         step "git" "$(git --version)"
@@ -2135,7 +2135,7 @@ $SysNpmVersion = ""
 $NodeSource = $null
 
 if (-not $IsPipInstall) {
-    # Put Node beside the Unsloth root. OXC can still need npm when the
+    # Put Node beside the Hyposloth root. OXC can still need npm when the
     # frontend build is skipped.
     if (-not [string]::IsNullOrWhiteSpace($env:UNSLOTH_STUDIO_HOME)) { $NodeOverride = $env:UNSLOTH_STUDIO_HOME.Trim() }
     elseif (-not [string]::IsNullOrWhiteSpace($env:STUDIO_HOME)) { $NodeOverride = $env:STUDIO_HOME.Trim() }
@@ -2412,19 +2412,19 @@ if ($NeedNodeForSetup) {
             step "frontend" "skipped (no suitable Node; system left untouched)" "Yellow"
         }
         $NeedFrontendBuild = $false
-        substep "found Node='$SysNodeVersion' npm='$SysNpmVersion'; Unsloth needs Node >=20.19/22.12/23 and npm >= 11" "Yellow"
-        substep "install a suitable Node + npm, or unset UNSLOTH_SKIP_NODE_INSTALL to let Unsloth manage an isolated Node" "Yellow"
+        substep "found Node='$SysNodeVersion' npm='$SysNpmVersion'; Hyposloth needs Node >=20.19/22.12/23 and npm >= 11" "Yellow"
+        substep "install a suitable Node + npm, or unset UNSLOTH_SKIP_NODE_INSTALL to let Hyposloth manage an isolated Node" "Yellow"
     } elseif ($NodeSource -eq "bundled") {
         New-Item -ItemType Directory -Force -Path $NodeParent -ErrorAction SilentlyContinue | Out-Null
-        # Minimal ownership guard for a custom-home dir (the full Unsloth-owned
+        # Minimal ownership guard for a custom-home dir (the full Hyposloth-owned
         # helpers are defined later); never os.replace over a user-owned dir.
         if ($NodeOverride -and (Test-Path -LiteralPath $NodeDir -PathType Container)) {
             $nodeOwnedMarker = Join-Path $NodeDir ".unsloth-studio-owned"
             $nodeMeta = Join-Path $NodeDir "UNSLOTH_NODE_PREBUILT_INFO.json"
             if (-not (Test-Path -LiteralPath $nodeOwnedMarker) -and -not (Test-Path -LiteralPath $nodeMeta)) {
-                Write-Host "[ERROR] $NodeDir already exists and is not an Unsloth-owned Node install." -ForegroundColor Red
+                Write-Host "[ERROR] $NodeDir already exists and is not a Hyposloth-owned Node install." -ForegroundColor Red
                 Write-Host "        Move it aside or choose an empty UNSLOTH_STUDIO_HOME before re-running." -ForegroundColor Yellow
-                Exit-SetupFailure "$NodeDir is not an Unsloth-owned Node install"
+                Exit-SetupFailure "$NodeDir is not a Hyposloth-owned Node install"
             }
         }
         substep "installing isolated Node (system Node/npm left untouched)..."
@@ -2435,8 +2435,8 @@ if ($NeedNodeForSetup) {
         $nodeExit = $LASTEXITCODE
         if ($nodeExit -eq 3) {
             Write-Host $nodeOut -ForegroundColor DarkGray
-            step "node" "install blocked by another active Unsloth install" "Red"
-            Exit-SetupFailure "Node install is blocked by another active Unsloth install" 3
+            step "node" "install blocked by another active Hyposloth install" "Red"
+            Exit-SetupFailure "Node install is blocked by another active Hyposloth install" 3
         } elseif ($nodeExit -ne 0) {
             Write-Host $nodeOut -ForegroundColor DarkGray
             Write-Host "[ERROR] Could not install an isolated Node automatically." -ForegroundColor Red
@@ -2763,9 +2763,9 @@ if (Test-Path -LiteralPath $LegacyStudioHome -PathType Container) {
     $LegacyStudioHome = (Resolve-Path -LiteralPath $LegacyStudioHome).Path
 }
 $StudioHomeIsCustom = ($_studioHomeCanon -ne $LegacyStudioHome)
-# Directory-local evidence that Unsloth created $Path, used to adopt a custom-home
+# Directory-local evidence that Hyposloth created $Path, used to adopt a custom-home
 # llama.cpp or whisper.cpp predating the .unsloth-studio-owned marker (see
-# setup.sh). Only Unsloth prebuilt markers count; source builds are
+# setup.sh). Only Hyposloth prebuilt markers count; source builds are
 # indistinguishable from a user clone on Windows and stay under the strict guard.
 function Test-StudioOwnedAdoptable {
     param([Parameter(Mandatory = $true)][string]$Path)
@@ -2784,9 +2784,9 @@ function Assert-StudioOwnedOrAbsent {
             Mark-StudioOwned $Path
             return
         }
-        Write-Host "[ERROR] $Path already exists and is not marked as an Unsloth-owned $Label." -ForegroundColor Red
+        Write-Host "[ERROR] $Path already exists and is not marked as a Hyposloth-owned $Label." -ForegroundColor Red
         Write-Host "        Move it aside or choose an empty UNSLOTH_STUDIO_HOME before re-running." -ForegroundColor Yellow
-        Exit-SetupFailure "$Label path is not an Unsloth-owned install: $Path"
+        Exit-SetupFailure "$Label path is not a Hyposloth-owned install: $Path"
     }
 }
 function Mark-StudioOwned {
@@ -2978,9 +2978,9 @@ if ((Test-Path -LiteralPath $VenvDir -PathType Container) -and -not $NoTorchMode
         $reason = if ($installedTorchTag) { "torch $installedTorchTag != required $expectedTorchTag" } else { "torch could not be imported" }
         if ($InstallerManagedSetup) {
             substep "Stale venv detected ($reason)." "Yellow"
-            Write-Host "   [ERROR] The existing Unsloth environment needs repair." -ForegroundColor Red
+            Write-Host "   [ERROR] The existing Hyposloth environment needs repair." -ForegroundColor Red
             Write-Host "           Re-run install.ps1 so it can replace the environment safely with rollback." -ForegroundColor Yellow
-            Exit-SetupFailure "The existing Unsloth environment needs repair"
+            Exit-SetupFailure "The existing Hyposloth environment needs repair"
         }
         substep "Stale venv detected ($reason) -- rebuilding..." "Yellow"
         # why: mirror install.ps1 env-mode guard so an update against a custom
@@ -2992,15 +2992,15 @@ if ((Test-Path -LiteralPath $VenvDir -PathType Container) -and -not $NoTorchMode
             -not (Test-Path -LiteralPath (Join-Path $StudioHome "share\studio.conf") -PathType Leaf) -and
             -not (Test-Path -LiteralPath (Join-Path $StudioHome "bin\unsloth.exe") -PathType Leaf)
         ) {
-            Write-Host "[ERROR] $VenvDir already exists but does not look like an Unsloth Studio install." -ForegroundColor Red
+            Write-Host "[ERROR] $VenvDir already exists but does not look like a Hyposloth Studio install." -ForegroundColor Red
             Write-Host "        Move it aside or choose an empty UNSLOTH_STUDIO_HOME before re-running." -ForegroundColor Yellow
-            Exit-SetupFailure "$VenvDir is not an Unsloth Studio environment"
+            Exit-SetupFailure "$VenvDir is not a Hyposloth Studio environment"
         }
         try {
             Remove-Item -LiteralPath $VenvDir -Recurse -Force -ErrorAction Stop
         } catch {
             Write-Host "   [ERROR] Could not remove stale venv: $($_.Exception.Message)" -ForegroundColor Red
-            Write-Host "           Close any running Unsloth/Python processes and re-run setup." -ForegroundColor Red
+            Write-Host "           Close any running Hyposloth/Python processes and re-run setup." -ForegroundColor Red
             Exit-SetupFailure "Could not remove the stale environment at $VenvDir"
         }
     }
@@ -3230,7 +3230,7 @@ if ($script:UnslothVerbose) {
 # The CUDA tag is chosen based on the driver's max supported CUDA version.
 
 # Triton/inductor filenames are long and can hit Windows MAX_PATH (260). With long
-# paths on, cache under Unsloth home; else use a short drive-root dir for headroom.
+# paths on, cache under Hyposloth home; else use a short drive-root dir for headroom.
 if ($LongPathsEnabled) {
     $TorchCacheDir = Join-Path $StudioHome "TORCHINDUCTOR_CACHE_DIR"
 } else {
@@ -3265,7 +3265,7 @@ $ROCmIndexUrl = $null
 # Install AMD ROCm PyTorch wheels when ROCm is confirmed OR a gfx arch is known
 # (name-inferred on Adrenalin-only hosts). The per-arch wheels bundle the runtime
 # (rocm-sdk-libraries-<gfx>), so torch.cuda.is_available() is True without a HIP
-# SDK -- which flips Unsloth out of chat-only (CHAT_ONLY) and enables Train/Export.
+# SDK -- which flips Hyposloth out of chat-only (CHAT_ONLY) and enables Train/Export.
 # Gating on $HasROCm alone left Strix Halo / Radeon 8060S on CPU torch; a failed
 # ROCm install still falls back to CPU below, so this is safe.
 if (-not $TorchIndexPinned -and ($HasROCm -or $ROCmGfxArch) -and $CuTag -eq "cpu") {
@@ -3812,7 +3812,7 @@ if ($LocalLlamaCppSrc) {
     # Reusing a local dir disables both the prebuilt download and the source
     # build, so a runnable llama-server.exe must already be present. Accept any
     # layout LlamaCppBackend._layout_candidates() resolves (root-level, build\bin,
-    # or build\bin\Release) so the flag never rejects a tree Unsloth could run.
+    # or build\bin\Release) so the flag never rejects a tree Hyposloth could run.
     $LocalLlamaServerFound = $false
     foreach ($_cand in @(
             (Join-Path $ResolvedLocal "llama-server.exe"),
@@ -3834,7 +3834,7 @@ if ($LocalLlamaCppSrc) {
         }
     } else {
         # Fail clearly rather than junction an unbuilt or wrong-platform checkout
-        # and leave Unsloth with no usable binary.
+        # and leave Hyposloth with no usable binary.
         if (-not $LocalLlamaServerFound) {
             step "llama.cpp" "no llama-server.exe under $ResolvedLocal (looked for .\llama-server.exe, .\build\bin and .\build\bin\Release) -- build llama.cpp there first, or drop --with-llama-cpp-dir" "Red"
             Exit-SetupFailure "No llama-server.exe was found under $ResolvedLocal"
@@ -3862,7 +3862,7 @@ if ($LocalLlamaCppSrc) {
             # prebuilt path's active-process handling and stop with a clear message.
             if (Test-Path -LiteralPath $LlamaCppDir) {
                 step "llama.cpp" "install blocked by active llama.cpp process" "Yellow"
-                substep "Close Unsloth or other llama.cpp users and retry" "Yellow"
+                substep "Close Hyposloth or other llama.cpp users and retry" "Yellow"
                 Exit-SetupFailure "llama.cpp install is blocked by an active llama.cpp process" 3
             }
         }
@@ -4038,7 +4038,7 @@ if ($LocalLlamaCppLinked) {
             if (Test-Path -LiteralPath $LlamaCppDir) {
                 substep "Existing install was restored" "Yellow"
             }
-            substep "Close Unsloth or other llama.cpp users and retry" "Yellow"
+            substep "Close Hyposloth or other llama.cpp users and retry" "Yellow"
             Exit-SetupFailure "llama.cpp install is blocked by an active llama.cpp process" 3
         } elseif ($prebuiltExit -eq 4) {
             step "llama.cpp" "not enough disk space to install llama.cpp" "Yellow"
@@ -4758,7 +4758,7 @@ if ($LocalLlamaCppLinked) {
     }
 
     # -- Step E: Build the DiffusionGemma visual server (optional, best-effort) --
-    # An example target present on llama.cpp PR #24423; lets Unsloth serve
+    # An example target present on llama.cpp PR #24423; lets Hyposloth serve
     # DiffusionGemma GGUFs without DG_VISUAL_BIN. No-op when not configured.
     if ($BuildOk) {
         $null = cmake --build $BuildDir --config Release --target llama-diffusion-gemma-visual-server -j $NumCpu 2>&1 | Out-String
@@ -4823,7 +4823,7 @@ if (-not $llamaCppIsLink -and (
 # ─────────────────────────────────────────────
 # Footer
 # ─────────────────────────────────────────────
-$DoneLabel = if ($env:SKIP_STUDIO_BASE -eq "1") { "Unsloth Studio Setup Complete" } else { "Unsloth Studio Updated" }
+$DoneLabel = if ($env:SKIP_STUDIO_BASE -eq "1") { "Hyposloth Studio Setup Complete" } else { "Hyposloth Studio Updated" }
 if ($script:StudioVtOk -and -not $env:NO_COLOR) {
     Write-Host ("  {0}{1}{2}" -f (Get-StudioAnsi Dim), $Rule, (Get-StudioAnsi Reset))
     if ($script:LlamaCppDegraded) {

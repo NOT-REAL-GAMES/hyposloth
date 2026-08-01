@@ -486,7 +486,7 @@ def test_verify_public_url_accepts_studio_marker(monkeypatch):
 
     def handler(req):
         seen["url"] = req.full_url
-        return _FakeResponse(b'{"status":"healthy","service":"Unsloth UI Backend"}')
+        return _FakeResponse(b'{"status":"healthy","service":"Hyposloth UI Backend"}')
 
     _patch_urlopen(monkeypatch, handler)
     assert ct.verify_public_url("https://words.trycloudflare.com") is True
@@ -499,7 +499,7 @@ def test_verify_public_url_waits_for_dns_first(monkeypatch):
 
     def handler(req):
         order.append(("probe", req.full_url))
-        return _FakeResponse(b'{"service":"Unsloth UI Backend"}')
+        return _FakeResponse(b'{"service":"Hyposloth UI Backend"}')
 
     _patch_urlopen(monkeypatch, handler)
     assert ct.verify_public_url("https://words.trycloudflare.com") is True
@@ -528,7 +528,7 @@ def test_verify_public_url_retries_then_succeeds(monkeypatch):
         calls.append(req.full_url)
         if len(calls) < 3:
             raise OSError("Name or service not known")
-        return _FakeResponse(b'{"service":"Unsloth UI Backend"}')
+        return _FakeResponse(b'{"service":"Hyposloth UI Backend"}')
 
     _patch_urlopen(monkeypatch, handler)
     monkeypatch.setattr(ct.time, "sleep", lambda _s: None)

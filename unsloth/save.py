@@ -246,7 +246,7 @@ def _loaded_via_remote_code(obj):
 
     Transformers loads auto_map code into the ``transformers_modules`` package, so a
     ``transformers_modules`` class proves the original load actually ran that remote code
-    (which the caller's / Unsloth's consent gate scans at load time). Export paths derive their
+    (which the caller's / Hyposloth's consent gate scans at load time). Export paths derive their
     reload trust_remote_code from this - the already approved load decision - instead of from a
     checkpoint's static ``auto_map``: a model that loads with built-in classes must not have its
     unvetted remote code run when it is re-read during quantization export. Walks PEFT / wrapper
@@ -302,7 +302,7 @@ def _normalize_compressed_method(save_method):
     if any(tag in key for tag in ("fp8", "fp4", "mxfp", "nvfp", "w4a", "w8a", "int4", "int8")):
         supported = ", ".join(sorted(COMPRESSED_EXPORT_SCHEMES.keys()))
         raise RuntimeError(
-            f"Unsloth: save_method='{save_method}' is not a supported compressed export.\n"
+            f"Hyposloth: save_method='{save_method}' is not a supported compressed export.\n"
             f"Supported compressed-tensors export methods: {supported}"
         )
     return None
@@ -355,7 +355,7 @@ def _quantize_q2_k_l(
     print_output: bool = True,
     imatrix = None,
 ):
-    # "Q2_K_L" is an Unsloth preset, not a native llama.cpp ftype: q2_k with
+    # "Q2_K_L" is a Hyposloth preset, not a native llama.cpp ftype: q2_k with
     # output/token-embedding tensors kept at q8_0 for higher precision.
     command = [
         str(quantizer_location),
@@ -372,7 +372,7 @@ def _quantize_q2_k_l(
 
     if print_output:
         print(
-            "Unsloth: Quantizing as Q2_K_L preset "
+            "Hyposloth: Quantizing as Q2_K_L preset "
             "(q2_k + --output-tensor-type q8_0 --token-embedding-type q8_0)..."
         )
 
@@ -424,7 +424,7 @@ def _quantize_q2_k_l(
     if print_output:
         file_size_bytes = output_path.stat().st_size
         file_size_gb = file_size_bytes / (1024**3)
-        print(f"Unsloth: Successfully quantized to {output_gguf} (size: {file_size_gb:.2f}GB)")
+        print(f"Hyposloth: Successfully quantized to {output_gguf} (size: {file_size_gb:.2f}GB)")
     return str(output_gguf)
 
 
@@ -526,7 +526,7 @@ def _preserve_sentencepiece_tokenizer_assets(
                     json.dump(tokenizer_config, file, indent = 2, ensure_ascii = False)
                     file.write("\n")
                 logger.warning_once(
-                    f"Unsloth: Restored added_tokens_decoder metadata in "
+                    f"Hyposloth: Restored added_tokens_decoder metadata in "
                     f"{tokenizer_config_path}."
                 )
 
@@ -574,7 +574,7 @@ def _preserve_sentencepiece_tokenizer_assets(
     if not os.path.isfile(tokenizer_model) and downloaded_path is not None:
         shutil.copy2(downloaded_path, tokenizer_model)
         logger.warning_once(
-            f"Unsloth: Preserved sentencepiece asset `tokenizer.model` in " f"{save_directory}."
+            f"Hyposloth: Preserved sentencepiece asset `tokenizer.model` in " f"{save_directory}."
         )
 
 
@@ -592,7 +592,7 @@ def _free_cached_model(model):
             )
 
             logger.warning_once(
-                "Unsloth: Will remove a cached repo with size "
+                "Hyposloth: Will remove a cached repo with size "
                 + delete_strategy.expected_freed_size_str,
             )
 
@@ -620,7 +620,7 @@ def _merge_lora(layer, name):
             # if not torch.isfinite(W).all():
             maximum_element = torch.max(W.min().abs(), W.max())
             if not torch.isfinite(maximum_element).item():
-                raise ValueError(f"Unsloth: Merge failed.\n{name} has some elements = infinity.")
+                raise ValueError(f"Hyposloth: Merge failed.\n{name} has some elements = infinity.")
         W = W.t().to(dtype)
     else:
         W = layer.weight
@@ -629,7 +629,7 @@ def _merge_lora(layer, name):
 
 def fast_save_pickle(shard, name):
     # Use this if # CPUs is <= 2
-    print(f"Unsloth: Saving {name}...")
+    print(f"Hyposloth: Saving {name}...")
     torch.save(
         shard,
         name,
@@ -690,7 +690,7 @@ def _preserve_tokenizer_eos_token(
             file.write("\n")
     except Exception as error:
         logger.warning_once(
-            f"Unsloth: Could not preserve tokenizer eos_token in {tokenizer_config}: {error}"
+            f"Hyposloth: Could not preserve tokenizer eos_token in {tokenizer_config}: {error}"
         )
 
 
@@ -808,11 +808,11 @@ def unsloth_save_model(
     save_peft_format: bool = True,
     # Push to hub
     use_temp_dir: Optional[bool] = None,
-    commit_message: Optional[str] = "Trained with Unsloth",
+    commit_message: Optional[str] = "Trained with Hyposloth",
     private: Optional[bool] = None,
     create_pr: bool = False,
     revision: str = None,
-    commit_description: str = "Upload model trained with Unsloth 2x faster",
+    commit_description: str = "Upload model trained with Hyposloth 2x faster",
     tags: List[str] = None,
     # Our functions
     temporary_location: str = "_unsloth_temporary_saved_buffers",
@@ -827,18 +827,18 @@ def unsloth_save_model(
 
     if commit_message is None:
         commit_message = ""
-    if "Unsloth" not in commit_message:
-        commit_message += " (Trained with Unsloth)"
+    if "Hyposloth" not in commit_message:
+        commit_message += " (Trained with Hyposloth)"
     commit_message = commit_message.lstrip()
 
     if commit_description is None:
-        commit_description = "Upload model trained with Unsloth 2x faster"
-    elif "Unsloth 2x faster" not in commit_description:
-        commit_description += " (Trained with Unsloth 2x faster)"
+        commit_description = "Upload model trained with Hyposloth 2x faster"
+    elif "Hyposloth 2x faster" not in commit_description:
+        commit_description += " (Trained with Hyposloth 2x faster)"
 
     if save_method == "merged_4bit":
         raise RuntimeError(
-            "Unsloth: Merging into 4bit will cause your model to lose accuracy if you plan\n"
+            "Hyposloth: Merging into 4bit will cause your model to lose accuracy if you plan\n"
             "to merge to GGUF or others later on. I suggest you to do this as a final step\n"
             "if you're planning to do multiple saves.\n"
             "If you are certain, change `save_method` to `merged_4bit_forced`."
@@ -877,14 +877,14 @@ def unsloth_save_model(
     save_method = save_method.lower().replace(" ", "_")
     if save_method != "lora" and save_method != "merged_16bit" and save_method != "merged_4bit":
         raise RuntimeError(
-            "Unsloth: You must select one of 3 options when saving models:\n"
+            "Hyposloth: You must select one of 3 options when saving models:\n"
             '"lora"         ==> This is the fastest and easiet. Just saves LoRA modules.\n'
             '"merged_16bit" ==> This merges LoRA weights and saves to float16. Needed for llama.cpp / GGUF.\n'
             '"merged_4bit"  ==> This merges LoRA weights and saves to 4bit. Useful for DPO / inference.'
         )
 
     if save_method == "merged_4bit":
-        print("Unsloth: Merging 4bit and LoRA weights to 4bit...")
+        print("Hyposloth: Merging 4bit and LoRA weights to 4bit...")
         print("This might take 5 minutes...")
 
         # Counteract no LoRA adapters!
@@ -906,14 +906,14 @@ def unsloth_save_model(
     if ((save_method == "lora") or (save_method == "merged_4bit")) and push_to_hub:
         if token is None:
             raise RuntimeError(
-                "Unsloth: Pushing to HF requires a token. Pass `token = 'hf_....'`\n"
+                "Hyposloth: Pushing to HF requires a token. Pass `token = 'hf_....'`\n"
                 "Go to https://huggingface.co/settings/tokens."
             )
 
         if save_method == "lora":
-            print("Unsloth: Saving LoRA adapters. Please wait...")
+            print("Hyposloth: Saving LoRA adapters. Please wait...")
         elif save_method == "merged_4bit":
-            print("Unsloth: Saving 4bit Bitsandbytes model. Please wait...")
+            print("Hyposloth: Saving 4bit Bitsandbytes model. Please wait...")
 
         # Update model tag
         _ = upload_to_huggingface(
@@ -1038,7 +1038,7 @@ def unsloth_save_model(
             )
 
         if tokenizer is not None:
-            print("Unsloth: Saving tokenizer...", end = "")
+            print("Hyposloth: Saving tokenizer...", end = "")
 
             # Set padding side to left for inference
             _tokenizer = tokenizer.tokenizer if hasattr(tokenizer, "tokenizer") else tokenizer
@@ -1054,7 +1054,7 @@ def unsloth_save_model(
         else:
             print()
 
-        print("Unsloth: Saving model...", end = "")
+        print("Hyposloth: Saving model...", end = "")
         if save_method != "lora":
             print(" This might take 10 minutes for Llama-7b...", end = "")
 
@@ -1082,12 +1082,12 @@ def unsloth_save_model(
                 KAGGLE_TMP, new_save_directory[new_save_directory.find("/") + 1 :]
             )
             logger.warning_once(
-                "Unsloth: You are pushing to hub in Kaggle environment.\n"
+                "Hyposloth: You are pushing to hub in Kaggle environment.\n"
                 f"To save memory, we shall move {save_directory} to {new_save_directory}"
             )
         else:
             logger.warning_once(
-                f"Unsloth: You are pushing to hub, but you passed your HF username = {username}.\n"
+                f"Hyposloth: You are pushing to hub, but you passed your HF username = {username}.\n"
                 f"We shall truncate {save_directory} to {new_save_directory}"
             )
 
@@ -1095,7 +1095,7 @@ def unsloth_save_model(
         tokenizer_save_settings["save_directory"] = new_save_directory
         save_directory = new_save_directory
 
-    print("Unsloth: Merging 4bit and LoRA weights to 16bit...")
+    print("Hyposloth: Merging 4bit and LoRA weights to 16bit...")
 
     # Determine max RAM usage minus sharding
     max_ram = psutil.virtual_memory().available
@@ -1123,7 +1123,7 @@ def unsloth_save_model(
 
     elif safe_serialization and (n_cpus <= 2):
         logger.warning_once(
-            f"Unsloth: You have {n_cpus} CPUs. Using `safe_serialization` is 10x slower.\n"
+            f"Hyposloth: You have {n_cpus} CPUs. Using `safe_serialization` is 10x slower.\n"
             f"We shall switch to Pytorch saving, which might take 3 minutes and not 30 minutes.\n"
             f"To force `safe_serialization`, set it to `None` instead.",
         )
@@ -1140,7 +1140,7 @@ def unsloth_save_model(
 
     max_ram = int(max(0, max_ram) * maximum_memory_usage)
     print(
-        f"Unsloth: Will use up to "
+        f"Hyposloth: Will use up to "
         f"{round(max_ram/1024/1024/1024, 2)} out of "
         f"{round(psutil.virtual_memory().total/1024/1024/1024, 2)} RAM for saving."
     )
@@ -1157,7 +1157,7 @@ def unsloth_save_model(
     if IS_KAGGLE_ENVIRONMENT or IS_COLAB_ENVIRONMENT:
         # We free up 4GB of space
         logger.warning_once(
-            "Unsloth: Kaggle/Colab has limited disk space. We need to delete the downloaded\n"
+            "Hyposloth: Kaggle/Colab has limited disk space. We need to delete the downloaded\n"
             "model which will save 4-16GB of disk space, allowing you to save on Kaggle/Colab."
         )
         _free_cached_model(internal_model)
@@ -1193,7 +1193,7 @@ def unsloth_save_model(
             )
         return _max_vram_by_device[idx]
 
-    print("Unsloth: Saving model... This might take 5 minutes ...")
+    print("Hyposloth: Saving model... This might take 5 minutes ...")
 
     from tqdm import tqdm as ProgressBar
 
@@ -1259,7 +1259,7 @@ def unsloth_save_model(
         if hasattr(value, "data"):
             state_dict[key] = value = value.data
         if type(value) is not torch.Tensor:
-            logger.warning_once(f"Unsloth: {key} is not a Tensor but a {type(value)}.")
+            logger.warning_once(f"Hyposloth: {key} is not a Tensor but a {type(value)}.")
 
     # Edit save_pretrained_settings
     # [TODO] _create_repo has errors due to **kwargs getting accepted
@@ -1321,14 +1321,14 @@ def unsloth_save_model(
 
     # Check if pushing to an organization
     if save_pretrained_settings["push_to_hub"] and (username != actual_username):
-        print(f"Unsloth: Saving to organization with address {new_save_directory}")
+        print(f"Hyposloth: Saving to organization with address {new_save_directory}")
         # We upload everything at the end!
         tokenizer_save_settings["push_to_hub"] = False
         tokenizer_save_settings["save_directory"] = new_save_directory
 
     # Save tokenizer
     if tokenizer is not None:
-        print("Unsloth: Saving tokenizer...", end = "")
+        print("Hyposloth: Saving tokenizer...", end = "")
 
         # Set padding side to left for inference
         _tokenizer = tokenizer.tokenizer if hasattr(tokenizer, "tokenizer") else tokenizer
@@ -1367,7 +1367,7 @@ def unsloth_save_model(
 
     # Check if pushing to an organization
     if save_pretrained_settings["push_to_hub"] and (username != actual_username):
-        print(f"Unsloth: Saving to organization with address {new_save_directory}")
+        print(f"Hyposloth: Saving to organization with address {new_save_directory}")
         # Pushing to organization: .save_pretrained doesn't work, so save
         # locally first then upload manually.
         save_pretrained_settings["save_directory"] = new_save_directory
@@ -1379,13 +1379,13 @@ def unsloth_save_model(
 
         hf_api = HfApi(token = save_pretrained_settings["token"])
 
-        print("Unsloth: Uploading all files... Please wait...")
+        print("Hyposloth: Uploading all files... Please wait...")
         hf_api.upload_folder(
             folder_path = new_save_directory,
             path_in_repo = ".",
             repo_id = new_save_directory,
             repo_type = "model",
-            commit_message = "(Trained with Unsloth)",
+            commit_message = "(Trained with Hyposloth)",
             ignore_patterns = "*.md",
         )
     else:
@@ -1473,7 +1473,7 @@ def install_llama_cpp_make_non_blocking():
 
         if check != 0:
             raise RuntimeError(
-                f"*** Unsloth: Failed compiling llama.cpp using os.system(...) with error {check}. Please report this ASAP!"
+                f"*** Hyposloth: Failed compiling llama.cpp using os.system(...) with error {check}. Please report this ASAP!"
             )
         # f"cmake --build llama.cpp/build --config Release -j{psutil.cpu_count()*2} --clean-first --target {' '.join(LLAMA_CPP_TARGETS)}",
         full_command = [
@@ -1542,7 +1542,7 @@ def _transformers_exceeds_llm_compressor_ceiling(transformers_version = None):
         return False, str(transformers_version)
 
 
-# A caller (e.g. Unsloth Studio) can enable FP8/FP4 export of newer-transformers models (Qwen3.5,
+# A caller (e.g. Hyposloth Studio) can enable FP8/FP4 export of newer-transformers models (Qwen3.5,
 # Gemma-4, ...) by provisioning a dedicated llm-compressor-main "shadow" (transformers>=5.9 layered
 # over the existing torch) and pointing us at its sys.path entry via this env var. When set, the
 # quantization subprocess uses it instead of the workspace llm-compressor and the ceiling fail-fast
@@ -1578,7 +1578,7 @@ def install_llm_compressor():
         "no",
     ):
         raise RuntimeError(
-            "Unsloth: llm-compressor is required for FP8/FP4 compressed export but is not "
+            "Hyposloth: llm-compressor is required for FP8/FP4 compressed export but is not "
             "installed, and automatic installation is disabled via "
             "UNSLOTH_DISABLE_LLM_COMPRESSOR_AUTOINSTALL. Install it manually with:\n"
             f"    uv pip install --python {sys.executable} '{_LLM_COMPRESSOR_SPEC}'\n"
@@ -1586,7 +1586,7 @@ def install_llm_compressor():
         )
 
     print(
-        "Unsloth: Installing llm-compressor for FP8/FP4 export "
+        "Hyposloth: Installing llm-compressor for FP8/FP4 export "
         f"({_LLM_COMPRESSOR_SPEC}; pinning your torch + transformers so they are not upgraded). "
         "This can take a few minutes..."
     )
@@ -1615,7 +1615,7 @@ def install_llm_compressor():
         cmd = ["uv", "pip", "install", "--python", sys.executable, _LLM_COMPRESSOR_SPEC]
     else:
         raise RuntimeError(
-            "Unsloth: cannot install llm-compressor because this environment has neither pip nor "
+            "Hyposloth: cannot install llm-compressor because this environment has neither pip nor "
             f"uv. Install it manually with:\n    uv pip install --python {sys.executable} '{_LLM_COMPRESSOR_SPEC}'\n"
             "(pin torch and transformers to your current versions to avoid upgrading them)."
         )
@@ -1629,7 +1629,7 @@ def install_llm_compressor():
         subprocess.check_call(cmd)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(
-            "Unsloth: Failed to install llm-compressor. Install it manually with:\n"
+            "Hyposloth: Failed to install llm-compressor. Install it manually with:\n"
             f"    uv pip install --python {sys.executable} '{_LLM_COMPRESSOR_SPEC}'\n"
             f"or, if pip is available:\n    {sys.executable} -m pip install '{_LLM_COMPRESSOR_SPEC}'\n"
             "(pin torch and transformers to your current versions to avoid upgrading them).\n"
@@ -1648,7 +1648,7 @@ def install_llm_compressor():
         from llmcompressor.modifiers.quantization import QuantizationModifier
     except Exception as e:
         raise RuntimeError(
-            "Unsloth: llm-compressor was installed but could not be imported. "
+            "Hyposloth: llm-compressor was installed but could not be imported. "
             "Please restart your Python session and try again.\n"
             f"Underlying error: {repr(e)}"
         )
@@ -1668,17 +1668,17 @@ def try_execute(commands, force_complete = False):
                 line = line.decode("utf-8", errors = "replace")
                 if "undefined reference" in line:
                     raise RuntimeError(
-                        f"*** Unsloth: Failed compiling llama.cpp with {line}. Please report this ASAP!"
+                        f"*** Hyposloth: Failed compiling llama.cpp with {line}. Please report this ASAP!"
                     )
                 elif "deprecated" in line:
                     return "CMAKE"
                 elif "Unknown argument" in line:
                     raise RuntimeError(
-                        f"*** Unsloth: Failed compiling llama.cpp with {line}. Please report this ASAP!"
+                        f"*** Hyposloth: Failed compiling llama.cpp with {line}. Please report this ASAP!"
                     )
                 elif "***" in line:
                     raise RuntimeError(
-                        f"*** Unsloth: Failed compiling llama.cpp with {line}. Please report this ASAP!"
+                        f"*** Hyposloth: Failed compiling llama.cpp with {line}. Please report this ASAP!"
                     )
                 print(line, flush = True, end = "")
             if force_complete and sp.returncode is not None and sp.returncode != 0:
@@ -1704,7 +1704,7 @@ def install_llama_cpp_old(version = -10):
     if os.path.exists("llama.cpp"):
         print(
             "**[WARNING]** You have a llama.cpp directory which is broken.\n"
-            "Unsloth will DELETE the broken directory and install a new one.\n"
+            "Hyposloth will DELETE the broken directory and install a new one.\n"
             "Press CTRL + C / cancel this if this is wrong. We shall wait 30 seconds.\n"
         )
         import time
@@ -1754,7 +1754,7 @@ def install_llama_cpp_old(version = -10):
         or os.path.exists("llama.cpp/build/bin/quantize")
     ):
         raise RuntimeError(
-            "Unsloth: The file 'llama.cpp/llama-quantize' or `llama.cpp/quantize` does not exist.\n"
+            "Hyposloth: The file 'llama.cpp/llama-quantize' or `llama.cpp/quantize` does not exist.\n"
             "We've also double checked the building directory under 'llama.cpp/build/bin/'.\n"
             "But we expect this file to exist! Check if the file exists under llama.cpp and investigate the building process of llama.cpp (make/cmake)!"
         )
@@ -1875,12 +1875,12 @@ def save_to_gguf(
     elif isinstance(quantization_method, tuple):
         quantization_method = list(quantization_method)
     else:
-        raise TypeError("Unsloth: quantization_method can only be a string or a list of strings")
+        raise TypeError("Hyposloth: quantization_method can only be a string or a list of strings")
 
     # Check if bfloat16 is supported
     if model_dtype == "bf16" and not torch.cuda.is_bf16_supported():
         logger.warning(
-            "Unsloth: Cannot convert to bf16 GGUF since your computer doesn't support it.\n"
+            "Hyposloth: Cannot convert to bf16 GGUF since your computer doesn't support it.\n"
             "We shall switch instead to f16."
         )
         model_dtype = "f16"
@@ -1892,7 +1892,7 @@ def save_to_gguf(
         import inspect
         if "imatrix" not in inspect.signature(quantize_gguf).parameters:
             raise RuntimeError(
-                "Unsloth: your installed unsloth_zoo's quantize_gguf does not support imatrix.\n"
+                "Hyposloth: your installed unsloth_zoo's quantize_gguf does not support imatrix.\n"
                 "Please upgrade it:  uv pip install --upgrade unsloth_zoo"
             )
 
@@ -1912,12 +1912,12 @@ def save_to_gguf(
         if quant_method in IMATRIX_QUANTS:
             if not has_imatrix:
                 raise RuntimeError(
-                    f"Unsloth: quant method '{quant_method}' is an IQ low-bit quant that requires an "
-                    "importance matrix. Pass imatrix_file=True (to fetch the upstream Unsloth imatrix) "
+                    f"Hyposloth: quant method '{quant_method}' is an IQ low-bit quant that requires an "
+                    "importance matrix. Pass imatrix_file=True (to fetch the upstream Hyposloth imatrix) "
                     "or imatrix_file='/path/to/imatrix' to save_pretrained_gguf / push_to_hub_gguf."
                 )
         elif quant_method not in ALLOWED_QUANTS.keys():
-            error = f"Unsloth: Quant method = [{quant_method}] not supported. Choose from below:\n"
+            error = f"Hyposloth: Quant method = [{quant_method}] not supported. Choose from below:\n"
             for key, value in ALLOWED_QUANTS.items():
                 error += f"[{key}] => {value}\n"
             for key, value in IMATRIX_QUANTS.items():
@@ -1929,7 +1929,7 @@ def save_to_gguf(
 
     # Determine optimal first_conversion
     if is_gpt_oss:
-        print("Unsloth: GPT-OSS model detected - using special conversion settings")
+        print("Hyposloth: GPT-OSS model detected - using special conversion settings")
         first_conversion = "None"  # No quantization for GPT-OSS
         # Only keep one conversion method since GPT-OSS doesn't quantize
         quantization_method = ["None"]
@@ -1942,7 +1942,7 @@ def save_to_gguf(
 
     # Check bfloat16 support again for first_conversion
     if first_conversion == "bf16" and not torch.cuda.is_bf16_supported():
-        logger.warning("Unsloth: Switching bf16 to f16 due to hardware limitations")
+        logger.warning("Hyposloth: Switching bf16 to f16 due to hardware limitations")
         first_conversion = "f16"
 
     first_conversion_dtype = "" if first_conversion == "None" else first_conversion
@@ -1955,7 +1955,7 @@ def save_to_gguf(
         second_step = f"[2] Single-pass export: converting straight to {quantization_method} - no separate quantize step."
         total_line = "In total, you will have to wait at least 6 minutes."
     print_info = (
-        f"==((====))==  Unsloth: Conversion from HF to GGUF information\n"
+        f"==((====))==  Hyposloth: Conversion from HF to GGUF information\n"
         f"   {chr(92)}{chr(92)}   /|    [0] Installing llama.cpp might take 3 minutes.\n"
         f"O^O/ {chr(92)}_/ {chr(92)}    [1] Converting HF to GGUF {first_conversion_dtype} might take 3 minutes.\n"
         f"{chr(92)}        /    {second_step}\n"
@@ -1966,9 +1966,9 @@ def save_to_gguf(
     # Step 1: Ensure llama.cpp is installed
     try:
         quantizer_location, converter_location = check_llama_cpp()
-        print("Unsloth: llama.cpp found in the system. Skipping installation.")
+        print("Hyposloth: llama.cpp found in the system. Skipping installation.")
     except:
-        print("Unsloth: Installing llama.cpp. This might take 3 minutes...")
+        print("Hyposloth: Installing llama.cpp. This might take 3 minutes...")
         if IS_KAGGLE_ENVIRONMENT:
             # Kaggle: no CUDA support due to environment limitations
             quantizer_location, converter_location = install_llama_cpp(
@@ -1981,14 +1981,14 @@ def save_to_gguf(
             )
 
     # Step 2: Download and patch converter script
-    print("Unsloth: Preparing converter script...")
+    print("Hyposloth: Preparing converter script...")
     with use_local_gguf():
         converter_path, supported_text_archs, supported_vision_archs = (
             _download_convert_hf_to_gguf()
         )
 
         # Step 3: Initial GGUF conversion
-        print(f"Unsloth: [1] Converting model into {first_conversion_dtype} GGUF format.")
+        print(f"Hyposloth: [1] Converting model into {first_conversion_dtype} GGUF format.")
         print(f"This might take 3 minutes...")
 
         initial_files, is_vlm_update = convert_to_gguf(
@@ -2011,14 +2011,14 @@ def save_to_gguf(
         if not os.path.exists(file):
             if IS_KAGGLE_ENVIRONMENT:
                 raise RuntimeError(
-                    f"Unsloth: Conversion failed for {file}\n"
+                    f"Hyposloth: Conversion failed for {file}\n"
                     "You are in a Kaggle environment with limited disk space (20GB).\n"
                     "Try saving to /tmp for more space or use a smaller model.\n"
                     "Alternatively, save the 16bit model first, then convert manually."
                 )
             else:
                 raise RuntimeError(
-                    f"Unsloth: Conversion failed for {file}\n"
+                    f"Hyposloth: Conversion failed for {file}\n"
                     "Please check disk space and try again."
                 )
 
@@ -2032,7 +2032,7 @@ def save_to_gguf(
         moved_files.append(dst)
     initial_files = moved_files
 
-    print(f"Unsloth: Initial conversion completed! Files: {initial_files}")
+    print(f"Hyposloth: Initial conversion completed! Files: {initial_files}")
 
     # Step 4: Additional quantizations using llama-quantize
     all_saved_locations = initial_files.copy()
@@ -2085,7 +2085,7 @@ def save_to_gguf(
             except Exception as e:
                 if IS_KAGGLE_ENVIRONMENT:
                     raise RuntimeError(
-                        f"Unsloth: Quantization failed for {output_location}\n"
+                        f"Hyposloth: Quantization failed for {output_location}\n"
                         "You are in a Kaggle environment, which might be the reason this is failing.\n"
                         "Kaggle only provides 20GB of disk space in the working directory.\n"
                         "Merging to 16bit for 7b models use 16GB of space.\n"
@@ -2108,7 +2108,7 @@ def save_to_gguf(
                         )
 
                     raise RuntimeError(
-                        f"Unsloth: Quantization failed for {output_location}\n"
+                        f"Hyposloth: Quantization failed for {output_location}\n"
                         "You might have to compile llama.cpp yourself, then run this again.\n"
                         "You do not need to close this Python program. Run the following commands in a new terminal:\n"
                         f'git clone --recursive https://github.com/ggerganov/llama.cpp "{LLAMA_CPP_DEFAULT_DIR}"\n'
@@ -2153,7 +2153,7 @@ def save_to_gguf(
             # Split the thread budget so total threads match the sequential run.
             per_worker_threads = max(1, n_cpus // max_workers)
             print(
-                f"Unsloth: [2] Converting GGUF {first_conversion_dtype} into "
+                f"Hyposloth: [2] Converting GGUF {first_conversion_dtype} into "
                 f"{methods_to_quantize}, {max_workers} at a time. This might take 10 minutes each..."
             )
             from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
@@ -2187,13 +2187,13 @@ def save_to_gguf(
             quantized_files = []
             for quant_method in methods_to_quantize:
                 print(
-                    f"Unsloth: [2] Converting GGUF {first_conversion_dtype} into {quant_method}. This might take 10 minutes..."
+                    f"Hyposloth: [2] Converting GGUF {first_conversion_dtype} into {quant_method}. This might take 10 minutes..."
                 )
                 quantized_files.append(_quantize_one(quant_method))
 
         all_saved_locations.extend(quantized_files)
         quants_created = len(quantized_files) > 0
-        print("Unsloth: Model files cleanup...")
+        print("Hyposloth: Model files cleanup...")
         want_full_precision = first_conversion in quantization_method
         if quants_created:
             # convert_to_gguf may return multiple base shards plus an mmproj entry,
@@ -2217,10 +2217,10 @@ def save_to_gguf(
                 for i, f in enumerate(base_files):
                     all_saved_locations.insert(1 + i, f)
     else:
-        print("Unsloth: GPT-OSS model - skipping additional quantizations")
+        print("Hyposloth: GPT-OSS model - skipping additional quantizations")
         want_full_precision = True
 
-    print(f"Unsloth: All GGUF conversions completed successfully!")
+    print(f"Hyposloth: All GGUF conversions completed successfully!")
     print(f"Generated files: {all_saved_locations}")
 
     return all_saved_locations, want_full_precision, is_vlm
@@ -2262,7 +2262,7 @@ def unsloth_save_pretrained_merged(
     """
     if tokenizer is None:
         logger.warning_once(
-            "Unsloth: You're not saving a tokenizer as well?\n"
+            "Hyposloth: You're not saving a tokenizer as well?\n"
             "You can do it separately via `tokenizer.save_pretrained(...)`"
         )
 
@@ -2347,14 +2347,14 @@ def unsloth_push_to_hub_merged(
     tokenizer = None,
     save_method: str = "merged_16bit",  # ["lora", "merged_16bit", "merged_4bit", "fp8", "mxfp4", "nvfp4", "mxfp8"]
     use_temp_dir: Optional[bool] = None,
-    commit_message: Optional[str] = "Trained with Unsloth",
+    commit_message: Optional[str] = "Trained with Hyposloth",
     private: Optional[bool] = None,
     token: Union[bool, str, None] = None,
     max_shard_size: Union[int, str, None] = "5GB",
     create_pr: bool = False,
     safe_serialization: bool = True,
     revision: str = None,
-    commit_description: str = "Upload model trained with Unsloth 2x faster",
+    commit_description: str = "Upload model trained with Hyposloth 2x faster",
     tags: Optional[List[str]] = None,
     temporary_location: str = "_unsloth_temporary_saved_buffers",
     maximum_memory_usage: float = 0.75,
@@ -2375,7 +2375,7 @@ def unsloth_push_to_hub_merged(
     """
     if tokenizer is None:
         logger.warning_once(
-            "Unsloth: You're not saving a tokenizer as well?\n"
+            "Hyposloth: You're not saving a tokenizer as well?\n"
             "You can do it separately via `tokenizer.push_to_hub(...)`"
         )
 
@@ -2496,7 +2496,7 @@ def _determine_username(save_directory, old_username, token):
                 username = old_username
             save_directory = f"{username}/{save_directory}"
         except:
-            raise RuntimeError(f"Unsloth: {save_directory} is not a Huggingface directory.")
+            raise RuntimeError(f"Hyposloth: {save_directory} is not a Huggingface directory.")
     else:
         username = save_directory.split("/")[0]
     return save_directory, username
@@ -2546,7 +2546,7 @@ def create_huggingface_repo(
                 metadata_update(save_directory, {"datasets": datasets}, overwrite = True, token = token)
             except Exception as e:
                 logger.warning_once(
-                    f"Unsloth: Could not update datasets metadata for {save_directory}: {e}"
+                    f"Hyposloth: Could not update datasets metadata for {save_directory}: {e}"
                 )
     hf_api = HfApi(token = token)
     return save_directory, hf_api
@@ -2599,7 +2599,7 @@ def upload_to_huggingface(
                 metadata_update(save_directory, {"datasets": datasets}, overwrite = True, token = token)
             except Exception as e:
                 logger.warning_once(
-                    f"Unsloth: Could not update datasets metadata for {save_directory}: {e}"
+                    f"Hyposloth: Could not update datasets metadata for {save_directory}: {e}"
                 )
 
     if file_location is not None:
@@ -2617,7 +2617,7 @@ def upload_to_huggingface(
         ftevent_files = glob.glob("*out.tfevents*", recursive = True)
         if len(ftevent_files) > 0:
             print(
-                "Unsloth: Uploading tensorboard files... Please wait...",
+                "Hyposloth: Uploading tensorboard files... Please wait...",
                 file_location + "*out.tfevents*",
             )
             for ftevent_file in ftevent_files:
@@ -2626,7 +2626,7 @@ def upload_to_huggingface(
                     path_in_repo = ftevent_file.replace(file_location, ""),
                     repo_id = save_directory,
                     repo_type = "model",
-                    commit_message = "(Trained with Unsloth)",
+                    commit_message = "(Trained with Hyposloth)",
                 )
 
         hf_api.upload_file(
@@ -2634,7 +2634,7 @@ def upload_to_huggingface(
             path_in_repo = uploaded_location,
             repo_id = save_directory,
             repo_type = "model",
-            commit_message = "(Trained with Unsloth)",
+            commit_message = "(Trained with Hyposloth)",
         )
 
         # We also upload a config.json file
@@ -2648,7 +2648,7 @@ def upload_to_huggingface(
                 path_in_repo = "config.json",
                 repo_id = save_directory,
                 repo_type = "model",
-                commit_message = "(Trained with Unsloth)",
+                commit_message = "(Trained with Hyposloth)",
             )
             os.remove("_temporary_unsloth_config.json")
     return username
@@ -2667,8 +2667,8 @@ def fix_tokenizer_bos_token(tokenizer):
         ):
             fix_bos_token = True
             logger.warning(
-                "Unsloth: ##### The current model auto adds a BOS token.\n"
-                "Unsloth: ##### Your chat template has a BOS token. We shall remove it temporarily."
+                "Hyposloth: ##### The current model auto adds a BOS token.\n"
+                "Hyposloth: ##### Your chat template has a BOS token. We shall remove it temporarily."
             )
 
             # Remove {{bos_token}}
@@ -2695,13 +2695,13 @@ def create_ollama_modelfile(tokenizer, base_model_name, model_location):
     ollama_template_name = MODEL_TO_OLLAMA_TEMPLATE_MAPPER.get(base_model_name)
     if not ollama_template_name:
         print(
-            f"Unsloth: No Ollama template mapping found for model '{base_model_name}'. Skipping Ollama Modelfile"
+            f"Hyposloth: No Ollama template mapping found for model '{base_model_name}'. Skipping Ollama Modelfile"
         )
         return None
     ollama_modelfile = OLLAMA_TEMPLATES.get(ollama_template_name)
     if not ollama_modelfile:
         print(
-            f"Unsloth: No Ollama template mapping found for model '{base_model_name}'. Skipping Ollama Modelfile"
+            f"Hyposloth: No Ollama template mapping found for model '{base_model_name}'. Skipping Ollama Modelfile"
         )
         return None
     tokenizer._ollama_modelfile = ollama_modelfile  # This comes from the unpacking above
@@ -2906,7 +2906,7 @@ def unsloth_save_pretrained_gguf(
     "q3_k_xs" : "3-bit extra small quantization",
     """
     if tokenizer is None:
-        raise ValueError("Unsloth: Saving to GGUF must have a tokenizer.")
+        raise ValueError("Hyposloth: Saving to GGUF must have a tokenizer.")
     if isinstance(tokenizer, (PreTrainedTokenizerBase, ProcessorMixin)):
         tokenizer = patch_saving_functions(tokenizer)
 
@@ -2916,7 +2916,7 @@ def unsloth_save_pretrained_gguf(
             return None
         if push_to_hub:
             raise ValueError(
-                "Unsloth: Please use .push_to_hub_gguf(save_method='lora') instead of "
+                "Hyposloth: Please use .push_to_hub_gguf(save_method='lora') instead of "
                 ".save_pretrained_gguf(save_method='lora', push_to_hub=True)."
             )
         _qm = quantization_method
@@ -2927,7 +2927,7 @@ def unsloth_save_pretrained_gguf(
         else:
             if _qm not in (None, "fast_quantized"):
                 logger.warning_once(
-                    f"Unsloth: LoRA GGUF export does not support "
+                    f"Hyposloth: LoRA GGUF export does not support "
                     f"quantization_method={quantization_method!r}; using outtype 'f16'. "
                     f"Valid LoRA outtypes: {_LORA_GGUF_OUTTYPES}."
                 )
@@ -2944,7 +2944,7 @@ def unsloth_save_pretrained_gguf(
     # Check if push_to_hub is requested
     if push_to_hub:
         raise ValueError(
-            "Unsloth: Please use .push_to_hub_gguf() instead of .save_pretrained_gguf() with push_to_hub=True"
+            "Hyposloth: Please use .push_to_hub_gguf() instead of .save_pretrained_gguf() with push_to_hub=True"
         )
 
     # Step 1: Check if this is a VLM (Vision-Language Model) and check if gpt-oss
@@ -2975,7 +2975,7 @@ def unsloth_save_pretrained_gguf(
             _ignored = [q for q in _qm if str(q).lower() != "mxfp4"]
             if _ignored:
                 logger.warning_once(
-                    f"Unsloth: GPT-OSS does not support GGUF quantization "
+                    f"Hyposloth: GPT-OSS does not support GGUF quantization "
                     f"(requested: {', '.join(str(q) for q in _ignored)}). "
                     f"Overriding to MXFP4 format. "
                     f"Pass quantization_method=None to suppress this warning."
@@ -3008,7 +3008,7 @@ def unsloth_save_pretrained_gguf(
     is_peft_model = isinstance(self, PeftModelForCausalLM) or isinstance(self, PeftModel)
 
     if is_peft_model:
-        print(f'Unsloth: Merging model weights to {"mxfp4" if is_gpt_oss else "16-bit"} format...')
+        print(f'Hyposloth: Merging model weights to {"mxfp4" if is_gpt_oss else "16-bit"} format...')
         try:
             # Call unsloth_generic_save directly (it's in the same file)
             unsloth_generic_save(**arguments)
@@ -3021,7 +3021,7 @@ def unsloth_save_pretrained_gguf(
         original_path = getattr(self.config, "_name_or_path", None)
         if original_path and os.path.isdir(original_path):
             print(
-                f"Unsloth: Model is not a PEFT model. Using existing checkpoint at {original_path}"
+                f"Hyposloth: Model is not a PEFT model. Using existing checkpoint at {original_path}"
             )
             save_directory = original_path
             # Persist tokenizer fixes (e.g. BOS token stripping) to disk
@@ -3030,7 +3030,7 @@ def unsloth_save_pretrained_gguf(
                 tokenizer.save_pretrained(save_directory)
         else:
             # Fallback: save the in-memory model to save_directory
-            print("Unsloth: Model is not a PEFT model. Saving directly without LoRA merge...")
+            print("Hyposloth: Model is not a PEFT model. Saving directly without LoRA merge...")
             os.makedirs(save_directory, exist_ok = True)
             try:
                 self.save_pretrained(save_directory)
@@ -3064,14 +3064,14 @@ def unsloth_save_pretrained_gguf(
         elif model_dtype == torch.bfloat16:
             model_dtype = "bfloat16"
         else:
-            raise TypeError("Unsloth: Model dtype can only be float16 or bfloat16")
+            raise TypeError("Hyposloth: Model dtype can only be float16 or bfloat16")
     except Exception as e:
         # Fallback if dtype_from_config fails
-        print(f"Unsloth: Could not determine dtype ({e}), defaulting to float16")
+        print(f"Hyposloth: Could not determine dtype ({e}), defaulting to float16")
         model_dtype = "float16"
 
     # Step 8: Convert to GGUF format
-    print("Unsloth: Converting to GGUF format...")
+    print("Hyposloth: Converting to GGUF format...")
 
     # Convert quantization_method to list if string
     # Use old style quantization_method
@@ -3088,7 +3088,7 @@ def unsloth_save_pretrained_gguf(
             quantization_method = list(quantization_method)
         else:
             raise TypeError(
-                "Unsloth: quantization_method can only be a string or a list of strings"
+                "Hyposloth: quantization_method can only be a string or a list of strings"
             )
         for i, quant_method in enumerate(quantization_method):
             if quant_method is None:
@@ -3107,7 +3107,7 @@ def unsloth_save_pretrained_gguf(
         from .tokenizer_utils import fix_sentencepiece_gguf
         fix_sentencepiece_gguf(save_directory)
     except Exception as e:
-        logger.warning(f"Unsloth: fix_sentencepiece_gguf skipped ({type(e).__name__}): {e}")
+        logger.warning(f"Hyposloth: fix_sentencepiece_gguf skipped ({type(e).__name__}): {e}")
 
     try:
         all_file_locations, want_full_precision, is_vlm_update = save_to_gguf(
@@ -3125,13 +3125,13 @@ def unsloth_save_pretrained_gguf(
     except Exception as e:
         if IS_KAGGLE_ENVIRONMENT:
             raise RuntimeError(
-                f"Unsloth: GGUF conversion failed in Kaggle environment.\n"
+                f"Hyposloth: GGUF conversion failed in Kaggle environment.\n"
                 f"This is likely due to the 20GB disk space limit.\n"
                 f"Try saving to /tmp directory or use a smaller model.\n"
                 f"Error: {e}"
             )
         else:
-            raise RuntimeError(f"Unsloth: GGUF conversion failed: {e}")
+            raise RuntimeError(f"Hyposloth: GGUF conversion failed: {e}")
 
     # Step 9: Create Ollama modelfile
     gguf_directory = f"{save_directory}_gguf"
@@ -3158,8 +3158,8 @@ def unsloth_save_pretrained_gguf(
     # Step 10: Show BOS token warning if applicable
     if fix_bos_token:
         logger.warning(
-            "Unsloth: ##### The current model auto adds a BOS token.\n"
-            "Unsloth: ##### We removed it in GGUF's chat template for you."
+            "Hyposloth: ##### The current model auto adds a BOS token.\n"
+            "Hyposloth: ##### We removed it in GGUF's chat template for you."
         )
 
     _exe = ".exe" if IS_WINDOWS else ""
@@ -3171,19 +3171,19 @@ def unsloth_save_pretrained_gguf(
     if is_vlm_update:
         print("\n")
         print(
-            f"Unsloth: example usage for Multimodal LLMs: {os.path.join(_bin_dir, 'llama-mtmd-cli' + _exe)} -m {all_file_locations[0]} --mmproj {all_file_locations[-1]}"
+            f"Hyposloth: example usage for Multimodal LLMs: {os.path.join(_bin_dir, 'llama-mtmd-cli' + _exe)} -m {all_file_locations[0]} --mmproj {all_file_locations[-1]}"
         )
-        print("Unsloth: load image inside llama.cpp runner: /image test_image.jpg")
-        print("Unsloth: Prompt model to describe the image")
+        print("Hyposloth: load image inside llama.cpp runner: /image test_image.jpg")
+        print("Hyposloth: Prompt model to describe the image")
     else:
         print(
-            f'Unsloth: example usage for text only LLMs: {os.path.join(_bin_dir, "llama-cli" + _exe)} --model {all_file_locations[0]} -p "why is the sky blue?"'
+            f'Hyposloth: example usage for text only LLMs: {os.path.join(_bin_dir, "llama-cli" + _exe)} --model {all_file_locations[0]} -p "why is the sky blue?"'
         )
 
     if ollama_success:
-        print(f"Unsloth: Saved Ollama Modelfile to {modelfile_location}")
+        print(f"Hyposloth: Saved Ollama Modelfile to {modelfile_location}")
         print(
-            f"Unsloth: convert model to ollama format by running - ollama create model_name -f {modelfile_location}"
+            f"Hyposloth: convert model to ollama format by running - ollama create model_name -f {modelfile_location}"
         )
 
     # Return a dict with all needed info for push_to_hub
@@ -3205,14 +3205,14 @@ def unsloth_push_to_hub_gguf(
     quantization_method = "fast_quantized",
     first_conversion: str = None,
     use_temp_dir: Optional[bool] = None,
-    commit_message: Optional[str] = "Trained with Unsloth",
+    commit_message: Optional[str] = "Trained with Hyposloth",
     private: Optional[bool] = None,
     token: Union[bool, str, None] = None,
     max_shard_size: Union[int, str, None] = "5GB",
     create_pr: bool = False,
     safe_serialization: bool = True,
     revision: str = None,
-    commit_description: str = "Upload model trained with Unsloth 2x faster",
+    commit_description: str = "Upload model trained with Hyposloth 2x faster",
     tags: Optional[List[str]] = None,
     temporary_location: str = "_unsloth_temporary_saved_buffers",
     maximum_memory_usage: float = 0.85,
@@ -3251,7 +3251,7 @@ def unsloth_push_to_hub_gguf(
     "q6_k"    : "Uses Q8_K for all tensors",
     """
     if tokenizer is None:
-        raise ValueError("Unsloth: Saving to GGUF must have a tokenizer.")
+        raise ValueError("Hyposloth: Saving to GGUF must have a tokenizer.")
     if not is_main_process:
         return None
 
@@ -3265,7 +3265,7 @@ def unsloth_push_to_hub_gguf(
         else:
             if _qm not in (None, "fast_quantized"):
                 logger.warning_once(
-                    f"Unsloth: LoRA GGUF export does not support "
+                    f"Hyposloth: LoRA GGUF export does not support "
                     f"quantization_method={quantization_method!r}; using outtype 'f16'. "
                     f"Valid LoRA outtypes: {_LORA_GGUF_OUTTYPES}."
                 )
@@ -3298,7 +3298,7 @@ def unsloth_push_to_hub_gguf(
         cleanup_temp = False
 
     # Step 2: Call save_pretrained_gguf to do the conversion
-    print(f"Unsloth: Converting model to GGUF format...")
+    print(f"Hyposloth: Converting model to GGUF format...")
 
     try:
         # Call save_pretrained_gguf - it returns all the info we need
@@ -3336,7 +3336,7 @@ def unsloth_push_to_hub_gguf(
         raise RuntimeError(f"Failed to convert model to GGUF: {e}")
 
     # Step 3: Upload to HuggingFace Hub
-    print("Unsloth: Uploading GGUF to Huggingface Hub...")
+    print("Hyposloth: Uploading GGUF to Huggingface Hub...")
 
     try:
         from huggingface_hub import HfApi
@@ -3504,7 +3504,7 @@ This model was finetuned and converted to GGUF format using [Unsloth](https://gi
                 metadata_update(full_repo_id, {"datasets": datasets}, overwrite = True, token = token)
             except Exception as e:
                 logger.warning_once(
-                    f"Unsloth: Could not update datasets metadata for {full_repo_id}: {e}"
+                    f"Hyposloth: Could not update datasets metadata for {full_repo_id}: {e}"
                 )
 
     except Exception as e:
@@ -3513,7 +3513,7 @@ This model was finetuned and converted to GGUF format using [Unsloth](https://gi
     finally:
         # Clean up temporary directory
         if cleanup_temp:
-            print("Unsloth: Cleaning up temporary files...")
+            print("Hyposloth: Cleaning up temporary files...")
             for d in [save_directory, f"{save_directory}_gguf"]:
                 if os.path.exists(d):
                     try:
@@ -3566,7 +3566,7 @@ def _lora_base_model_id(model):
     return os.fspath(base) if base else ""
 
 
-# Upstream Unsloth GGUF repos ship a calibration imatrix under one of these names; the GGUF-format
+# Upstream Hyposloth GGUF repos ship a calibration imatrix under one of these names; the GGUF-format
 # one is suffixed .gguf_file so the Hub does not list it as a model GGUF (renamed to .gguf locally).
 _IMATRIX_UPSTREAM_NAMES = ("imatrix_unsloth.dat", "imatrix_unsloth.gguf_file")
 
@@ -3621,16 +3621,16 @@ def _resolve_imatrix_file(model, imatrix_file, token, dest_dir):
     if imatrix_file is not True and isinstance(imatrix_file, (str, os.PathLike)):
         path = os.path.expanduser(os.fspath(imatrix_file))
         if not os.path.isfile(path):
-            raise FileNotFoundError(f"Unsloth: imatrix_file '{path}' does not exist.")
+            raise FileNotFoundError(f"Hyposloth: imatrix_file '{path}' does not exist.")
         return _materialize_imatrix(path, dest_dir) if path.endswith(".gguf_file") else path
 
     if imatrix_file is not True:
         raise TypeError(
-            "Unsloth: imatrix_file must be None, a path string, or True "
+            "Hyposloth: imatrix_file must be None, a path string, or True "
             f"(got {type(imatrix_file).__name__})."
         )
 
-    # imatrix_file=True: auto-resolve from the upstream Unsloth GGUF repo. HfApi is the module-level
+    # imatrix_file=True: auto-resolve from the upstream Hyposloth GGUF repo. HfApi is the module-level
     # import (save.py top); hf_hub_download is imported here as it is not needed elsewhere.
     from huggingface_hub import hf_hub_download
 
@@ -3647,10 +3647,10 @@ def _resolve_imatrix_file(model, imatrix_file, token, dest_dir):
             if name in files:
                 downloaded = hf_hub_download(repo_id = repo, filename = name, token = token)
                 local = _materialize_imatrix(downloaded, dest_dir)
-                print(f"Unsloth: Using imatrix '{name}' from '{repo}' -> '{local}'")
+                print(f"Hyposloth: Using imatrix '{name}' from '{repo}' -> '{local}'")
                 return local
     raise RuntimeError(
-        "Unsloth: imatrix_file=True but no upstream Unsloth imatrix was found.\n"
+        "Hyposloth: imatrix_file=True but no upstream Hyposloth imatrix was found.\n"
         f"  Searched repos: {repos or '(none derived from the base model)'}\n"
         f"  Searched files: {list(_IMATRIX_UPSTREAM_NAMES)}\n"
         "Pass imatrix_file='/path/to/imatrix.(dat|gguf)' to use your own."
@@ -3665,8 +3665,8 @@ def _unsloth_save_lora_gguf(
     push_to_hub = False,
     token = None,
     private = None,
-    commit_message = "Converted LoRA to GGUF with Unsloth",
-    commit_description = "Convert LoRA to GGUF format using Unsloth",
+    commit_message = "Converted LoRA to GGUF with Hyposloth",
+    commit_description = "Convert LoRA to GGUF format using Hyposloth",
     create_pr = False,
     revision = None,
 ):
@@ -3678,12 +3678,12 @@ def _unsloth_save_lora_gguf(
 
     if not isinstance(model, (PeftModelForCausalLM, PeftModel)):
         raise RuntimeError(
-            "Unsloth: LoRA GGUF export needs a PEFT/LoRA model. "
+            "Hyposloth: LoRA GGUF export needs a PEFT/LoRA model. "
             "For a full or merged model use save_pretrained_gguf(...) instead."
         )
     if outtype not in _LORA_GGUF_OUTTYPES:
         raise ValueError(
-            f"Unsloth: LoRA GGUF outtype must be one of {_LORA_GGUF_OUTTYPES} (got '{outtype}')."
+            f"Hyposloth: LoRA GGUF outtype must be one of {_LORA_GGUF_OUTTYPES} (got '{outtype}')."
         )
     # Resolve a token even for local saves: the converter may fetch a gated/private base config.
     if token is None:
@@ -3693,7 +3693,7 @@ def _unsloth_save_lora_gguf(
     base_model_id = _lora_base_model_id(model)
     if not base_model_id:
         raise RuntimeError(
-            "Unsloth: could not determine the base model for LoRA GGUF export "
+            "Hyposloth: could not determine the base model for LoRA GGUF export "
             "(no adapter base_model_name_or_path or model config _name_or_path)."
         )
     try:
@@ -3732,7 +3732,7 @@ def _unsloth_save_lora_gguf(
             converter = os.path.join(source_dir, "convert_lora_to_gguf.py")
         if not os.path.exists(converter):
             raise RuntimeError(
-                "Unsloth: convert_lora_to_gguf.py not found after installing a llama.cpp source "
+                "Hyposloth: convert_lora_to_gguf.py not found after installing a llama.cpp source "
                 "checkout. A full llama.cpp source checkout is required for LoRA GGUF export."
             )
 
@@ -3754,7 +3754,7 @@ def _unsloth_save_lora_gguf(
             env["HF_TOKEN"] = token
             env["HUGGING_FACE_HUB_TOKEN"] = token
 
-        print(f"Unsloth: Converting LoRA adapter at '{lora_dir}' to GGUF -> '{out_gguf}'")
+        print(f"Hyposloth: Converting LoRA adapter at '{lora_dir}' to GGUF -> '{out_gguf}'")
         try:
             with subprocess.Popen(
                 cmd,
@@ -3773,15 +3773,15 @@ def _unsloth_save_lora_gguf(
                     raise subprocess.CalledProcessError(sp.returncode, sp.args)
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
-                f"Unsloth: LoRA -> GGUF conversion failed (exit {e.returncode}). "
+                f"Hyposloth: LoRA -> GGUF conversion failed (exit {e.returncode}). "
                 "See the output above for details."
             )
 
         if not push_to_hub:
-            print(f"Unsloth: Done. Saved LoRA GGUF to '{out_gguf}'")
+            print(f"Hyposloth: Done. Saved LoRA GGUF to '{out_gguf}'")
             return out_gguf
 
-        print(f"Unsloth: Uploading LoRA GGUF to '{save_directory}' ...")
+        print(f"Hyposloth: Uploading LoRA GGUF to '{save_directory}' ...")
         from huggingface_hub import HfApi
 
         api = HfApi(token = token)
@@ -3813,12 +3813,12 @@ def unsloth_convert_lora_to_ggml_and_push_to_hub(
     tokenizer,
     repo_id: str,
     use_temp_dir: Optional[bool] = None,
-    commit_message: Optional[str] = "Converted LoRA to GGUF with Unsloth",
+    commit_message: Optional[str] = "Converted LoRA to GGUF with Hyposloth",
     private: Optional[bool] = None,
     token: Union[bool, str, None] = None,
     create_pr: bool = False,
     revision: str = None,
-    commit_description: str = "Convert LoRA to GGUF format using Unsloth",
+    commit_description: str = "Convert LoRA to GGUF format using Hyposloth",
     temporary_location: str = "_unsloth_temporary_saved_buffers",
     maximum_memory_usage: float = 0.85,
     outtype: str = "f16",
@@ -3939,7 +3939,7 @@ def _prewarm_base_model_hub_cache(
         from huggingface_hub import HfFileSystem, hf_hub_download, snapshot_download
 
         # Resolve the cache from the live env like the merge, not huggingface_hub's frozen
-        # constants: a runtime cache redirect (read-only default, Unsloth) would else miss (#6890).
+        # constants: a runtime cache redirect (read-only default, Hyposloth) would else miss (#6890).
         try:
             from unsloth_zoo.hf_cache import _active_caches
             _hub_cache = _active_caches()[1]
@@ -4012,7 +4012,7 @@ def _prewarm_base_model_hub_cache(
         free_space = shutil.disk_usage(cache_probe).free if os.path.exists(cache_probe) else 0
         if free_space < 2 * total_size_in_bytes:
             print(
-                f"Unsloth: Not enough free disk to keep `{model_name}` in the Hugging Face "
+                f"Hyposloth: Not enough free disk to keep `{model_name}` in the Hugging Face "
                 f"cache (need ~{round(2 * total_size_in_bytes / 1024**3, 1)}GB free, have "
                 f"{round(free_space / 1024**3, 1)}GB). Downloading straight to the merge "
                 f"directory instead; the next export will re-download it."
@@ -4024,7 +4024,7 @@ def _prewarm_base_model_hub_cache(
         else:
             size_str = f"{max(1, round(total_size_in_bytes / 1024**2))}MB"
         print(
-            f"Unsloth: Downloading `{model_name}` into the Hugging Face cache so future "
+            f"Hyposloth: Downloading `{model_name}` into the Hugging Face cache so future "
             f"exports skip the {size_str} download..."
         )
         snapshot_download(
@@ -4036,7 +4036,7 @@ def _prewarm_base_model_hub_cache(
         )
     except Exception as e:
         print(
-            f"Unsloth: Could not pre-cache the base model weights ({e}). "
+            f"Hyposloth: Could not pre-cache the base model weights ({e}). "
             f"Falling back to downloading into the merge directory."
         )
 
@@ -4054,7 +4054,7 @@ def save_to_gguf_generic(
     if token is None and repo_id is not None:
         token = get_token()
     if repo_id is not None and token is None:
-        raise RuntimeError("Unsloth: Please specify a token for uploading!")
+        raise RuntimeError("Hyposloth: Please specify a token for uploading!")
 
     if not os.path.exists(os.path.join("llama.cpp", "unsloth_convert_hf_to_gguf.py")):
         install_llama_cpp(just_clone_repo = True)
@@ -4073,7 +4073,7 @@ def save_to_gguf_generic(
             quantization_method = list(quantization_method)
         else:
             raise TypeError(
-                "Unsloth: quantization_method can only be a string or a list of strings"
+                "Hyposloth: quantization_method can only be a string or a list of strings"
             )
         for i, quant_method in enumerate(quantization_method):
             if quant_method is None:
@@ -4092,7 +4092,7 @@ def save_to_gguf_generic(
     # Check if wrong method
     for quant_method in new_quantization_methods:
         if quant_method not in ALLOWED_QUANTS.keys():
-            error = f"Unsloth: Quant method = [{quant_method}] not supported. Choose from below:\n"
+            error = f"Hyposloth: Quant method = [{quant_method}] not supported. Choose from below:\n"
             for key, value in ALLOWED_QUANTS.items():
                 error += f"[{key}] => {value}\n"
             raise RuntimeError(error)
@@ -4147,11 +4147,11 @@ def unsloth_generic_save(
     save_peft_format: bool = True,
     # Push to hub
     use_temp_dir: Optional[bool] = None,
-    commit_message: Optional[str] = "Trained with Unsloth",
+    commit_message: Optional[str] = "Trained with Hyposloth",
     private: Optional[bool] = None,
     create_pr: bool = False,
     revision: str = None,
-    commit_description: str = "Upload model trained with Unsloth 2x faster",
+    commit_description: str = "Upload model trained with Hyposloth 2x faster",
     tags: List[str] = None,
     # Our functions
     temporary_location: str = "_unsloth_temporary_saved_buffers",
@@ -4166,7 +4166,7 @@ def unsloth_generic_save(
 
     if save_method == "merged_4bit":
         raise RuntimeError(
-            "Unsloth: Merging into 4bit will cause your model to lose accuracy if you plan\n"
+            "Hyposloth: Merging into 4bit will cause your model to lose accuracy if you plan\n"
             "to merge to GGUF or others later on. I suggest you to do this as a final step\n"
             "if you're planning to do multiple saves.\n"
             "If you are certain, change `save_method` to `merged_4bit_forced`."
@@ -4201,7 +4201,7 @@ def unsloth_generic_save(
             _save_kwargs["state_dict"] = state_dict
 
         if push_to_hub:
-            print(f"Unsloth: Pushing full fine-tuned model to '{save_directory}' ...")
+            print(f"Hyposloth: Pushing full fine-tuned model to '{save_directory}' ...")
             model.push_to_hub(
                 repo_id = save_directory,
                 token = token,
@@ -4227,7 +4227,7 @@ def unsloth_generic_save(
                 )
                 _tokenizer.padding_side = old_padding_side
         else:
-            print(f"Unsloth: Saving full fine-tuned model to '{save_directory}' ...")
+            print(f"Hyposloth: Saving full fine-tuned model to '{save_directory}' ...")
             model.save_pretrained(save_directory, **_save_kwargs)
             if tokenizer is not None:
                 _tokenizer = tokenizer.tokenizer if hasattr(tokenizer, "tokenizer") else tokenizer
@@ -4236,7 +4236,7 @@ def unsloth_generic_save(
                 tokenizer.save_pretrained(save_directory)
                 _tokenizer.padding_side = old_padding_side
 
-        print(f"Unsloth: Model saved successfully to '{save_directory}'")
+        print(f"Hyposloth: Model saved successfully to '{save_directory}'")
     else:
         _prewarm_base_model_hub_cache(model, save_method = save_method, token = token)
         from unsloth_zoo.saving_utils import merge_and_overwrite_lora
@@ -4261,7 +4261,7 @@ def unsloth_generic_save(
             metadata_update(save_dir, {"datasets": datasets}, overwrite = True, token = token)
         except Exception as e:
             logger.warning_once(
-                f"Unsloth: Could not update datasets metadata for {save_directory}: {e}"
+                f"Hyposloth: Could not update datasets metadata for {save_directory}: {e}"
             )
 
     return
@@ -4304,7 +4304,7 @@ def unsloth_generic_save_pretrained_merged(
     """
     if tokenizer is None:
         logger.warning_once(
-            "Unsloth: You're not saving a tokenizer as well?\n"
+            "Hyposloth: You're not saving a tokenizer as well?\n"
             "You can do it separately via `tokenizer.save_pretrained(...)`"
         )
 
@@ -4389,14 +4389,14 @@ def unsloth_generic_push_to_hub_merged(
     tokenizer = None,
     save_method: str = "merged_16bit",  # ["lora", "merged_16bit", "merged_4bit"]
     use_temp_dir: Optional[bool] = None,
-    commit_message: Optional[str] = "Trained with Unsloth",
+    commit_message: Optional[str] = "Trained with Hyposloth",
     private: Optional[bool] = None,
     token: Union[bool, str, None] = None,
     max_shard_size: Union[int, str, None] = "5GB",
     create_pr: bool = False,
     safe_serialization: bool = True,
     revision: str = None,
-    commit_description: str = "Upload model trained with Unsloth 2x faster",
+    commit_description: str = "Upload model trained with Hyposloth 2x faster",
     tags: Optional[List[str]] = None,
     temporary_location: str = "_unsloth_temporary_saved_buffers",
     maximum_memory_usage: float = 0.75,
@@ -4417,7 +4417,7 @@ def unsloth_generic_push_to_hub_merged(
     """
     if tokenizer is None:
         logger.warning_once(
-            "Unsloth: You're not saving a tokenizer as well?\n"
+            "Hyposloth: You're not saving a tokenizer as well?\n"
             "You can do it separately via `tokenizer.push_to_hub(...)`"
         )
 
@@ -4552,11 +4552,11 @@ def _unsloth_save_torchao_with_given_config(
     """
 
     if push_to_hub:
-        assert token is not None, "Unsloth: Please specify a token for uploading!"
+        assert token is not None, "Hyposloth: Please specify a token for uploading!"
 
     assert (
         torchao_config is not None
-    ), "Unsloth: Please specify a torchao_config for post-training quantization!"
+    ), "Hyposloth: Please specify a torchao_config for post-training quantization!"
 
     # first merge the lora weights
     arguments = dict(locals())
@@ -4695,8 +4695,8 @@ def _print_compressed_hw_note(scheme, out_dir):
             "(older GPUs fall back to weight-only in vLLM)"
         )
     print(
-        f"Unsloth: Saved {scheme} compressed checkpoint to '{out_dir}'.\n"
-        f"Unsloth: Load it with vLLM for accelerated inference. Hardware for full speed: {hw}."
+        f"Hyposloth: Saved {scheme} compressed checkpoint to '{out_dir}'.\n"
+        f"Hyposloth: Load it with vLLM for accelerated inference. Hardware for full speed: {hw}."
     )
 
 
@@ -4947,7 +4947,7 @@ def _offload_model_for_quantize_subprocess(model):
             except Exception as snap_exc:
                 # Restore will fall back to re-deriving from the device_map.
                 logger.warning_once(
-                    f"Unsloth: could not snapshot the accelerate dispatch "
+                    f"Hyposloth: could not snapshot the accelerate dispatch "
                     f"({type(snap_exc).__name__}: {snap_exc}); re-dispatching on restore."
                 )
             remove_hook_from_submodules(root)
@@ -4975,7 +4975,7 @@ def _offload_model_for_quantize_subprocess(model):
         # A silent `return None` is indistinguishable from "nothing to move", which
         # hides a real bug behind a merely slower export.
         logger.warning_once(
-            f"Unsloth: could not free the model's accelerator memory before the quantized "
+            f"Hyposloth: could not free the model's accelerator memory before the quantized "
             f"export ({type(exc).__name__}: {exc}); continuing with the model resident."
         )
         return None
@@ -5007,7 +5007,7 @@ def _restore_model_after_quantize_subprocess(model, restore_token) -> None:
             model.to(value)  # restore the model to its original device
     except Exception:
         logger.warning_once(
-            "Unsloth: could not restore the model to its original device(s) after the "
+            "Hyposloth: could not restore the model to its original device(s) after the "
             "quantized export; it may remain on CPU."
         )
 
@@ -5031,7 +5031,7 @@ def _unsloth_save_compressed_tensors(
 
     Mirrors the torchao PTQ path: LoRA is first merged into the base model at 16bit and
     written to `save_directory` (which is kept). The merged checkpoint is then quantized with
-    llm-compressor's `QuantizationModifier(scheme)` in a separate process (so Unsloth's
+    llm-compressor's `QuantizationModifier(scheme)` in a separate process (so Hyposloth's
     transformers monkey-patches do not interfere), and written to the sibling directory
     `save_directory + "-" + suffix`. The result is intended for vLLM inference.
     """
@@ -5061,7 +5061,7 @@ def _unsloth_save_compressed_tensors(
         _exceeds, _tf_ver = _transformers_exceeds_llm_compressor_ceiling()
         if _exceeds:
             raise RuntimeError(
-                f"Unsloth: FP8/FP4 compressed-tensors export is not available for this model. It runs "
+                f"Hyposloth: FP8/FP4 compressed-tensors export is not available for this model. It runs "
                 f"under transformers {_tf_ver}, but llm-compressor supports transformers "
                 f"<= {_LLM_COMPRESSOR_MAX_TRANSFORMERS}. Export to GGUF or 16-bit instead."
             )
@@ -5072,7 +5072,7 @@ def _unsloth_save_compressed_tensors(
             except Exception:
                 tf_ver = "unknown"
             raise RuntimeError(
-                f"Unsloth: scheme '{scheme}' is not available in your installed "
+                f"Hyposloth: scheme '{scheme}' is not available in your installed "
                 f"compressed-tensors / llm-compressor.\n"
                 f"It requires a newer llm-compressor that needs transformers>=5.9 "
                 f"(you have transformers {tf_ver}).\n"
@@ -5114,7 +5114,7 @@ def _unsloth_save_compressed_tensors(
         # reloads with default weight filenames, so never write variant-named shards here; the
         # user's variant (if any) is applied to the final compressed checkpoint in the subprocess.
         variant = merge_kwargs.pop("variant", None)
-        print(f"Unsloth: Merging to 16bit before {scheme} quantization...")
+        print(f"Hyposloth: Merging to 16bit before {scheme} quantization...")
         merge_args = dict(merge_kwargs)
         merge_args.update(
             dict(
@@ -5141,7 +5141,7 @@ def _unsloth_save_compressed_tensors(
             )
         if is_vlm:
             logger.warning(
-                "Unsloth: FP8/FP4 compressed export for vision / multimodal models is "
+                "Hyposloth: FP8/FP4 compressed export for vision / multimodal models is "
                 "experimental; vision-tower layers may be affected."
             )
         # trust_remote_code must reflect the approved load decision (whether the model / tokenizer
@@ -5189,16 +5189,16 @@ def _unsloth_save_compressed_tensors(
                 calib_kind, calib_value = "disk", calib_tmp
             else:
                 raise TypeError(
-                    "Unsloth: calibration_dataset must be None, a Hugging Face dataset id, a "
+                    "Hyposloth: calibration_dataset must be None, a Hugging Face dataset id, a "
                     "local path saved with Dataset.save_to_disk(...), or a Dataset with "
                     "save_to_disk()."
                 )
         elif not needs_calibration and calibration_dataset is not None:
             logger.warning_once(
-                f"Unsloth: scheme '{scheme}' is data-free; ignoring calibration_dataset."
+                f"Hyposloth: scheme '{scheme}' is data-free; ignoring calibration_dataset."
             )
 
-        # 6) Quantize in a separate process: importing Unsloth patches transformers attention,
+        # 6) Quantize in a separate process: importing Hyposloth patches transformers attention,
         #    which breaks the forward llm-compressor runs for calibration. Run the converter by
         #    file path (not `-m`) so the subprocess stays unpatched, like GGUF -> llama.cpp.
         out_dir = local_dir + "-" + suffix
@@ -5253,7 +5253,7 @@ def _unsloth_save_compressed_tensors(
             env["PYTHONPATH"] = _shadow_pythonpath
 
         print(
-            f"Unsloth: Quantizing the merged model to {scheme} with llm-compressor "
+            f"Hyposloth: Quantizing the merged model to {scheme} with llm-compressor "
             f"{'(llm-compressor-main shadow) ' if _shadow_pythonpath is not None else ''}"
             "(in a separate process)..."
         )
@@ -5261,7 +5261,7 @@ def _unsloth_save_compressed_tensors(
             subprocess.check_call(cmd, env = env)
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
-                f"Unsloth: {scheme} quantization failed (llm-compressor subprocess exit "
+                f"Hyposloth: {scheme} quantization failed (llm-compressor subprocess exit "
                 f"{e.returncode}). See the output above for details."
             )
 
@@ -5273,13 +5273,13 @@ def _unsloth_save_compressed_tensors(
                 cfg = json.load(f)
         if "quantization_config" not in cfg:
             raise RuntimeError(
-                f"Unsloth: {scheme} export failed - no quantization_config written to {cfg_path}"
+                f"Hyposloth: {scheme} export failed - no quantization_config written to {cfg_path}"
             )
 
         # 8) Optional hub upload of the compressed artifact (not the intermediate 16bit one).
         #    The repo was already created/validated up front, so just upload here.
         if push_to_hub:
-            print(f"Unsloth: Uploading {scheme} checkpoint to '{repo_id}' ...")
+            print(f"Hyposloth: Uploading {scheme} checkpoint to '{repo_id}' ...")
             api.upload_folder(
                 folder_path = out_dir,
                 repo_id = repo_id,
@@ -5297,7 +5297,7 @@ def _unsloth_save_compressed_tensors(
                     metadata_update(repo_id, {"datasets": datasets}, overwrite = True, token = token)
                 except Exception as meta_err:
                     logger.warning_once(
-                        f"Unsloth: could not update datasets metadata for {repo_id}: {meta_err}"
+                        f"Hyposloth: could not update datasets metadata for {repo_id}: {meta_err}"
                     )
 
         # 9) Inference hardware note.
@@ -5359,7 +5359,7 @@ def _unsloth_save_torchao(
         quant_type = Int8WeightOnlyConfig()
         safe_serialization = False  # torchao only supports safetensors for float8 configs
     else:
-        raise RuntimeError(f"Unsloth: unknown torchao export kind '{kind}' (expected fp8/int8).")
+        raise RuntimeError(f"Hyposloth: unknown torchao export kind '{kind}' (expected fp8/int8).")
 
     # Always merge into an isolated temp staging dir (never save_directory itself), so a co-selected
     # 16-bit export written to save_directory is not overwritten or deleted; the torchao output is
@@ -5390,7 +5390,7 @@ def _unsloth_save_torchao(
         # 1) Merge to 16bit at a staging dir (LoRA and base alike). The reload reads default
         #    weight filenames, so never write variant-named shards here.
         merge_kwargs.pop("variant", None)
-        print(f"Unsloth: Merging to 16bit before torchao {kind} quantization...")
+        print(f"Hyposloth: Merging to 16bit before torchao {kind} quantization...")
         merge_args = dict(merge_kwargs)
         merge_args.update(
             dict(
@@ -5457,7 +5457,7 @@ def _unsloth_save_torchao(
 
         # 4) Reload the staged 16bit checkpoint with torchao applied. bfloat16 is required;
         #    device_map="auto" falls back to CPU, so this works on any hardware.
-        print(f"Unsloth: Quantizing the merged model to torchao {kind}...")
+        print(f"Hyposloth: Quantizing the merged model to torchao {kind}...")
         dtype_kw = {"torch_dtype": torch.bfloat16} if HAS_TORCH_DTYPE else {"dtype": torch.bfloat16}
         quantized_model = auto_model.from_pretrained(
             staging,
@@ -5484,13 +5484,13 @@ def _unsloth_save_torchao(
                 cfg = json.load(f)
         if "quantization_config" not in cfg:
             raise RuntimeError(
-                f"Unsloth: torchao {kind} export failed - no quantization_config written to "
+                f"Hyposloth: torchao {kind} export failed - no quantization_config written to "
                 f"{cfg_path}"
             )
 
         # 6) Optional hub upload of the quantized artifact (the temp staging is cleaned in finally).
         if push_to_hub:
-            print(f"Unsloth: Uploading torchao {kind} checkpoint to '{repo_id}' ...")
+            print(f"Hyposloth: Uploading torchao {kind} checkpoint to '{repo_id}' ...")
             api.upload_folder(
                 folder_path = out_dir,
                 repo_id = repo_id,
@@ -5507,13 +5507,13 @@ def _unsloth_save_torchao(
                     metadata_update(repo_id, {"datasets": datasets}, overwrite = True, token = token)
                 except Exception as meta_err:
                     logger.warning_once(
-                        f"Unsloth: could not update datasets metadata for {repo_id}: {meta_err}"
+                        f"Hyposloth: could not update datasets metadata for {repo_id}: {meta_err}"
                     )
 
         result = repo_id if push_to_hub else out_dir
         print(
-            f"Unsloth: Saved torchao {kind} checkpoint to '{result}'.\n"
-            f"Unsloth: This is portable (produced on any device, no NVIDIA GPU required). Load it "
+            f"Hyposloth: Saved torchao {kind} checkpoint to '{result}'.\n"
+            f"Hyposloth: This is portable (produced on any device, no NVIDIA GPU required). Load it "
             f"with vLLM or transformers; FP8/INT8 acceleration is available on supported GPUs."
         )
         return result
@@ -5580,7 +5580,7 @@ def unsloth_save_pretrained_torchao(
     if torchao_config is not None:
         # PTQ path: user provided a config, model must NOT have QAT config unless PEFT
         assert not has_qat_config, (
-            "Unsloth: You passed `torchao_config` but this model was trained with `qat_scheme`. "
+            "Hyposloth: You passed `torchao_config` but this model was trained with `qat_scheme`. "
             "For QAT models, do not pass `torchao_config` - the quantization config is already "
             "attached to the model from training."
         )
@@ -5595,7 +5595,7 @@ def unsloth_save_pretrained_torchao(
     else:
         # QAT path: no config provided, model must have QAT config
         assert has_qat_config, (
-            "Unsloth: No `torchao_config` provided and model was not trained with `qat_scheme`. "
+            "Hyposloth: No `torchao_config` provided and model was not trained with `qat_scheme`. "
             "Either train with `qat_scheme` parameter, or provide a `torchao_config` for "
             "post-training quantization."
         )
@@ -5612,7 +5612,7 @@ def unsloth_save_pretrained_torchao(
 
 
 def not_implemented_save(*args, **kwargs):
-    raise NotImplementedError("Unsloth: Sorry GGUF is currently not supported for vision models!")
+    raise NotImplementedError("Hyposloth: Sorry GGUF is currently not supported for vision models!")
 
 
 def patch_saving_functions(model, vision = False):
@@ -5649,20 +5649,20 @@ def patch_saving_functions(model, vision = False):
         commit_message = arguments["commit_message"]
         if commit_message is not None:
             if not commit_message.endswith(" "): commit_message += " "
-            if "Unsloth" not in commit_message:
-                commit_message += "(Trained with Unsloth)"
+            if "Hyposloth" not in commit_message:
+                commit_message += "(Trained with Hyposloth)"
         else:
-            commit_message = "Upload model trained with Unsloth"
+            commit_message = "Upload model trained with Hyposloth"
         arguments["commit_message"] = commit_message
 
     if "commit_description" in arguments:
         commit_description = arguments["commit_description"]
         if commit_description is not None:
             if not commit_description.endswith(" "): commit_description += " "
-            if "Unsloth" not in commit_description:
-                commit_description += "(Trained with Unsloth 2x faster)"
+            if "Hyposloth" not in commit_description:
+                commit_description += "(Trained with Hyposloth 2x faster)"
         else:
-            commit_description = "Upload model trained with Unsloth 2x faster"
+            commit_description = "Upload model trained with Hyposloth 2x faster"
         arguments["commit_description"] = commit_description
 
     # Update model tag

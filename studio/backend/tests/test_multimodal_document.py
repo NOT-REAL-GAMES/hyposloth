@@ -3,7 +3,7 @@
 
 """Tests for PDF / document attachment translation on external providers.
 
-Unsloth adds a normalised `input_document` content part on
+Hyposloth adds a normalised `input_document` content part on
 ChatCompletionRequest so the frontend needn't know the per-provider
 attachment shape:
 

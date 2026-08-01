@@ -167,7 +167,7 @@ def _attach_bnb_multidevice_hooks(
         all_devs = {p.device for p in model.parameters()}
     except Exception as exc:
         warnings.warn(
-            "Unsloth: Failed to determine device placement from model parameters, "
+            "Hyposloth: Failed to determine device placement from model parameters, "
             f"so multi-GPU hooks cannot be attached. ({type(exc).__name__}: {exc})",
             RuntimeWarning,
             stacklevel = 2,
@@ -228,11 +228,11 @@ def _attach_bnb_multidevice_hooks(
                 param.__dict__[key] = val
 
         logger.info(
-            f"Unsloth: Attached accelerate AlignDevicesHook ({desc}) for bnb multi-GPU inference."
+            f"Hyposloth: Attached accelerate AlignDevicesHook ({desc}) for bnb multi-GPU inference."
         )
     except Exception as exc:
         warnings.warn(
-            f"Unsloth: Could not attach multi-device dispatch hooks automatically "
+            f"Hyposloth: Could not attach multi-device dispatch hooks automatically "
             f"({type(exc).__name__}: {exc}). "
             "Cross-device inference may fail. Consider using a single GPU or "
             "calling accelerate.dispatch_model() manually.",
@@ -476,7 +476,7 @@ def unsloth_base_fast_generate(self, *args, **kwargs):
     else:
         key = next(iter(kwargs.keys()))
         if type(kwargs[key]) is not torch.Tensor:
-            raise TypeError("Unsloth: You need to pass in input_ids to .generate!")
+            raise TypeError("Hyposloth: You need to pass in input_ids to .generate!")
         input_ids = kwargs[key]
     assert type(input_ids) is torch.Tensor
     bsz = input_ids.shape[0]
@@ -850,12 +850,12 @@ class FastBaseModel:
 
         if unsloth_vllm_standby and os.environ.get("UNSLOTH_VLLM_STANDBY", "0") != "1":
             raise RuntimeError(
-                "Unsloth: `unsloth_vllm_standby` is True, but environment variable `UNSLOTH_VLLM_STANDBY` is not set to 1!"
+                "Hyposloth: `unsloth_vllm_standby` is True, but environment variable `UNSLOTH_VLLM_STANDBY` is not set to 1!"
             )
 
         if model_types is None:
             raise RuntimeError(
-                "Unsloth: Please use FastModel or FastVisionModel and not use FastBaseModel directly!"
+                "Hyposloth: Please use FastModel or FastVisionModel and not use FastBaseModel directly!"
             )
         if os.environ.get("UNSLOTH_MODEL_NAME", "") == "":
             os.environ["UNSLOTH_MODEL_NAME"] = model_name.lower()
@@ -908,7 +908,7 @@ class FastBaseModel:
         if is_vlm_config and fast_inference:
             if not any(arch in VLLM_SUPPORTED_VLM for arch in model_types):
                 raise RuntimeError(
-                    f"Unsloth: Fast inference is only supported for Language models and Qwen2.5-VL, Gemma3 among vision models. "
+                    f"Hyposloth: Fast inference is only supported for Language models and Qwen2.5-VL, Gemma3 among vision models. "
                     f"Found architectures: {', '.join(model_types)}!"
                 )
 
@@ -922,7 +922,7 @@ class FastBaseModel:
         os.environ["UNSLOTH_USE_NEW_MODEL"] = "1"
         if trust_remote_code:
             print(
-                "Unsloth: WARNING `trust_remote_code` is True.\n"
+                "Hyposloth: WARNING `trust_remote_code` is True.\n"
                 "Are you certain you want to do remote code execution?"
             )
         token = hf_login(token)
@@ -958,14 +958,14 @@ class FastBaseModel:
             # [TODO] After adding vLLM support for XPU, change this
             vllm_version = ""
         else:
-            raise ValueError(f"Unsloth: Unsupported device type: {DEVICE_TYPE}")
+            raise ValueError(f"Hyposloth: Unsupported device type: {DEVICE_TYPE}")
 
         max_memory = round(gpu_stats.total_memory / 1024 / 1024 / 1024, 3)
 
         arch_name = model_type_arch.title()
         arch_name = arch_name.replace("_Vl_", "_VL_").replace("_Moe", "_MoE")
         statistics = (
-            f"==((====))==  Unsloth {__version__}: Fast {arch_name} patching. Transformers: {transformers_version}.{vllm_version}\n"
+            f"==((====))==  Hyposloth {__version__}: Fast {arch_name} patching. Transformers: {transformers_version}.{vllm_version}\n"
             f"   {chr(92)}{chr(92)}   /|    {gpu_stats_name}Num GPUs = {DEVICE_COUNT}. Max memory: {max_memory} GB. Platform: {platform_system}.\n"
             f"O^O/ {chr(92)}_/ {chr(92)}    Torch: {torch.__version__}. {gpu_stats_snippet} Triton: {triton_version}\n"
             f"{chr(92)}        /    Bfloat16 = {str(SUPPORTS_BFLOAT16).upper()}. FA [Xformers = {xformers_version}. FA2 = {HAS_FLASH_ATTENTION}]\n"
@@ -985,7 +985,7 @@ class FastBaseModel:
             old_hf_transfer = "0"
         if old_hf_transfer == "1":
             print(
-                "Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!"
+                "Hyposloth: Fast downloading is enabled - ignore downloading bars which are red colored!"
             )
         if old_hf_transfer != "0":
             os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
@@ -1010,7 +1010,7 @@ class FastBaseModel:
         do_forced_float32 = False
         if os.environ.get("UNSLOTH_FORCE_FLOAT32", "0") == "1":
             print(
-                f"Unsloth: Using float16 precision for {model_type_arch} won't work! Using float32."
+                f"Hyposloth: Using float16 precision for {model_type_arch} won't work! Using float32."
             )
             bnb_compute_dtype = torch.float16
             do_forced_float32 = True
@@ -1082,7 +1082,7 @@ class FastBaseModel:
 
         if full_finetuning and (load_in_4bit or load_in_8bit):
             print(
-                "Unsloth: You selected full finetuning support, but 4bit / 8bit is enabled - disabling LoRA / QLoRA."
+                "Hyposloth: You selected full finetuning support, but 4bit / 8bit is enabled - disabling LoRA / QLoRA."
             )
             load_in_4bit = False
             load_in_8bit = False
@@ -1090,7 +1090,7 @@ class FastBaseModel:
 
         if int(load_in_4bit) + int(load_in_8bit) + int(load_in_16bit) >= 2:
             raise RuntimeError(
-                "Unsloth: Can only load in 4bit or 8bit or 16bit, not a combination!"
+                "Hyposloth: Can only load in 4bit or 8bit or 16bit, not a combination!"
             )
 
         # Prefetch the repo (killable child) so the in-process load below is a cache hit. vLLM owns the
@@ -1162,26 +1162,26 @@ class FastBaseModel:
         elif load_in_16bit:
             bnb_config = None
         elif not load_in_4bit and not load_in_8bit and not full_finetuning:
-            print("Unsloth: QLoRA and full finetuning all not selected. Switching to 16bit LoRA.")
+            print("Hyposloth: QLoRA and full finetuning all not selected. Switching to 16bit LoRA.")
 
         if full_finetuning:
             os.environ["UNSLOTH_ENABLE_FULL_FINETUNING"] = "1"
             if dtype == torch.bfloat16:
                 if float32_mixed_precision != True:
                     print(
-                        f"Unsloth: Using bfloat16 full finetuning which cuts memory usage by 50%.\n"
+                        f"Hyposloth: Using bfloat16 full finetuning which cuts memory usage by 50%.\n"
                         f"To enable float32 training, use `float32_mixed_precision = True` during FastLanguageModel.from_pretrained"
                     )
                 else:
                     print(
-                        f"Unsloth: Using full float32 full finetuning. "
+                        f"Hyposloth: Using full float32 full finetuning. "
                         f"To enable bfloat16 training to reduce VRAM usage by 50% albeit with a slightly higher loss, do:\n"
                         "use `float32_mixed_precision = False` during FastLanguageModel.from_pretrained"
                     )
                     os.environ["UNSLOTH_BFLOAT16_MIXED_PRECISION"] = "1"
             else:
                 print(
-                    "Unsloth: Float16 full finetuning uses more memory since we upcast weights to float32."
+                    "Hyposloth: Float16 full finetuning uses more memory since we upcast weights to float32."
                 )
         else:
             os.environ["UNSLOTH_ENABLE_FULL_FINETUNING"] = "0"
@@ -1220,7 +1220,7 @@ class FastBaseModel:
                 ):
                     if "bitsandbytes_4bit" not in AUTO_QUANTIZATION_CONFIG_MAPPING:
                         raise KeyError(
-                            "Unsloth: AUTO_QUANTIZATION_CONFIG_MAPPING does not have `bitsandbytes_4bit`"
+                            "Hyposloth: AUTO_QUANTIZATION_CONFIG_MAPPING does not have `bitsandbytes_4bit`"
                         )
                     quantizer = AUTO_QUANTIZATION_CONFIG_MAPPING["bitsandbytes_4bit"]
                 else:
@@ -1270,7 +1270,7 @@ class FastBaseModel:
             if offload_embedding and fast_inference:
                 # vLLM manages its own weights; embedding offload does not apply.
                 print(
-                    "Unsloth: Not offloading embeddings; incompatible with fast_inference (vLLM)."
+                    "Hyposloth: Not offloading embeddings; incompatible with fast_inference (vLLM)."
                 )
                 offload_embedding = False
             if not fast_inference:
@@ -1344,7 +1344,7 @@ class FastBaseModel:
                             )
                         nbytes = embed_tokens.weight.numel() * embed_tokens.weight.itemsize
                         ngb = round(nbytes / 1024 / 1024 / 1024, 2)
-                        print(f"Unsloth: Offloading embeddings to RAM to save {ngb} GB.")
+                        print(f"Hyposloth: Offloading embeddings to RAM to save {ngb} GB.")
                         _embed_device = embed_tokens.weight.device  # decoder device, before offload
                         embed_tokens.to("cpu")
 
@@ -1365,7 +1365,7 @@ class FastBaseModel:
                 if full_finetuning:
                     max_lora_rank = max(get_lora_supported_ranks())
                     raise NotImplementedError(
-                        "Unsloth: `fast_inference=True` cannot be used together with `full_finetuning=True`.\n"
+                        "Hyposloth: `fast_inference=True` cannot be used together with `full_finetuning=True`.\n"
                         "Reason: fast_inference is optimized for inference-only workflows and "
                         "does not currently support full fine-tuning.\n"
                         "Workaround: disable fast_inference, or use parameter-efficient fine-tuning "
@@ -1583,14 +1583,14 @@ class FastBaseModel:
         if is_vlm and (tokenizer is None or not hasattr(tokenizer, "image_processor")):
             if _missing_torchvision_error(_primary_err):
                 raise ImportError(
-                    f"Unsloth: Could not load the vision processor for `{tokenizer_name}` "
+                    f"Hyposloth: Could not load the vision processor for `{tokenizer_name}` "
                     "because torchvision is not installed. transformers requires torchvision "
                     "for this model's vision (image/video) processors. Please install it, "
                     "e.g. `pip install torchvision`."
                 )
             import sys
             print(
-                f"Unsloth: Warning - VLM processor fallback returned None for model_type={model_type_arch}",
+                f"Hyposloth: Warning - VLM processor fallback returned None for model_type={model_type_arch}",
                 file = sys.stderr,
             )
         # Backwards compat: if processor has no chat_template (e.g. old saves without
@@ -1654,7 +1654,7 @@ class FastBaseModel:
                 raise _patch_err
         model = post_patch_loss_function(model)
 
-        # Log Unsloth version for future fastpaths for inference
+        # Log Hyposloth version for future fastpaths for inference
         if hasattr(model, "config"):
             model.config.update({"unsloth_version": __version__})
         patch_saving_functions(model, vision = True)
@@ -1698,7 +1698,7 @@ class FastBaseModel:
             if tokenizer is None:
                 del model
                 raise RuntimeError(
-                    "Unsloth: Could not load the tokenizer/processor. If you are "
+                    "Hyposloth: Could not load the tokenizer/processor. If you are "
                     "offline, make sure the tokenizer files exist in the checkpoint "
                     "folder or were previously downloaded to the Hugging Face cache, "
                     "or set HF_HUB_OFFLINE=1 to force local loading. "
@@ -1735,7 +1735,7 @@ class FastBaseModel:
         for module in model.modules():
             module.max_seq_length = max_seq_length
         m._saved_temp_tokenizer = tokenizer
-        # Prevent Transformers Trainer from auto-wrapping Unsloth LoRA models in DP.
+        # Prevent Transformers Trainer from auto-wrapping Hyposloth LoRA models in DP.
         _mark_unsloth_disable_data_parallel(model, disable = not full_finetuning)
 
         # Patch generate
@@ -1796,7 +1796,7 @@ class FastBaseModel:
         **kwargs,
     ):
         if os.environ.get("UNSLOTH_ENABLE_FULL_FINETUNING", "0") == "1":
-            print("Unsloth: Full finetuning is enabled, so .get_peft_model has no effect")
+            print("Hyposloth: Full finetuning is enabled, so .get_peft_model has no effect")
             # Full finetuning still compiles, so a stray pre-train forward can poison the
             # cache; install the detector here too (it is idempotent).
             _unsloth_install_pretrain_detector(model)
@@ -1804,12 +1804,12 @@ class FastBaseModel:
         transformers_set_seed(random_state)
 
         if type(r) is not int:
-            raise TypeError(f"Unsloth: Rank of {str(r)} must be an integer.")
+            raise TypeError(f"Hyposloth: Rank of {str(r)} must be an integer.")
         if r <= 0:
-            raise TypeError(f"Unsloth: Rank of {str(r)} must be larger than 0.")
+            raise TypeError(f"Hyposloth: Rank of {str(r)} must be larger than 0.")
 
         if isinstance(model, PeftModelForCausalLM):
-            raise RuntimeError("Unsloth: You already added LoRA adapters to your model!")
+            raise RuntimeError("Hyposloth: You already added LoRA adapters to your model!")
 
         # Remember whether the CALLER explicitly opted into audio. "all-linear" turns
         # the flag on implicitly below, but an old unsloth_zoo that cannot do audio
@@ -1830,7 +1830,7 @@ class FastBaseModel:
             _audio_kwargs = {"finetune_audio_layers": finetune_audio_layers}
         elif _audio_explicitly_requested:
             raise RuntimeError(
-                "Unsloth: finetune_audio_layers=True requires a newer unsloth_zoo. "
+                "Hyposloth: finetune_audio_layers=True requires a newer unsloth_zoo. "
                 "Please upgrade with `pip install --upgrade --no-deps unsloth_zoo`."
             )
         else:
@@ -1870,7 +1870,7 @@ class FastBaseModel:
             if type(target_modules) in (list, tuple) and (_scoping or finetune_audio_layers):
                 if _scoping:
                     print(
-                        "Unsloth: Explicit target_modules are constrained by the "
+                        "Hyposloth: Explicit target_modules are constrained by the "
                         "finetune_(vision|language|attention|mlp) filters; adapters "
                         "attach only where both select."
                     )
@@ -1892,13 +1892,13 @@ class FastBaseModel:
             ):
                 # If vLLM is being used but lora is not enabled, throw an error
                 # Ref https://github.com/vllm-project/vllm/blob/51ba839555a5d122eadd91e9c16463ac288f5fa1/vllm/v1/engine/processor.py#L148-L151
-                raise RuntimeError("Unsloth: LoRA is not enabled for this model!")
+                raise RuntimeError("Hyposloth: LoRA is not enabled for this model!")
             if finetune_vision_layers:
                 # vLLM does not support LoRA on vision layers
                 # https://github.com/vllm-project/vllm/blob/main/vllm/lora/models.py#L471-L477
                 # TODO: Update this once vLLM V1 supports LoRA on vision layers (possibly not happening)
                 raise RuntimeError(
-                    "Unsloth: Finetuning vision layers is not supported for fast_inference. Only text layers are supported!"
+                    "Hyposloth: Finetuning vision layers is not supported for fast_inference. Only text layers are supported!"
                 )
             if model.config.model_type in VLLM_NON_LORA_VLM:
                 # mllama is still only in vllm v0 https://arc.net/l/quote/llwkfgmu
@@ -1906,7 +1906,7 @@ class FastBaseModel:
                 # vLLM V0 does not support LoRA on multi modal models.
                 # TODO: Update this once vLLM V1 supports Llama 3.2 aka mllama
                 raise RuntimeError(
-                    "Unsloth: LoRA finetuning for Llama 3.2 aka mllama models is not supported with fast_inference!"
+                    "Hyposloth: LoRA finetuning for Llama 3.2 aka mllama models is not supported with fast_inference!"
                 )
 
         # Clear deleted GPU items
@@ -1962,7 +1962,7 @@ class FastBaseModel:
                 )
                 target_modules = f"(?:{target_modules})|(?:{_expert_alt})"
             print(
-                f"Unsloth: Detected MoE model with per-expert Linear experts. "
+                f"Hyposloth: Detected MoE model with per-expert Linear experts. "
                 f"Enabling LoRA on {len(_moe_module_targets)} expert projection modules."
             )
             warn_if_zoo_cannot_merge_moe_experts()
@@ -2042,7 +2042,7 @@ class FastBaseModel:
             _LoraModel._create_and_replace = _original_car
         # Apply QAT + LoRA if specified
         if qat_scheme is not None:
-            print("Unsloth: Applying QAT to mitigate quantization degradation")
+            print("Hyposloth: Applying QAT to mitigate quantization degradation")
             model = _prepare_model_for_qat(model, qat_scheme)
         # Fix LoraConfig.auto_mapping is None
         fix_lora_auto_mapping(model)
@@ -2160,7 +2160,7 @@ class FastBaseModel:
             Trainer._inner_training_loop.__name__ != "_fast_inner_training_loop"
             and trust_remote_code == False
         ):
-            raise RuntimeError("Unsloth: Unsuccessfully patched inner_training_loop")
+            raise RuntimeError("Hyposloth: Unsuccessfully patched inner_training_loop")
         patch_saving_functions(model, vision = True)
 
         # Patch tokenizer to pad to the left
@@ -2173,7 +2173,7 @@ class FastBaseModel:
         if hasattr(m, "_saved_temp_tokenizer"):
             if hasattr(m._saved_temp_tokenizer, "tokenizer"):
                 m._saved_temp_tokenizer.tokenizer.padding_side = "left"
-        # Prevent Transformers Trainer from auto-wrapping Unsloth LoRA models in DP.
+        # Prevent Transformers Trainer from auto-wrapping Hyposloth LoRA models in DP.
         _mark_unsloth_disable_data_parallel(model, disable = not full_finetuning)
 
         # Clear deleted GPU items
@@ -2223,7 +2223,7 @@ class FastBaseModel:
     def for_inference(model):
         if not hasattr(model, "parameters"):
             raise TypeError(
-                "Unsloth: I think you're passing a tokenizer, not the model to for_inference!"
+                "Hyposloth: I think you're passing a tokenizer, not the model to for_inference!"
             )
 
         def _for_inference(m):
@@ -2279,7 +2279,7 @@ class FastBaseModel:
     def for_training(model, use_gradient_checkpointing = True):
         if not hasattr(model, "parameters"):
             raise TypeError(
-                "Unsloth: I think you're passing a tokenizer, not the model to for_training!"
+                "Hyposloth: I think you're passing a tokenizer, not the model to for_training!"
             )
 
         # Delete all fast inference loras
@@ -2410,7 +2410,7 @@ def check_dataset_for_missing_videos(
         from datasets import IterableDataset as _IterableDataset
         if isinstance(dataset, _IterableDataset):
             warnings.warn(
-                "Unsloth: check_dataset_for_missing_videos received a streaming "
+                "Hyposloth: check_dataset_for_missing_videos received a streaming "
                 "IterableDataset; iterating would exhaust it and training would "
                 "see zero samples. Skipping validation - pass a map-style Dataset "
                 "or rely on the UnslothVisionDataCollator's per-batch check.",
@@ -2453,7 +2453,7 @@ def check_dataset_for_missing_videos(
     if missing:
         missing_list = "\n".join(f"  - {p}" for p in missing)
         error_msg = (
-            f"Unsloth: {len(missing)} video file(s) referenced in your dataset could not be found.\n"
+            f"Hyposloth: {len(missing)} video file(s) referenced in your dataset could not be found.\n"
             "Training would silently continue with empty video tensors - the model would receive\n"
             "no actual video signal while loss still appears to decrease.\n\n"
             f"Missing files:\n{missing_list}\n\n"

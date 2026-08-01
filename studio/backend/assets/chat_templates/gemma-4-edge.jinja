@@ -1,9 +1,9 @@
 {#-
-  Gemma 4 chat template (E2B / E4B edge variant), vendored for Unsloth Studio.
+  Gemma 4 chat template (E2B / E4B edge variant), vendored for Hyposloth Studio.
   Source: google/gemma-4-31B-it HF discussion/PR #118 (adds the preserve_thinking
   flag plus null-rendering, string-arguments validation, balanced turn tags, empty
   messages handling, and OpenAI image_url/input_audio aliases).
-  Unsloth-local changes vs PR #118:
+  Hyposloth-local changes vs PR #118:
     1. preserve_thinking defaults to false (see SETUP block below).
     2. The empty "<|channel>thought\n<channel|>" block on enable_thinking=false is
        NOT emitted. Google ships a distinct template for E2B/E4B (google/gemma-4-E2B-it,
@@ -192,7 +192,7 @@
 {%- set ns = namespace(prev_message_type=None, prev_non_tool_role=None) -%}
 {%- set loop_messages = messages -%}
 {%- set enable_thinking = enable_thinking | default(false) -%}
-{#- Unsloth Studio: preserve_thinking defaults OFF (upstream PR #118 defaults true). -#}
+{#- Hyposloth Studio: preserve_thinking defaults OFF (upstream PR #118 defaults true). -#}
 {%- set preserve_thinking = preserve_thinking | default(false) -%}
 {{- bos_token -}}
 {#- Handle System/Tool Definitions Block -#}

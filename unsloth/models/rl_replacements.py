@@ -473,12 +473,12 @@ def _require_replace(
         detail = f" ({where})" if where else ""
         if required:
             raise RuntimeError(
-                f"Unsloth: source anchor not found{detail}; the patched function is out "
+                f"Hyposloth: source anchor not found{detail}; the patched function is out "
                 "of sync with this TRL / unsloth_zoo version. Please file a bug report."
             )
         if where not in _WARNED_MISSING_ANCHORS:
             _WARNED_MISSING_ANCHORS.add(where)
-            logger.warning(f"Unsloth: skipped an optional source edit{detail} (anchor not found).")
+            logger.warning(f"Hyposloth: skipped an optional source edit{detail} (anchor not found).")
         return function
     return function.replace(old, new, count)
 
@@ -514,7 +514,7 @@ def sft_trainer_prepare_dataset(function_name, function):
             )
             if _n_setup != 1:
                 raise RuntimeError(
-                    "Unsloth: failed to install wrapped-packing support into "
+                    "Hyposloth: failed to install wrapped-packing support into "
                     "sft_prepare_dataset (signature not found); please file a bug report."
                 )
             # why: route each edit through _require_replace so a drifted anchor fails
@@ -561,7 +561,7 @@ def sft_trainer_prepare_dataset(function_name, function):
         "if 'skip_prepare_dataset' in locals() and skip_prepare_dataset:\n"
         "    return dataset\n"
         "if 'tokenizer'          not in locals(): tokenizer = processing_class\n"
-        "if 'formatting_func'    not in locals(): raise RuntimeError('Unsloth: Please file a bug report - `formatting_func` does not exist!')\n"
+        "if 'formatting_func'    not in locals(): raise RuntimeError('Hyposloth: Please file a bug report - `formatting_func` does not exist!')\n"
         "if 'dataset_text_field' not in locals() and 'args' in locals(): dataset_text_field = args.dataset_text_field\n"
         "if 'dataset_text_field' not in locals(): dataset_text_field = None\n"
         "if formatting_func is None and dataset_text_field is None and 'prompt' in dataset[0] and 'completion' in dataset[0]:\n"
@@ -970,7 +970,7 @@ def grpo_trainer__generate_and_score_completions(function_name, function):
 
     # Important note: we disable TRL's importance sampling logic
     # It is disabled because the LLM path moves left padding to the right.
-    # We must adjust the vLLM sampling_logprob tensor in Unsloth to account for this.
+    # We must adjust the vLLM sampling_logprob tensor in Hyposloth to account for this.
     string_to_find = "if self.use_vllm and self.vllm_importance_sampling_correction:"
 
     replacement_string = "if False and self.use_vllm and self.vllm_importance_sampling_correction:"
@@ -996,7 +996,7 @@ def grpo_trainer__generate_and_score_completions(function_name, function):
     # like reasoning_effort. Inject code to store per-sample chat_template_kwargs on self.
     _metadata_extraction = (
         "\n"
-        "        # Unsloth: Extract per-sample chat_template_kwargs before metadata is lost\n"
+        "        # Hyposloth: Extract per-sample chat_template_kwargs before metadata is lost\n"
         "        _ct_ = getattr(self.processing_class, 'chat_template', None) or ''\n"
         "        _sk_ = {'prompt', 'chosen', 'rejected', 'completion', 'messages', 'label',\n"
         "                'images', 'image', 'videos', 'video', 'audios', 'audio'}\n"
@@ -1220,7 +1220,7 @@ def grpo_trainer__get_per_token_logps(function_name, function):
         compute_efficient = False,
     ):
         if True:  # os.environ.get('UNSLOTH_USE_NEW_MODEL', '0') == '0':
-            return None  # Unsloth efficient GRPO
+            return None  # Hyposloth efficient GRPO
         # Otherwise, calculate normally:
         if not hasattr(self, "_autocast_dtype"):
             self._autocast_dtype = (
@@ -1282,9 +1282,9 @@ def grpo_trainer__get_per_token_logps_and_entropies(function_name, function):
         *args,
         **kwargs,
     ):
-        # All Unsloth code here in this function is licensed under AGPL3
+        # All Hyposloth code here in this function is licensed under AGPL3
         # if True: # os.environ.get('UNSLOTH_USE_NEW_MODEL', '0') == '0':
-        #     return None, None  # logps, entropies Unsloth efficient GRPO
+        #     return None, None  # logps, entropies Hyposloth efficient GRPO
         if compute_efficient:
             return None, None
         else:
@@ -1647,7 +1647,7 @@ def grpo_trainer__get_per_token_logps_and_entropies(function_name, function):
                     os.environ["UNSLOTH_RETURN_HIDDEN_STATES"] = "1"
                     if UNSLOTH_ENABLE_LOGGING:
                         print(
-                            f"[Unsloth] GRPO PrefixGrouper (no-grad) disabled (fell back to packed): {_pg_err!r}",
+                            f"[Hyposloth] GRPO PrefixGrouper (no-grad) disabled (fell back to packed): {_pg_err!r}",
                             flush = True,
                         )
 
@@ -1805,7 +1805,7 @@ def grpo_trainer__get_per_token_logps_and_entropies(function_name, function):
                             _pk_diff = float(((_pk_result - _pk_ref).abs() * _pk_cm).max())
                             if UNSLOTH_ENABLE_LOGGING:
                                 print(
-                                    f"[Unsloth] GRPO seq-packing (no-grad) verify: T={_pk_T} maxseg={_pk_maxseg} packed-vs-perrow max|d|={_pk_diff:.4f}",
+                                    f"[Hyposloth] GRPO seq-packing (no-grad) verify: T={_pk_T} maxseg={_pk_maxseg} packed-vs-perrow max|d|={_pk_diff:.4f}",
                                     flush = True,
                                 )
                             # kernel-noise floor ~0.25; cross-sample contamination is >= 2.4
@@ -1834,7 +1834,7 @@ def grpo_trainer__get_per_token_logps_and_entropies(function_name, function):
                                     )
                                 if UNSLOTH_ENABLE_LOGGING:
                                     print(
-                                        f"[Unsloth] GRPO seq-packing (no-grad) fell back at T={_pk_T} (diff={_pk_diff:.3f})",
+                                        f"[Hyposloth] GRPO seq-packing (no-grad) fell back at T={_pk_T} (diff={_pk_diff:.3f})",
                                         flush = True,
                                     )
                 except Exception as _pk_err:
@@ -1848,7 +1848,7 @@ def grpo_trainer__get_per_token_logps_and_entropies(function_name, function):
                     unwrapped_model._unsloth_seq_packing_nograd_ok = False
                     if UNSLOTH_ENABLE_LOGGING:
                         print(
-                            f"[Unsloth] GRPO sequence-packing (no-grad) disabled (fell back to padded): {_pk_err!r}",
+                            f"[Hyposloth] GRPO sequence-packing (no-grad) disabled (fell back to padded): {_pk_err!r}",
                             flush = True,
                         )
             # ---- PrefixGrouper first-use self-verify (no-grad) ----
@@ -1872,7 +1872,7 @@ def grpo_trainer__get_per_token_logps_and_entropies(function_name, function):
                         _pg_diff = float(((_pg_a - _pg_b).abs() * _pg_cm).max())
                         if UNSLOTH_ENABLE_LOGGING:
                             print(
-                                f"[Unsloth] GRPO PrefixGrouper (no-grad) verify: sig={_pg_layout.signature} "
+                                f"[Hyposloth] GRPO PrefixGrouper (no-grad) verify: sig={_pg_layout.signature} "
                                 f"shared-prefix vs full-row-packed max|d|={_pg_diff:.4f}",
                                 flush = True,
                             )
@@ -1909,7 +1909,7 @@ def grpo_trainer__get_per_token_logps_and_entropies(function_name, function):
                         os.environ["UNSLOTH_RETURN_HIDDEN_STATES"] = "1"
                         if UNSLOTH_ENABLE_LOGGING:
                             print(
-                                f"[Unsloth] GRPO PrefixGrouper (no-grad) verify failed (fell back to packed): {_pg_err3!r}",
+                                f"[Hyposloth] GRPO PrefixGrouper (no-grad) verify failed (fell back to packed): {_pg_err3!r}",
                                 flush = True,
                             )
                 # else: no packed reference (packing off/failed) -> cannot verify; fall back.
@@ -2056,7 +2056,7 @@ def grpo_trainer__get_per_token_logps_and_entropies(function_name, function):
         )
         if n != 1:
             raise RuntimeError(
-                "Unsloth GRPO: could not downgrade the per-token-logps return to a "
+                "Hyposloth GRPO: could not downgrade the per-token-logps return to a "
                 f"2-tuple for TRL {trl_version} (matched {n} times, expected 1). The "
                 "return line changed; update the arity gate in rl_replacements.py."
             )
@@ -2538,7 +2538,7 @@ def grpo_trainer_compute_loss(function_name, function):
 RL_FUNCTIONS["grpo_trainer"].append(grpo_trainer_compute_loss)
 
 
-# Fix KTO shape mismatch when Unsloth model forward truncates input_ids
+# Fix KTO shape mismatch when Hyposloth model forward truncates input_ids
 # but labels aren't truncated. TRL 0.27.2+ _process_tokens only truncates
 # completions, not prompts -- so prompts exceeding max_seq_length cause the
 # model to produce shorter logits than the labels expect.
@@ -2549,7 +2549,7 @@ def kto_trainer_get_batch_logps(function_name, function):
     # to preserve the exact indentation of the raise statement.
     old = 'raise ValueError("Logits (batch and sequence length dim) and labels must have the same shape.")'
     new = (
-        "# Unsloth: auto-truncate to shorter sequence length (model may have truncated input_ids)\n"
+        "# Hyposloth: auto-truncate to shorter sequence length (model may have truncated input_ids)\n"
         "            _min_len = min(logits.shape[1], labels.shape[1])\n"
         "            logits = logits[:, :_min_len, :]\n"
         "            labels = labels[:, :_min_len]"
@@ -2583,7 +2583,7 @@ def _kto_completion_repl(m):
     ws, var = m.group("ws"), m.group("var")
     return (
         f"{ws}shift_logits = completion_logits[:, :-1, :].contiguous()\n"
-        f"{ws}# Unsloth: clamp logits/ids/mask to shorter seq len (model may truncate input_ids)\n"
+        f"{ws}# Hyposloth: clamp logits/ids/mask to shorter seq len (model may truncate input_ids)\n"
         f'{ws}_uns_ids = {var}["completion_input_ids"][:, 1:].contiguous()\n'
         f"{ws}_uns_n = min(shift_logits.shape[1], _uns_ids.shape[1])\n"
         f"{ws}per_token_logps = selective_log_softmax(shift_logits[:, :_uns_n], _uns_ids[:, :_uns_n])\n"
@@ -2595,7 +2595,7 @@ def _kto_kl_repl(m):
     ws, var = m.group("ws"), m.group("var")
     return (
         f"{ws}shift_KL_logits = KL_logits[:, :-1, :].contiguous()\n"
-        f"{ws}# Unsloth: clamp logits/ids/mask to shorter seq len (model may truncate input_ids)\n"
+        f"{ws}# Hyposloth: clamp logits/ids/mask to shorter seq len (model may truncate input_ids)\n"
         f'{ws}_uns_kl_ids = {var}["KL_completion_input_ids"][:, 1:].contiguous()\n'
         f"{ws}_uns_kl_n = min(shift_KL_logits.shape[1], _uns_kl_ids.shape[1])\n"
         f"{ws}KL_per_token_logps = selective_log_softmax(shift_KL_logits[:, :_uns_kl_n], _uns_kl_ids[:, :_uns_kl_n])\n"
@@ -2630,7 +2630,7 @@ def grpo_trainer_fix_batch_size(RLTrainer_source, RLConfig_source):
     check_batch_size = (
         "div = per_device_train_batch_size // num_generations\n"
         "if div * num_generations != per_device_train_batch_size:\n"
-        "    print('Unsloth: We now expect `per_device_train_batch_size` to be a multiple of `num_generations`.\\n"
+        "    print('Hyposloth: We now expect `per_device_train_batch_size` to be a multiple of `num_generations`.\\n"
         "We will change the batch size of ' + str(per_device_train_batch_size) + ' to the `num_generations` of ' + str(num_generations))\n"
         "    per_device_train_batch_size = num_generations\n"
     )
@@ -2682,7 +2682,7 @@ def openenv_vllm_reload_weights():
     # at the executor level. This causes unsloth's patched generate to try waking up again,
     # resulting in double create_and_map on already-mapped handles.
     #
-    # The fix: Use wake_up() with no tags, which wakes everything. Unsloth's patched
+    # The fix: Use wake_up() with no tags, which wakes everything. Hyposloth's patched
     # CuMemAllocator.wake_up skips weights anyway, so this is safe.
     if importlib.util.find_spec("trl") is None:
         return
@@ -2693,9 +2693,9 @@ def openenv_vllm_reload_weights():
         import trl.experimental.openenv.utils as openenv_utils
         import trl.experimental.openenv as openenv
     except (ImportError, NameError, Exception) as e:
-        logger.info(f"Unsloth: Failed to import trl openenv: {e}")
+        logger.info(f"Hyposloth: Failed to import trl openenv: {e}")
         logger.info(
-            "Unsloth: trl.experimental.openenv not available — skipping RL openenv patches."
+            "Hyposloth: trl.experimental.openenv not available — skipping RL openenv patches."
         )
         return
 
@@ -2721,7 +2721,7 @@ def openenv_vllm_reload_weights():
         src = inspect.getsource(patch_target)
     except OSError as e:
         logger.warning(
-            f"Unsloth: Could not retrieve source for trl openenv "
+            f"Hyposloth: Could not retrieve source for trl openenv "
             f"{patch_target_name} ({e}); skipping rewrite. The unmodified "
             f"TRL openenv path will run, so the duplicate reload_weights "
             f"strip and the wake_up tag rewrite are NOT applied. Open an "
@@ -2748,11 +2748,11 @@ def openenv_vllm_reload_weights():
     src = reload_weights_pattern.sub(replace_reload_weights, src)
 
     # Change wake_up(tags=["kv_cache"]) to wake_up() - wake everything to set is_sleeping=False
-    # This prevents double wake_up issues. Unsloth's allocator skips weights anyway.
+    # This prevents double wake_up issues. Hyposloth's allocator skips weights anyway.
     src = re.sub(r"\.wake_up\(tags=\[.*?\]\)", ".wake_up()", src)
 
     if original_src == src:
-        logger.warning("Unsloth: Warning - regex did not match, patch may have failed")
+        logger.warning("Hyposloth: Warning - regex did not match, patch may have failed")
         return
 
     # Execute and explicitly assign to module
@@ -2764,7 +2764,7 @@ def openenv_vllm_reload_weights():
     setattr(openenv_utils, patch_target_name, patched_func)
     if patch_target_name == "generate_rollout_completions":
         openenv.generate_rollout_completions = patched_func
-    logger.info(f"Unsloth: Patched trl openenv {patch_target_name}")
+    logger.info(f"Hyposloth: Patched trl openenv {patch_target_name}")
 
 
 RL_ADDITIONAL_FUNCTIONS["openenv"].append(openenv_vllm_reload_weights)
@@ -2785,19 +2785,19 @@ def vllm_generation_init_patch():
     try:
         import trl.generation.vllm_generation as vllm_generation
     except (ImportError, NameError, Exception) as e:
-        logger.info(f"Unsloth: Failed to import trl.generation.vllm_generation: {e}")
+        logger.info(f"Hyposloth: Failed to import trl.generation.vllm_generation: {e}")
         return
 
     def patch_vllm_generation_method(method_name, transform, marker, filename_suffix):
         method = getattr(vllm_generation.VLLMGeneration, method_name, None)
         if method is None:
-            logger.info(f"Unsloth: Could not find VLLMGeneration.{method_name}")
+            logger.info(f"Hyposloth: Could not find VLLMGeneration.{method_name}")
             return False
 
         try:
             src = inspect.getsource(method)
         except Exception as e:
-            logger.info(f"Unsloth: Could not get source of VLLMGeneration.{method_name}: {e}")
+            logger.info(f"Hyposloth: Could not get source of VLLMGeneration.{method_name}: {e}")
             return False
 
         src = textwrap.dedent(src)
@@ -2831,7 +2831,7 @@ def vllm_generation_init_patch():
             llm_block = textwrap.dedent(match.group("llm_block"))
             return (
                 f"{indent}if hasattr(model, 'vllm_engine'):\n"
-                f"{indent}    # Unsloth already inits vLLM in fast inference mode. Do not redo :)\n"
+                f"{indent}    # Hyposloth already inits vLLM in fast inference mode. Do not redo :)\n"
                 f"{indent}    self.llm = model.vllm_engine\n"
                 f"{indent}    self.unsloth_fast_inference_lora = getattr(self.llm, 'shared_weights', False)\n"
                 f"{indent}    if getattr(self.llm, 'shared_weights', False) and hasattr(model, 'load_lora'):\n"
@@ -2842,7 +2842,7 @@ def vllm_generation_init_patch():
         patched_src, num_replacements = pattern.subn(replace_llm_block, src, count = 1)
         if num_replacements == 0:
             raise RuntimeError(
-                "Unsloth: Warning - regex did not match, VLLMGeneration._init_vllm patch may have failed"
+                "Hyposloth: Warning - regex did not match, VLLMGeneration._init_vllm patch may have failed"
             )
         return patched_src
 
@@ -2862,7 +2862,7 @@ def vllm_generation_init_patch():
             guard = (
                 "    if getattr(getattr(self, 'llm', None), 'shared_weights', False) or "
                 "getattr(self, 'unsloth_fast_inference_lora', False):\n"
-                "        # Unsloth fast inference LoRA shares weights with vLLM already.\n"
+                "        # Hyposloth fast inference LoRA shares weights with vLLM already.\n"
                 "        return\n\n"
             )
             return match.group("def_line") + guard + body
@@ -2870,7 +2870,7 @@ def vllm_generation_init_patch():
         patched_src, num_replacements = pattern.subn(replace_sync_weights, src, count = 1)
         if num_replacements == 0:
             raise RuntimeError(
-                "Unsloth: Warning - regex did not match, VLLMGeneration.sync_weights patch may have failed"
+                "Hyposloth: Warning - regex did not match, VLLMGeneration.sync_weights patch may have failed"
             )
         return patched_src
 
@@ -2892,7 +2892,7 @@ def vllm_generation_init_patch():
         patched_src, num_replacements = pattern.subn(replace_reload_weights, src, count = 1)
         if num_replacements == 0:
             raise RuntimeError(
-                "Unsloth: Warning - regex did not match, VLLMGeneration.generate patch may have failed"
+                "Hyposloth: Warning - regex did not match, VLLMGeneration.generate patch may have failed"
             )
 
         # Inject lora_request when sharing weights (vLLM needs the adapter)
@@ -2934,11 +2934,11 @@ def vllm_generation_init_patch():
         return
 
     if init_patched:
-        logger.info("Unsloth: Patched trl VLLMGeneration._init_vllm")
+        logger.info("Hyposloth: Patched trl VLLMGeneration._init_vllm")
     if sync_patched:
-        logger.info("Unsloth: Patched trl VLLMGeneration.sync_weights")
+        logger.info("Hyposloth: Patched trl VLLMGeneration.sync_weights")
     if generate_patched:
-        logger.info("Unsloth: Patched trl VLLMGeneration.generate")
+        logger.info("Hyposloth: Patched trl VLLMGeneration.generate")
 
 
 RL_ADDITIONAL_FUNCTIONS["vllm_generation"].append(vllm_generation_init_patch)

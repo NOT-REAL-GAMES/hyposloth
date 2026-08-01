@@ -1,7 +1,7 @@
 """Regression test for ``_get_new_mapper`` leaking into ``loader_utils`` globals.
 
 ``get_model_name`` calls ``_get_new_mapper()`` whenever a name misses the local
-tables, purely to answer "would a newer Unsloth support this?". It fetches
+tables, purely to answer "would a newer Hyposloth support this?". It fetches
 ``mapper.py`` from GitHub main, prefixes the three mappers it wants with
 ``NEW_``, and ``exec``s the result into ``globals()``.
 

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Utilities for enabling packed (padding-free) batches across Unsloth."""
+"""Utilities for enabling packed (padding-free) batches across Hyposloth."""
 
 from __future__ import annotations
 
@@ -252,7 +252,7 @@ def _hybrid_reject(reason: str) -> bool:
     if reason not in _HYBRID_WARNED:
         _HYBRID_WARNED.add(reason)
         _HYBRID_LOGGER.warning(
-            "Unsloth: hybrid linear-attention packing disabled (padded path): %s.",
+            "Hyposloth: hybrid linear-attention packing disabled (padded path): %s.",
             reason,
         )
     return False
@@ -276,7 +276,7 @@ def _hybrid_varlen_kernels_available(gated_delta_modules) -> Optional[str]:
 
     Dispatch (the mixer actually calling self.causal_conv1d_fn /
     self.chunk_gated_delta_rule) is verified at RUNTIME by the forward-wrapper
-    handshake, not statically: Unsloth's compile-disable shim hides it from
+    handshake, not statically: Hyposloth's compile-disable shim hides it from
     inspect.getsource, and every supported transformers release dispatches
     through the instance attribute."""
     if not gated_delta_modules:
@@ -508,7 +508,7 @@ def patch_hybrid_linear_attention_varlen(model) -> bool:
                         m._unsloth_varlen = None
                     _hybrid_reject("varlen conv/scan not both dispatched (dispatch changed?)")
                     raise RuntimeError(
-                        "Unsloth: experimental hybrid packing cannot continue because the "
+                        "Hyposloth: experimental hybrid packing cannot continue because the "
                         "varlen conv/scan wrappers were not both invoked for "
                         f"{sorted(set(missing))}. Unset UNSLOTH_EXPERIMENTAL_HYBRID_PACKING "
                         "to train these models on the padded path."

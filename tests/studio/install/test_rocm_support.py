@@ -344,7 +344,7 @@ class TestRuntimePatterns:
             install_kind = "windows-hip",
         )
         patterns = runtime_patterns_for_choice(choice)
-        # Narrowed from "*.exe" to the two binaries Unsloth actually invokes.
+        # Narrowed from "*.exe" to the two binaries Hyposloth actually invokes.
         assert "llama-server.exe" in patterns
         assert "llama-quantize.exe" in patterns
         assert "*.dll" in patterns
@@ -362,7 +362,7 @@ class TestRuntimePatterns:
         assert "lib*.dylib" in patterns
 
     def test_diffusion_visual_server_kept(self):
-        # The DiffusionGemma visual-server must survive the prune so Unsloth can
+        # The DiffusionGemma visual-server must survive the prune so Hyposloth can
         # serve DiffusionGemma GGUFs natively.
         for kind, name in (
             ("linux-cuda", "llama-diffusion-gemma-visual-server"),
@@ -1735,7 +1735,7 @@ class TestTokenizerErrorMessage:
         assert "We do not support AMD" not in source
 
     def test_new_message_has_docs_link(self):
-        """New message should point to Unsloth AMD docs."""
+        """New message should point to Hyposloth AMD docs."""
         tu_path = PACKAGE_ROOT / "unsloth" / "tokenizer_utils.py"
         source = tu_path.read_text(encoding = "utf-8")
         assert "docs.unsloth.ai" in source or "No GPU detected" in source
@@ -3314,10 +3314,10 @@ class TestInstallBnbWindowsRocm:
         sitecustomize = site_packages / "sitecustomize.py"
         sitecustomize.write_text(
             "EXISTING = True\n"
-            "# BEGIN Unsloth BNB_ROCM_VERSION\n"
+            "# BEGIN Hyposloth BNB_ROCM_VERSION\n"
             "import os as _unsloth_os\n"
             "_unsloth_os.environ.setdefault('BNB_ROCM_VERSION', '72')\n"
-            "# END Unsloth BNB_ROCM_VERSION\n",
+            "# END Hyposloth BNB_ROCM_VERSION\n",
             encoding = "utf-8",
         )
 
@@ -3325,7 +3325,7 @@ class TestInstallBnbWindowsRocm:
             assert stack_mod._persist_bnb_rocm_version("713") is True
 
         source = sitecustomize.read_text(encoding = "utf-8")
-        assert source.count("# BEGIN Unsloth BNB_ROCM_VERSION") == 1
+        assert source.count("# BEGIN Hyposloth BNB_ROCM_VERSION") == 1
         assert "EXISTING = True" in source
         assert "'713'" in source
         assert "'72'" not in source
@@ -3347,7 +3347,7 @@ class TestInstallBnbWindowsRocm:
         sitecustomize = site_packages / "sitecustomize.py"
         sitecustomize.write_text(
             "EXISTING = True\n"
-            "# BEGIN Unsloth BNB_ROCM_VERSION\n"
+            "# BEGIN Hyposloth BNB_ROCM_VERSION\n"
             "import os as _unsloth_os\n"
             "_unsloth_os.environ.setdefault('BNB_ROCM_VERSION', '72')\n",
             encoding = "utf-8",
@@ -3357,8 +3357,8 @@ class TestInstallBnbWindowsRocm:
             assert stack_mod._persist_bnb_rocm_version("713") is True
 
         source = sitecustomize.read_text(encoding = "utf-8")
-        assert source.count("# BEGIN Unsloth BNB_ROCM_VERSION") == 1
-        assert source.count("# END Unsloth BNB_ROCM_VERSION") == 1
+        assert source.count("# BEGIN Hyposloth BNB_ROCM_VERSION") == 1
+        assert source.count("# END Hyposloth BNB_ROCM_VERSION") == 1
         assert "EXISTING = True" in source
         assert "'713'" in source
         assert "'72'" not in source
@@ -3369,10 +3369,10 @@ class TestInstallBnbWindowsRocm:
         site_packages.mkdir()
         sitecustomize = site_packages / "sitecustomize.py"
         block = (
-            "# BEGIN Unsloth BNB_ROCM_VERSION\n"
+            "# BEGIN Hyposloth BNB_ROCM_VERSION\n"
             "import os as _unsloth_os\n"
             "_unsloth_os.environ.setdefault('BNB_ROCM_VERSION', '72')\n"
-            "# END Unsloth BNB_ROCM_VERSION\n"
+            "# END Hyposloth BNB_ROCM_VERSION\n"
         )
         sitecustomize.write_text(block + "USER_MID = 1\n" + block, encoding = "utf-8")
 
@@ -3380,8 +3380,8 @@ class TestInstallBnbWindowsRocm:
             assert stack_mod._persist_bnb_rocm_version("713") is True
 
         source = sitecustomize.read_text(encoding = "utf-8")
-        assert source.count("# BEGIN Unsloth BNB_ROCM_VERSION") == 1
-        assert source.count("# END Unsloth BNB_ROCM_VERSION") == 1
+        assert source.count("# BEGIN Hyposloth BNB_ROCM_VERSION") == 1
+        assert source.count("# END Hyposloth BNB_ROCM_VERSION") == 1
         assert "USER_MID = 1" in source
         assert "'713'" in source
         assert "'72'" not in source

@@ -45,7 +45,7 @@ try {
     # ----- Case A: a WSL shortcut survives -> keep unsloth.ico, drop the rest, keep dir -----
     $progA = Join-Path $work "shortcutsA"
     New-Item -ItemType Directory -Force -Path $progA | Out-Null
-    Set-Content -LiteralPath (Join-Path $progA "Unsloth Studio (WSL - Ubuntu-24.04).lnk") -Value "x"
+    Set-Content -LiteralPath (Join-Path $progA "Hyposloth Studio (WSL - Ubuntu-24.04).lnk") -Value "x"
     $dataA = Join-Path $work "dataA"
     New-Item -ItemType Directory -Force -Path $dataA | Out-Null
     Set-Content -LiteralPath (Join-Path $dataA "unsloth.ico") -Value "ICO"

@@ -939,7 +939,7 @@ type ChatRuntimeStore = {
   // Describe figures/charts at ingest time (vision model required).
   ragCaptionFigures: boolean;
   /**
-   * When on, local Unsloth tool calls pause for an explicit allow/deny in the
+   * When on, local Hyposloth tool calls pause for an explicit allow/deny in the
    * chat before they run.
    */
   confirmToolCalls: boolean;
@@ -1026,7 +1026,7 @@ type ChatRuntimeStore = {
   tensorParallel: boolean;
   /** Backend-reported tensor-parallel state; null until first hydrated. */
   loadedTensorParallel: boolean | null;
-  /** GPU memory strategy for GGUF loads. "auto" = Unsloth picks GPUs and context
+  /** GPU memory strategy for GGUF loads. "auto" = Hyposloth picks GPUs and context
    *  to fit; "manual" = you own the offload (gpuLayers < 0 = Auto/--fit, >= 0
    *  pins layers + nCpuMoe). */
   gpuMemoryMode: "auto" | "manual";
@@ -2411,7 +2411,7 @@ export const useChatRuntimeStore = create<ChatRuntimeStore>((set, get) => ({
     })),
 }));
 
-// Mirror token edits made through the shared store (e.g. Unsloth's field).
+// Mirror token edits made through the shared store (e.g. Hyposloth's field).
 const unsubscribeHfTokenMirror = mirrorHfTokenInto(useChatRuntimeStore);
 if (import.meta.hot) {
   import.meta.hot.dispose(unsubscribeHfTokenMirror);

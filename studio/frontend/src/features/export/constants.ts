@@ -223,7 +223,7 @@ export function mergedFormatPayload(value: string): {
 
 /**
  * llama.cpp effective bits-per-weight per quant; GGUF size ~= fp16_bytes * bpw / 16.
- * K-quant values are published average bit-rates (Q2_K_L = Unsloth Q2_K + Q8_0
+ * K-quant values are published average bit-rates (Q2_K_L = Hyposloth Q2_K + Q8_0
  * embeddings). Approximate ("~"), not exact file sizes.
  */
 export const GGUF_BPW: Record<string, number> = {

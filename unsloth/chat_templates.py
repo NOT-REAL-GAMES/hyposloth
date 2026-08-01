@@ -52,8 +52,8 @@ DEFAULT_SYSTEM_MESSAGE = {}
 def _ollama_template(name: str):
     return OLLAMA_TEMPLATES[name]
 
-# =========================================== Unsloth
-# Unsloth efficient template leverages from Zephyr
+# =========================================== Hyposloth
+# Hyposloth efficient template leverages from Zephyr
 unsloth_template = \
     "{{ bos_token }}"\
     "{% if messages[0]['role'] == 'system' %}"\
@@ -1818,14 +1818,14 @@ def _change_system_message(template: str, type_chat_template: str, system_messag
     # fill it before the no-default return below. A missing message here is an error.
     if default_system_message is None and "{system_message}" in template:
         if system_message is None:
-            raise ValueError("Unsloth: You need to provide a system message for custom templates.")
+            raise ValueError("Hyposloth: You need to provide a system message for custom templates.")
         new_template = template.replace("{system_message}", system_message)
         return new_template, system_message
 
     if default_system_message is None:
         if system_message is not None:
             logger.warning_once(
-                f"Unsloth: You tried to change the system message for {type_chat_template}, "
+                f"Hyposloth: You tried to change the system message for {type_chat_template}, "
                 "but it doesn't have a default system message. "
                 "You need to manually add the system message in your data."
             )
@@ -1921,7 +1921,7 @@ def get_chat_template(
         # eos_token is <end_of_turn> (gemma-3-270m-it, gemma-3-1b-it) slips through.
         if not map_eos_token and yes_map_eos_token and token_mapping is not None:
             logger.warning_once(
-                f"Unsloth: {type_chat_template} builds {stop_word} by renaming existing "\
+                f"Hyposloth: {type_chat_template} builds {stop_word} by renaming existing "\
                 f"tokens, so map_eos_token = False cannot be honored here."
             )
             map_eos_token = True
@@ -1930,7 +1930,7 @@ def get_chat_template(
         if not is_fast_tokenizer:
             pass
             # print(
-            #     "Unsloth: Not a fast tokenizer, so can't process it as of yet :(\n"\
+            #     "Hyposloth: Not a fast tokenizer, so can't process it as of yet :(\n"\
             #     "Please log a Github issue if you want this as a new feature!\n"\
             #     "Your chat template will still work, but it won't add or edit tokens."
             # )
@@ -1961,7 +1961,7 @@ def get_chat_template(
 
             if map_eos_token and (not stop_word in token_mapping.values()):
                 # Do not map 107 = <|im_end|> and 1 = <|im_end|>. This will reduce the vocab size by 1
-                logger.warning_once(f"Unsloth: Will map {stop_word} to EOS = {tokenizer.eos_token}.")
+                logger.warning_once(f"Hyposloth: Will map {stop_word} to EOS = {tokenizer.eos_token}.")
                 string_vocab = string_vocab.replace(tokenizer.eos_token, stop_word)
             pass
 
@@ -1995,7 +1995,7 @@ def get_chat_template(
                 pass
 
         elif map_eos_token and (stop_word != "eos_token"):
-            logger.warning_once(f"Unsloth: Will map {stop_word} to EOS = {tokenizer.eos_token}.")
+            logger.warning_once(f"Hyposloth: Will map {stop_word} to EOS = {tokenizer.eos_token}.")
 
             # HACK: replace old EOS with a new one (e.g. ChatML <|im_end|>) to
             # avoid the slow lm_head/embedding retraining of new tokens.
@@ -2043,7 +2043,7 @@ def get_chat_template(
 
     else:
         raise TypeError(
-            f"Unsloth: `chat_template` must be a tuple of (your_template, eos_token,) or one of\n"\
+            f"Hyposloth: `chat_template` must be a tuple of (your_template, eos_token,) or one of\n"\
             f"{CHAT_TEMPLATES.keys()}"
         )
 
@@ -2060,7 +2060,7 @@ def get_chat_template(
         .replace("'assistant'", "'" + mapping["assistant"] + "'")
 
     if use_zoo_tokenizer_patch:
-        # Unsloth MLX avoids the model-utils tokenizer wrapper because that
+        # Hyposloth MLX avoids the model-utils tokenizer wrapper because that
         # import path pulls in Torch/GPU-specific modules before MLX training.
         from unsloth_zoo.tokenizer_utils import patch_tokenizer
     else:
@@ -2135,7 +2135,7 @@ def _parse_combined_prompt(combined_prompt, dataset):
     for column in possible_columns:
         if column not in dataset_columns:
             raise KeyError(
-                f"Unsloth: Your prompt includes '{column}' but this does not exist in the dataset. "\
+                f"Hyposloth: Your prompt includes '{column}' but this does not exist in the dataset. "\
                 f"Only allowed columns are {list(dataset_columns)}"
             )
 
@@ -2187,7 +2187,7 @@ def _create_formatter(possible_columns, final_optional_prompts, user_column_name
         prompt = prompt[2:-2]
         needed_columns = re.findall(r"\{(.+?)\}", prompt)
         if len(needed_columns) == 0:
-            raise IndexError("Unsloth: Optional [[...]] blocks must contain at least 1 {column}.")
+            raise IndexError("Hyposloth: Optional [[...]] blocks must contain at least 1 {column}.")
         optional_name = f"__optional_{j}__"
         formatter_templates.append(("optional", optional_name, prompt, needed_columns))
         merged_prompt_parts.append("{" + optional_name + "}")
@@ -2260,7 +2260,7 @@ def to_sharegpt(
     if "conversations" in dataset.column_names:
         convo = dataset[0]["conversations"]
         if type(convo) is list:
-            raise TypeError("Unsloth: Your dataset is probably already in ShareGPT format!")
+            raise TypeError("Hyposloth: Your dataset is probably already in ShareGPT format!")
 
     possible_columns, final_optional_prompts = _parse_combined_prompt(merged_prompt, dataset)
     formatter = _create_formatter(possible_columns, final_optional_prompts, merged_column_name)
@@ -2271,7 +2271,7 @@ def to_sharegpt(
         assistants = examples[output_column_name]
         if len(users) != len(assistants):
             raise ValueError(
-                "Unsloth: Input and output columns must have matching batch lengths. "
+                "Hyposloth: Input and output columns must have matching batch lengths. "
                 f"Got {len(users)} {merged_column_name} rows and {len(assistants)} {output_column_name} rows."
             )
         texts = [
@@ -2413,10 +2413,10 @@ extra_eos_tokens = None,
     for extra_eos in extra_eos_tokens:
         assert(type(extra_eos) is str)
         if extra_eos not in vocab:
-            raise ValueError(f"Unsloth: `{extra_eos}` is not a singular token in the tokenizer.")
+            raise ValueError(f"Hyposloth: `{extra_eos}` is not a singular token in the tokenizer.")
 
     error_msg = \
-        "Unsloth: Your prompt template must have 2 examples showing the user input {INPUT} "\
+        "Hyposloth: Your prompt template must have 2 examples showing the user input {INPUT} "\
         "and the assistant output {OUTPUT}\n\n"\
         "For example what is not allowed is just:\n"\
         "### Input:\\n{INPUT}\\n\\n### Response:\\n{OUTPUT}\\n\n\n"\
@@ -2429,7 +2429,7 @@ extra_eos_tokens = None,
         extra_eos_tokens.insert(0, tokenizer.eos_token)
     if len(extra_eos_tokens) == 0:
         raise RuntimeError(
-            "Unsloth: Your tokenizer does not have an EOS token? Please provide one via extra_eos_tokens!"
+            "Hyposloth: Your tokenizer does not have an EOS token? Please provide one via extra_eos_tokens!"
         )
 
     # Check tokenizer types
@@ -2441,7 +2441,7 @@ extra_eos_tokens = None,
         tokenizer_name.startswith(("unsloth/llama-3-8b", "unsloth/llama-3-70b")):
         # Warn
         logger.warning(
-            "Unsloth: Base llama-3 models did not train <|eot_id|>.\n"\
+            "Hyposloth: Base llama-3 models did not train <|eot_id|>.\n"\
             "Please use the instruct version or use <|end_of_text|>"
         )
     extra_eos_tokens = list(set(extra_eos_tokens))
@@ -2508,7 +2508,7 @@ extra_eos_tokens = None,
             combined_changed = combined            .replace('\n', '\\n')
             left_changed     = final_combined_check.replace('\n', '\\n')
             raise RuntimeError(
-                "Unsloth: The prompt template you provided isn't correct. You gave:\n"\
+                "Hyposloth: The prompt template you provided isn't correct. You gave:\n"\
                 f"{combined_changed}\n\n"\
                 "But we require the following:\n"\
                 f"{left_changed}"
@@ -2535,7 +2535,7 @@ extra_eos_tokens = None,
             if input_pos  == -1: missing.append("{INPUT}")
             if output_pos == -1: missing.append("{OUTPUT}")
             raise RuntimeError(
-                f"Unsloth: chat_template must contain {' and '.join(missing)} "
+                f"Hyposloth: chat_template must contain {' and '.join(missing)} "
                 f"placeholder(s). Got: {chat_template[:200]!r}"
             )
         ending = chat_template[output_pos + len("{OUTPUT}"):]
@@ -2545,7 +2545,7 @@ extra_eos_tokens = None,
         response_part = re.findall(find_text, chat_template, flags = re.DOTALL | re.MULTILINE)
         if len(response_part) == 0:
             raise RuntimeError(
-                "Unsloth: Could not recover a two-example structure from chat_template. "
+                "Hyposloth: Could not recover a two-example structure from chat_template. "
                 "Provide exactly two {INPUT}/{OUTPUT} pairs (and optionally {SYSTEM}). "
                 f"Got: {chat_template[:200]!r}"
             )
@@ -2558,7 +2558,7 @@ extra_eos_tokens = None,
             except: break
         if found is None:
             raise RuntimeError(
-                "Unsloth: Could not locate a separator between examples in chat_template. "
+                "Hyposloth: Could not locate a separator between examples in chat_template. "
                 "Provide exactly two {INPUT}/{OUTPUT} pairs (and optionally {SYSTEM}). "
                 f"Got: {chat_template[:200]!r}"
             )
@@ -2576,7 +2576,7 @@ extra_eos_tokens = None,
         system_part, input_part, output_part = system_part, instruction_part, response_part
 
     if count_eos == 0:
-        logger.warning("Unsloth: We automatically added an EOS token to stop endless generations.")
+        logger.warning("Hyposloth: We automatically added an EOS token to stop endless generations.")
         eos = extra_eos_tokens[0]
         output_part = output_part + eos
 
@@ -2646,7 +2646,7 @@ extra_eos_tokens = None,
 
         if "{SYSTEM}" in partial_system:
             if default_system_message is None:
-                raise RuntimeError("Unsloth: Please specify a default system message!")
+                raise RuntimeError("Hyposloth: Please specify a default system message!")
 
         # Separate the BOS
         if has_bos_token:
@@ -2707,12 +2707,12 @@ extra_eos_tokens = None,
     output_idx = output_part.find("{OUTPUT}")
     if input_idx == -1:
         raise RuntimeError(
-            f"Unsloth: The instruction section of the template must contain the "
+            f"Hyposloth: The instruction section of the template must contain the "
             f"'{{INPUT}}' placeholder. Section: {input_part[:200]!r}"
         )
     if output_idx == -1:
         raise RuntimeError(
-            f"Unsloth: The response section of the template must contain the "
+            f"Hyposloth: The response section of the template must contain the "
             f"'{{OUTPUT}}' placeholder. Section: {output_part[:200]!r}"
         )
     input_part  = input_part [:input_idx ]
@@ -2823,7 +2823,7 @@ def create_stopping_criteria(tokenizer, stop_word = "eos_token"):
         from transformers import StoppingCriteria, StoppingCriteriaList
     except ImportError as exc:
         raise ImportError(
-            "Unsloth: create_stopping_criteria requires PyTorch and is only "
+            "Hyposloth: create_stopping_criteria requires PyTorch and is only "
             "supported on Torch backends."
         ) from exc
 

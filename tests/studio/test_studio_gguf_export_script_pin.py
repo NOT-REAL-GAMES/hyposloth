@@ -1,4 +1,4 @@
-"""Unsloth GGUF export pins convert_hf_to_gguf.py via UNSLOTH_LLAMA_CPP_SCRIPTS_DIR, with a once-per-process warning fallback when unsloth_zoo lacks the local-script resolver."""
+"""Hyposloth GGUF export pins convert_hf_to_gguf.py via UNSLOTH_LLAMA_CPP_SCRIPTS_DIR, with a once-per-process warning fallback when unsloth_zoo lacks the local-script resolver."""
 
 from __future__ import annotations
 

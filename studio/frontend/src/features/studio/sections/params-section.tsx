@@ -1145,7 +1145,7 @@ export function ParamsSection(): ReactElement {
                         {platformDeviceType === "mac" ? (
                           <SelectItem value="mlx">MLX</SelectItem>
                         ) : (
-                          <SelectItem value="unsloth">Unsloth</SelectItem>
+                          <SelectItem value="unsloth">Hyposloth</SelectItem>
                         )}
                       </SelectContent>
                     </Select>

@@ -140,7 +140,7 @@ def __get_model_name(
     elif not SUPPORTS_FOURBIT and lower_model_name in INT_TO_FLOAT_MAPPER:
         model_name = INT_TO_FLOAT_MAPPER[lower_model_name]
         print(
-            f"Unsloth: Your transformers version of {transformers_version} does not support native "
+            f"Hyposloth: Your transformers version of {transformers_version} does not support native "
             f"4bit loading.\nThe minimum required version is 4.37.\n"
             f'Try `pip install --upgrade "transformers>=4.37"`\n'
             f"to obtain the latest transformers build, then restart this session.\n"
@@ -151,7 +151,7 @@ def __get_model_name(
     elif not load_in_4bit and lower_model_name in INT_TO_FLOAT_MAPPER:
         new_model_name = INT_TO_FLOAT_MAPPER[lower_model_name]
         # logger.warning_once(
-        #     f"Unsloth: You passed in `{model_name}` which is a 4bit model, yet you set\n"\
+        #     f"Hyposloth: You passed in `{model_name}` which is a 4bit model, yet you set\n"\
         #     f"`load_in_4bit = False`. We shall load `{new_model_name}` instead."
         # )
         return new_model_name
@@ -167,7 +167,7 @@ def __get_model_name(
 
         new_model_name = FLOAT_TO_INT_MAPPER[lower_model_name]
         # logger.warning_once(
-        #     f"Unsloth: You passed in `{model_name}` and `load_in_4bit = True`.\n"\
+        #     f"Hyposloth: You passed in `{model_name}` and `load_in_4bit = True`.\n"\
         #     f"We shall load `{new_model_name}` for 4x faster loading."
         # )
         return new_model_name
@@ -195,7 +195,7 @@ def _get_new_mapper():
         # FLOAT_TO_FP8_BLOCK_MAPPER / FLOAT_TO_FP8_ROW_MAPPER, the _add_* helpers
         # and the builder's loop variables, so exec'ing into globals() would swap
         # the FP8 tables this module imported from the installed mapper for the
-        # ones on GitHub main. This is only a probe for "would a newer Unsloth
+        # ones on GitHub main. This is only a probe for "would a newer Hyposloth
         # support this name?", so it must not change what the installed version
         # resolves; the fetched FP8 tables are returned for the probe to use
         # instead of being written over the installed ones.
@@ -275,7 +275,7 @@ def get_model_name(
         and model_name[0].isalnum()
         and not _env_says_offline()  # offline: skip the remote (raw GitHub) mapper refresh
     ):
-        # Try checking if a new Unsloth version allows it!
+        # Try checking if a new Hyposloth version allows it!
         (
             NEW_INT_TO_FLOAT_MAPPER,
             NEW_FLOAT_TO_INT_MAPPER,
@@ -297,7 +297,7 @@ def get_model_name(
         )
         if upgraded_model_name is not None:
             raise NotImplementedError(
-                f"Unsloth: {model_name} is not supported in your current Unsloth version! Please update Unsloth via:\n\n"
+                f"Hyposloth: {model_name} is not supported in your current Hyposloth version! Please update Hyposloth via:\n\n"
                 "pip uninstall unsloth unsloth_zoo -y\n"
                 'pip install --upgrade --no-cache-dir "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"\n'
                 'pip install --upgrade --no-cache-dir "git+https://github.com/unslothai/unsloth-zoo.git"\n'
@@ -359,7 +359,7 @@ def _offline_quantize_to_fp8(
     if text_config is not None:
         cache_name += "-text-only"
     new_model_name = os.path.join(temp_dir, cache_name)
-    print(f"Unsloth: Quantizing '{model_name}' to fp8, using model_name='{new_model_name}' instead")
+    print(f"Hyposloth: Quantizing '{model_name}' to fp8, using model_name='{new_model_name}' instead")
 
     if not os.path.isdir(new_model_name):
         from ._utils import _apply_text_only_key_mapping
@@ -667,12 +667,12 @@ def _restore_dropped_fp8_scales(
                 continue
 
         if restored > 0:
-            print(f"Unsloth: Restored {restored} dropped FP8 weight_scale_inv tensor(s) on load")
+            print(f"Hyposloth: Restored {restored} dropped FP8 weight_scale_inv tensor(s) on load")
         if failed > 0:
-            print(f"Unsloth: {failed} dropped FP8 weight_scale_inv tensor(s) could not be restored")
+            print(f"Hyposloth: {failed} dropped FP8 weight_scale_inv tensor(s) could not be restored")
         if offloaded > 0:
             print(
-                f"Unsloth: {offloaded} dropped FP8 weight_scale_inv tensor(s) skipped because the "
+                f"Hyposloth: {offloaded} dropped FP8 weight_scale_inv tensor(s) skipped because the "
                 "layer is disk-offloaded; load without disk offload so the scales can be restored"
             )
         return (restored, skipped)
@@ -712,7 +712,7 @@ def check_and_disable_bitsandbytes_loading(
     if load_in_4bit or load_in_8bit:
         if verbose:
             print(
-                f"Unsloth: Model already quantized with {quant_method}. "
+                f"Hyposloth: Model already quantized with {quant_method}. "
                 f"Disabling `load_in_4bit` and `load_in_8bit` to avoid quantization config conflict."
             )
         load_in_4bit = False
@@ -760,12 +760,12 @@ def _get_fp8_mode_and_check_settings(
 
     # Check user settings
     if fp8_mode not in ["row", "block"]:
-        raise ValueError(f"Unsloth: `load_in_fp8` can only be 'row' or 'block', got '{fp8_mode}'")
+        raise ValueError(f"Hyposloth: `load_in_fp8` can only be 'row' or 'block', got '{fp8_mode}'")
     if full_finetuning:
-        raise ValueError("Unsloth: `load_in_fp8` is not compatible with full finetuning")
+        raise ValueError("Hyposloth: `load_in_fp8` is not compatible with full finetuning")
     if load_in_4bit or load_in_8bit or load_in_16bit:
         raise ValueError(
-            "Unsloth: `load_in_fp8` is not compatible with `load_in_4bit`, `load_in_8bit` or `load_in_16bit`",
+            "Hyposloth: `load_in_fp8` is not compatible with `load_in_4bit`, `load_in_8bit` or `load_in_16bit`",
         )
 
     # Check if this is Hopper or above
@@ -775,25 +775,25 @@ def _get_fp8_mode_and_check_settings(
         and torch.cuda.get_device_capability() >= (9, 0)
     ):
         raise ValueError(
-            "Unsloth: On the fly `load_in_fp8` requires H100 GPUs or after. Try `unsloth/Qwen3-8B` instead."
+            "Hyposloth: On the fly `load_in_fp8` requires H100 GPUs or after. Try `unsloth/Qwen3-8B` instead."
         )
 
     # Check if torch >= 2.9.0
     if Version(torch.__version__) < Version("2.9.0"):
         raise ValueError(
-            "Unsloth: On the fly `load_in_fp8` requires torch 2.9.0+. Try `unsloth/Qwen3-8B` instead."
+            "Hyposloth: On the fly `load_in_fp8` requires torch 2.9.0+. Try `unsloth/Qwen3-8B` instead."
         )
 
     # Check if torchao has this PR: https://github.com/pytorch/ao/pull/3158,
     # which will be released in 0.15.0.
     if importlib.util.find_spec("torchao") is None:
         raise ValueError(
-            "Unsloth: Please install torchao for on the fly float8 to work! Try `unsloth/Qwen3-8B` instead."
+            "Hyposloth: Please install torchao for on the fly float8 to work! Try `unsloth/Qwen3-8B` instead."
         )
     import torchao
 
     error_message = (
-        "Unsloth: `load_in_fp8` requires torchao 0.15.0+ (or nightly).\n"
+        "Hyposloth: `load_in_fp8` requires torchao 0.15.0+ (or nightly).\n"
         f"You have torchao version={torchao.__version__}\n"
         "Use `pip install --upgrade --force-reinstall torchao`"
     )
@@ -811,13 +811,13 @@ def _get_fp8_mode_and_check_settings(
             os.environ["UNSLOTH_HAS_FBGEMM"] = "0"
             from unsloth_zoo.log import logger
             logger.info(
-                f"Unsloth: fbgemm_gpu_genai=={fbgemm_gpu.__version__} is old for FP8 loading. "
+                f"Hyposloth: fbgemm_gpu_genai=={fbgemm_gpu.__version__} is old for FP8 loading. "
                 f"Using Triton kernels instead."
             )
     return fp8_mode
 
 
-# Rotary inv_freq buffers are deliberately kept on CPU - Unsloth pre-builds a
+# Rotary inv_freq buffers are deliberately kept on CPU - Hyposloth pre-builds a
 # cos/sin cache per GPU instead (see LlamaRotaryEmbedding.multi_gpu_cos_cached)
 # so the GPU-resident lookup never needs to move the tiny inv_freq tensor itself.
 # torch.nn.parallel.DistributedDataParallel ignores device entirely when it
@@ -853,7 +853,7 @@ def _exclude_rope_inv_freq_from_ddp(model):
 
 # =============================================================================
 # Offline loading - single source of truth (shared by vision.py, loader.py and
-# the Unsloth exporter). Decide offline ONCE at the load boundary and force it
+# the Hyposloth exporter). Decide offline ONCE at the load boundary and force it
 # ONCE around the whole load, so every nested HF call inherits it.
 # =============================================================================
 

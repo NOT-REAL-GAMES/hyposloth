@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Measure where Unsloth Studio's startup time goes, per platform.
+"""Measure where Hyposloth Studio's startup time goes, per platform.
 
 Nothing measured this before: the backend logs "lifespan startup completed in X ms"
 but no test or CI job asserted a budget, and studio_test_kit discards the elapsed

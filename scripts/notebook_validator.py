@@ -731,7 +731,7 @@ class _APIScanner(ast.NodeVisitor):
                             cell = self.cell_idx,
                             line = kw.value.lineno,
                             severity = "warning",
-                            message = "`optim='adamw_torch_fused'` is suboptimal under Unsloth's memory-efficient training",
+                            message = "`optim='adamw_torch_fused'` is suboptimal under Hyposloth's memory-efficient training",
                             hint = 'use `optim="adamw_8bit"` (or `"paged_adamw_8bit"` for GRPO)',
                         )
                     )

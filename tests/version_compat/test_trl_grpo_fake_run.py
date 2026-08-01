@@ -166,7 +166,7 @@ def test_grpo_patch_neutralizes_ref_adapter_and_qlora_cast(generated_grpo_source
 
 # SFT / DPO: the same source-transform patcher runs on them (a fake patch run,
 # no training), so a structural TRL change can break generation. Assert the patch
-# produces a valid, importable Unsloth trainer AND that the shared QLoRA
+# produces a valid, importable Hyposloth trainer AND that the shared QLoRA
 # `_is_quantized_model` bf16 cast is neutralized (TRL 1.7's spelling), which the
 # patcher applies to every trainer. Catches "and or others" beyond GRPO.
 
@@ -183,7 +183,7 @@ def _patch_and_get_source(trainer_file: str, trainer_cls: str) -> str:
     _rl._patch_trl_rl_trainers_impl(trainer_file)
     mod = importlib.import_module(f"trl.trainer.{trainer_file}")
     patched = getattr(mod, trainer_cls)
-    assert patched.__name__ == f"Unsloth{trainer_cls}", (
+    assert patched.__name__ == f"Hyposloth{trainer_cls}", (
         f"{trainer_cls} patch silently no-oped on this TRL "
         f"(got {patched.__name__!r}); source-transform dispatch drifted"
     )

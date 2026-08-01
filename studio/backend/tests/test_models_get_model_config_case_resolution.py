@@ -92,7 +92,7 @@ def test_repo_in_any_hf_cache_matches_case_variant_in_legacy_cache(tmp_path, mon
     for d in (active, legacy, default):
         d.mkdir()
     # Differently-cased entry in the legacy cache only.
-    (legacy / "models--Unsloth--Foo").mkdir()
+    (legacy / "models--Hyposloth--Foo").mkdir()
 
     # No active-cache variant; case resolution is a no-op here.
     monkeypatch.setattr(paths_pkg, "resolve_cached_repo_id_case", lambda name: name)

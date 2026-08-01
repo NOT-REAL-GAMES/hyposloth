@@ -4,7 +4,7 @@
 """Regression tests for trust_remote_code in the native-template fallback.
 
 ``render_native_template`` re-fetches a model's native chat template from its
-repo when an Unsloth override template (mistral, gemma-4) dropped the tools
+repo when a Hyposloth override template (mistral, gemma-4) dropped the tools
 schema. For a model loaded with ``trust_remote_code=True`` whose tokenizer repo
 carries custom code, the secondary ``AutoTokenizer.from_pretrained`` must re-use
 that same consent or transformers raises (it requires ``trust_remote_code`` to

@@ -939,7 +939,7 @@ def compute_lora_params(arch: ModelArchConfig, lora_rank: int, target_modules: l
             n_moe = n_layers - n_dense
             # peft "all-linear" attaches LoRA to nn.Linear only; routed experts
             # are nn.Parameter and need explicit gate_proj/up_proj/down_proj
-            # naming via Unsloth's get_moe_target_parameters. Shared experts are
+            # naming via Hyposloth's get_moe_target_parameters. Shared experts are
             # nn.Linear, picked up by get_peft_regex.
             routed_moe = (
                 0

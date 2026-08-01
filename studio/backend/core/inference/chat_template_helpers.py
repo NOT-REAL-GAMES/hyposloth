@@ -150,7 +150,7 @@ def _split_partial_marker(text: str, marker: str) -> tuple[str, str]:
 class ReasoningChannelNormalizer:
     """Incrementally convert one native reasoning channel to ``<think>``.
 
-    The parser follows mlx-vlm's streaming boundary behavior but emits Unsloth's
+    The parser follows mlx-vlm's streaming boundary behavior but emits Hyposloth's
     established canonical text contract. Only the configured opening and
     closing markers are consumed; tool-call and other control markers remain
     available to downstream parsers.
@@ -462,7 +462,7 @@ def render_native_template(
 ):
     """Render ``messages`` + ``tools`` with the model's NATIVE chat template.
 
-    Some Unsloth override templates (e.g. ``mistral``, ``gemma-4``) do not emit
+    Some Hyposloth override templates (e.g. ``mistral``, ``gemma-4``) do not emit
     the ``tools`` schema, so a tool-calling turn silently stops advertising tools.
     The native template ships in the model repo and carries the family's
     tool-calling syntax. It is loaded straight from the repo (bypassing any
@@ -602,7 +602,7 @@ def render_with_native_template_fallback(
 
     if not tools:
         # Gemma 4 can emit its native reasoning protocol even when a generation-time
-        # Unsloth override rendered a marker-free prompt. Preserve the live-verified
+        # Hyposloth override rendered a marker-free prompt. Preserve the live-verified
         # no-tools thinking behavior without letting cached native metadata describe
         # unrelated tool prompts that kept the active override.
         markers = live_markers

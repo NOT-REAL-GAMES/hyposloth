@@ -2,7 +2,7 @@
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
 """
-Main FastAPI application for Unsloth UI Backend
+Main FastAPI application for Hyposloth UI Backend
 """
 
 import os
@@ -19,7 +19,7 @@ os.environ["PYTHONWARNINGS"] = "ignore"
 
 # Pin GPU index ordering to PCI bus id before any torch import creates a CUDA
 # context. Without this, torch/CUDA default to FASTEST_FIRST while nvidia-smi
-# (and Unsloth's VRAM probes) use PCI-bus order, so a GPU index chosen from
+# (and Hyposloth's VRAM probes) use PCI-bus order, so a GPU index chosen from
 # nvidia-smi data can resolve to a different physical card via
 # CUDA_VISIBLE_DEVICES. setdefault so an explicit user override wins. See
 # utils/hardware/hardware.py for the full rationale; set here too so the entry
@@ -93,7 +93,7 @@ if sys.platform == "win32":
     # ── Windows AMD ROCm: make hipInfo.exe resolvable for subprocess probes ──
     # bitsandbytes' get_rocm_gpu_arch() runs `hipinfo.exe` via PATH at import
     # time; the AMD torch wheel ships it in the venv Scripts dir, which is on
-    # PATH only when the venv is activated -- Unsloth launches python directly.
+    # PATH only when the venv is activated -- Hyposloth launches python directly.
     # Without this, every bitsandbytes import logs a scary (but harmless)
     # "Could not detect ROCm GPU architecture: [WinError 2]" ERROR + WARNING.
     # Gated on the file existing: only AMD ROCm wheels ship hipInfo.exe, so
@@ -252,7 +252,7 @@ def _read_studio_install_id() -> str:
 
     Returns "" when absent or not a 64-char lowercase-hex token; then
     /api/health emits "" and the launcher accepts any healthy backend.
-    Carries no install-path info (matters when Unsloth runs -H 0.0.0.0)."""
+    Carries no install-path info (matters when Hyposloth runs -H 0.0.0.0)."""
     try:
         token = (
             (_STUDIO_ROOT_RESOLVED / "share" / "studio_install_id")
@@ -594,7 +594,7 @@ async def lifespan(app: FastAPI):
         print("DEFAULT ADMIN ACCOUNT CREATED")
         print(f"    username: {storage.DEFAULT_ADMIN_USERNAME}")
         print(f"    password saved to: {bootstrap_path}")
-        print("    Open the Unsloth UI to sign in and change it.")
+        print("    Open the Hyposloth UI to sign in and change it.")
         print("=" * 60 + "\n")
     else:
         app.state.bootstrap_password = (
@@ -631,14 +631,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title = "Unsloth UI Backend",
+    title = "Hyposloth UI Backend",
     version = UNSLOTH_VERSION,
-    description = "Backend API for Unsloth UI - Training and Model Management",
+    description = "Backend API for Hyposloth UI - Training and Model Management",
     lifespan = lifespan,
 )
 
 # The MCP surface is opt-in because it can start GPU jobs and write model
-# artifacts. Mount it only when explicitly enabled by the Unsloth process.
+# artifacts. Mount it only when explicitly enabled by the Hyposloth process.
 if os.environ.get("UNSLOTH_STUDIO_ENABLE_MCP") == "1":
     from fastmcp.utilities.lifespan import combine_lifespans
 
@@ -1039,7 +1039,7 @@ app.include_router(models_router, prefix = "/api/models", tags = ["models"])
 app.include_router(chat_history_router, prefix = "/api/chat", tags = ["chat"])
 app.include_router(research_runs_router, prefix = "/api/chat/research-runs", tags = ["research-runs"])
 app.include_router(inference_router, prefix = "/api/inference", tags = ["inference"])
-# Unsloth-only inference endpoints (cancel, etc.) are NOT exposed on the /v1
+# Hyposloth-only inference endpoints (cancel, etc.) are NOT exposed on the /v1
 # OpenAI-compat prefix below.
 app.include_router(inference_studio_router, prefix = "/api/inference", tags = ["inference"])
 
@@ -1076,7 +1076,7 @@ async def liveness_check():
     """Cheap process liveness for desktop port validation."""
     return {
         "status": "alive",
-        "service": "Unsloth UI Backend",
+        "service": "Hyposloth UI Backend",
         "desktop_protocol_version": 1,
         # Lockstep with DESKTOP_MANAGEABILITY_VERSION in
         # studio/src-tauri/src/preflight/version.rs and `desktop-capabilities`.
@@ -1100,7 +1100,7 @@ async def health_check(request: Request):
     base = {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
-        "service": "Unsloth UI Backend",
+        "service": "Hyposloth UI Backend",
         "chat_only": _hw_module.CHAT_ONLY,
         "desktop_protocol_version": 1,
         # Lockstep: see the note in /api/liveness above.
@@ -1153,7 +1153,7 @@ def studio_install_source(_current_subject: str = Depends(get_current_subject)):
 
 @app.get("/api/studio/update-status")
 def studio_update_status(_current_subject: str = Depends(get_current_subject)):
-    """Return source-aware manual update status for browser-served Unsloth."""
+    """Return source-aware manual update status for browser-served Hyposloth."""
     return get_studio_update_status(UNSLOTH_VERSION)
 
 
@@ -1179,7 +1179,7 @@ def studio_download_transport_capabilities(_current_subject: str = Depends(get_c
 
 @app.post("/api/shutdown")
 async def shutdown_server(request: Request, current_subject: str = Depends(get_current_subject)):
-    """Gracefully shut down the Unsloth Studio server.
+    """Gracefully shut down the Hyposloth Studio server.
 
     Called by the frontend quit dialog so users can stop the server from the UI
     without the CLI or killing the process manually.

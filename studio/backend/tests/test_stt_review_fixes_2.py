@@ -83,7 +83,7 @@ def test_build_script_refuses_unowned_dir_in_custom_studio_home(tmp_path):
     result = _run_build_script(env)
 
     assert result.returncode != 0
-    assert "not marked as an Unsloth-owned" in result.stderr
+    assert "not marked as a Hyposloth-owned" in result.stderr
     # The unowned tree, and the user's file inside it, survived untouched.
     assert user_file.read_text() == "precious"
 
@@ -99,7 +99,7 @@ def test_build_script_proceeds_when_marker_present(tmp_path):
     result = _run_build_script(env)
 
     # Past the guard: it fails later at the stubbed git clone, not the gate.
-    assert "not marked as an Unsloth-owned" not in result.stderr
+    assert "not marked as a Hyposloth-owned" not in result.stderr
     assert "stub-git-invoked" in result.stderr
 
 
@@ -127,7 +127,7 @@ def test_build_script_keeps_legacy_home_behavior(tmp_path):
     result = _run_build_script(env)
 
     # The legacy managed dir is always Studio-owned; no gate, straight to git.
-    assert "not marked as an Unsloth-owned" not in result.stderr
+    assert "not marked as a Hyposloth-owned" not in result.stderr
     assert "stub-git-invoked" in result.stderr
 
 

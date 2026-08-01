@@ -37,7 +37,7 @@ command -v cmake >/dev/null 2>&1 || { echo "ERROR: cmake is required" >&2; exit 
 STUDIO_OWNED_MARKER=".unsloth-studio-owned"
 if [ "$CUSTOM_STUDIO_HOME" = true ] && [ -e "$INSTALL_DIR" ] && \
    [ ! -f "$INSTALL_DIR/$STUDIO_OWNED_MARKER" ]; then
-    echo "ERROR: $INSTALL_DIR already exists and is not marked as an Unsloth-owned whisper.cpp build tree." >&2
+    echo "ERROR: $INSTALL_DIR already exists and is not marked as a Hyposloth-owned whisper.cpp build tree." >&2
     echo "       Move it aside or choose an empty UNSLOTH_STUDIO_HOME before re-running." >&2
     exit 1
 fi

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Run script for Unsloth UI Backend.
+"""Run script for Hyposloth UI Backend.
 
 Self-contained; can be moved to any directory.
 """
@@ -117,7 +117,7 @@ DISABLE_PUBLIC_CHECK_ENV = "UNSLOTH_STUDIO_DISABLE_PUBLIC_CHECK"
 def public_check_disabled() -> bool:
     """True when the operator has turned off the third-party startup lookups.
 
-    On a wildcard bind Unsloth asks ifconfig.me for the public IP and check-host.net
+    On a wildcard bind Hyposloth asks ifconfig.me for the public IP and check-host.net
     whether the port is reachable. Both are useful for sharing a Studio but both tell
     an outside service this machine is running one, which lab and privacy-sensitive
     deployments do not want (#7307 Problem 8). Set the var to opt out.
@@ -173,7 +173,7 @@ def _resolve_external_ip() -> str:
 def _install_uvicorn_startup_log_rewrite(bind_host: str, display_host: str) -> None:
     """Rewrite Uvicorn's startup log line: swap wildcard bind for the
     externally-reachable address, use our Mac-aware stop hint, and rename the
-    prefix to "Unsloth Studio running on"."""
+    prefix to "Hyposloth Studio running on"."""
     import logging
     import re
 
@@ -183,7 +183,7 @@ def _install_uvicorn_startup_log_rewrite(bind_host: str, display_host: str) -> N
     new_suffix = "(To stop: press Ctrl+C -- on macOS, Control+C not Command+C)"
     old_suffix_re = re.compile(r"\(Press CTRL\+C to quit\)")
     old_prefix = "Uvicorn running on "
-    new_prefix = "Unsloth Studio running on "
+    new_prefix = "Hyposloth Studio running on "
 
     def _rewrite(text: str) -> str:
         if text.startswith(old_prefix):
@@ -246,7 +246,7 @@ def _working_local_url(port: int) -> "str | None":
 def _localhost_ipv6_mismatch_url(bind_host: str, port: int) -> "str | None":
     """Return the IPv4 loopback URL when localhost won't reach 127.0.0.1.
 
-    Local Unsloth binds to 127.0.0.1. Where localhost resolves to IPv6 only (::1),
+    Local Hyposloth binds to 127.0.0.1. Where localhost resolves to IPv6 only (::1),
     http://localhost:<port> fails (or hits a different process on ::1) even though
     http://127.0.0.1:<port> works. Return the IPv4 URL for the caller to surface.
     """
@@ -257,7 +257,7 @@ def _localhost_ipv6_mismatch_url(bind_host: str, port: int) -> "str | None":
 
     ipv4_url = f"http://127.0.0.1:{port}"
 
-    # Only warn once Unsloth is confirmed answering on IPv4 loopback.
+    # Only warn once Hyposloth is confirmed answering on IPv4 loopback.
     if _working_local_url(port) != ipv4_url:
         return None
 
@@ -279,7 +279,7 @@ def _localhost_ipv6_mismatch_url(bind_host: str, port: int) -> "str | None":
             if host == "::1":
                 has_ipv6_loopback = True
 
-    # A connection to ::1 is NOT evidence Unsloth is reachable there: Unsloth binds
+    # A connection to ::1 is NOT evidence Hyposloth is reachable there: Hyposloth binds
     # 127.0.0.1 only, so anything on ::1 is a different process. Dual-stack
     # localhost is fine (browsers fall back to 127.0.0.1), so only the IPv6-only
     # case strands the user.
@@ -301,13 +301,13 @@ def _stdout_color_ok() -> bool:
 
 
 def _print_localhost_ipv6_mismatch_warning(local_url: str, port: int) -> None:
-    """Warn that localhost points at ::1 while Unsloth is bound to 127.0.0.1."""
+    """Warn that localhost points at ::1 while Hyposloth is bound to 127.0.0.1."""
     use_color = _stdout_color_ok()
     warn_c = "\033[38;5;215;1m" if use_color else ""
     reset = "\033[0m" if use_color else ""
 
     print(
-        f"{warn_c}  Warning: localhost resolves to IPv6 (::1), but Unsloth "
+        f"{warn_c}  Warning: localhost resolves to IPv6 (::1), but Hyposloth "
         f"Studio is listening on 127.0.0.1 only. Open {local_url} instead of "
         f"http://localhost:{port}.{reset}",
         flush = True,
@@ -317,7 +317,7 @@ def _print_localhost_ipv6_mismatch_warning(local_url: str, port: int) -> None:
 def _verify_global_reachability(display_host: str, port: int) -> None:
     """Probe check-host.net to confirm display_host:port is reachable from the
     public internet. Synchronous so output lands between the banner URLs and the
-    stop hint. Bounded at ~15s; failures swallowed (verifier failing != Unsloth
+    stop hint. Bounded at ~15s; failures swallowed (verifier failing != Hyposloth
     failing). Only meaningful for a wildcard bind, and skipped entirely by
     UNSLOTH_STUDIO_DISABLE_PUBLIC_CHECK."""
     global _public_reachable
@@ -457,7 +457,7 @@ def _verify_global_reachability(display_host: str, port: int) -> None:
             local_url = _working_local_url(port)
             if local_url:
                 print(
-                    f"{local_url_c}  You can access Unsloth Studio locally "
+                    f"{local_url_c}  You can access Hyposloth Studio locally "
                     f"in the meantime: {local_url}{reset}",
                     flush = True,
                 )
@@ -522,7 +522,7 @@ def _emit_tool_policy_notice(host: str, secure: bool, enable_tools: "Optional[bo
 def _emit_secure_startup_output(port: int, enable_tools: "Optional[bool]" = None) -> None:
     """Secure-mode banner: only the Cloudflare link (loopback has no public raw URL)."""
     print("")
-    print("🦥 Unsloth Studio is running (secure)")
+    print("🦥 Hyposloth Studio is running (secure)")
     print("─" * 52)
     _print_cloudflare_line(secure = True)
     print(f"  On this machine only: http://127.0.0.1:{port}/")
@@ -583,15 +583,15 @@ def _print_cloudflare_line(secure: bool = False, loopback_host: str = "127.0.0.1
                     "  Cloudflare tunnel: ON. This Cloudflare URL is PUBLIC, and the "
                     "raw port is also publicly reachable. --no-cloudflare disables "
                     f"only the Cloudflare URL; bind {loopback_host} or close firewall "
-                    "access to keep Unsloth private.",
+                    "access to keep Hyposloth private.",
                     warn,
                 )
             else:
                 _emit(
                     "  Cloudflare tunnel: ON. This is a PUBLIC internet URL: anyone "
-                    "who has it can reach this Unsloth. Relaunch with --no-cloudflare "
+                    "who has it can reach this Hyposloth. Relaunch with --no-cloudflare "
                     f"to disable the Cloudflare URL; bind {loopback_host} or close "
-                    "firewall access to keep Unsloth private.",
+                    "firewall access to keep Hyposloth private.",
                     warn,
                 )
         return
@@ -600,12 +600,12 @@ def _print_cloudflare_line(secure: bool = False, loopback_host: str = "127.0.0.1
             _emit(
                 "  Cloudflare tunnel: requested but failed to start. The raw port is "
                 "still reachable from the public internet (see the reachability check "
-                "above): anyone who can reach it can access this Unsloth.",
+                "above): anyone who can reach it can access this Hyposloth.",
                 warn,
             )
         elif _public_reachable is False:
             _emit(
-                "  Cloudflare tunnel: requested but failed to start. Unsloth is reachable "
+                "  Cloudflare tunnel: requested but failed to start. Hyposloth is reachable "
                 "on your local network only (no public link).",
                 warn,
             )
@@ -613,7 +613,7 @@ def _print_cloudflare_line(secure: bool = False, loopback_host: str = "127.0.0.1
             _emit(
                 "  Cloudflare tunnel: requested but failed to start. There is no "
                 "Cloudflare public link. Raw port reachability was not verified; "
-                f"bind {loopback_host} or close firewall access to keep Unsloth private.",
+                f"bind {loopback_host} or close firewall access to keep Hyposloth private.",
                 warn,
             )
     elif _cloudflare_flag:
@@ -621,19 +621,19 @@ def _print_cloudflare_line(secure: bool = False, loopback_host: str = "127.0.0.1
             _emit(
                 "  Cloudflare tunnel: OFF for this mode. The raw port is still "
                 "reachable from the public internet (see the reachability check above): "
-                "anyone who can reach it can access this Unsloth.",
+                "anyone who can reach it can access this Hyposloth.",
                 warn,
             )
         elif _public_reachable is False:
             _emit(
-                "  Cloudflare tunnel: OFF for this mode. Unsloth is reachable on your "
+                "  Cloudflare tunnel: OFF for this mode. Hyposloth is reachable on your "
                 "local network only (no public link)."
             )
         else:
             _emit(
                 "  Cloudflare tunnel: OFF for this mode. There is no Cloudflare public "
                 "link. Raw port reachability was not verified; "
-                f"bind {loopback_host} or close firewall access to keep Unsloth private.",
+                f"bind {loopback_host} or close firewall access to keep Hyposloth private.",
                 warn,
             )
     elif _cloudflare_flag is False or _cloudflare_flag is None:
@@ -644,12 +644,12 @@ def _print_cloudflare_line(secure: bool = False, loopback_host: str = "127.0.0.1
                 f"  Cloudflare tunnel: OFF ({_reason}). The raw port is still "
                 "reachable from the public internet (see the reachability check above): "
                 "pass --cloudflare to also expose a public Cloudflare HTTPS link, or "
-                f"bind {loopback_host} to keep Unsloth private.",
+                f"bind {loopback_host} to keep Hyposloth private.",
                 warn,
             )
         elif _public_reachable is False:
             _emit(
-                f"  Cloudflare tunnel: OFF ({_reason}). Unsloth is reachable on your "
+                f"  Cloudflare tunnel: OFF ({_reason}). Hyposloth is reachable on your "
                 "local network only. Pass --cloudflare to expose a public "
                 "Cloudflare HTTPS link."
             )
@@ -658,7 +658,7 @@ def _print_cloudflare_line(secure: bool = False, loopback_host: str = "127.0.0.1
                 f"  Cloudflare tunnel: OFF ({_reason}). There is no Cloudflare "
                 "public link. Raw port reachability was not verified; pass --cloudflare "
                 "to expose a public Cloudflare HTTPS link, or "
-                f"bind {loopback_host} or close firewall access to keep Unsloth private.",
+                f"bind {loopback_host} or close firewall access to keep Hyposloth private.",
                 warn,
             )
 
@@ -721,7 +721,7 @@ def _is_port_free(host: str, port: int) -> bool:
 
     For a ``0.0.0.0`` wildcard host, also check whether anything is listening on
     ``127.0.0.1`` (and ``::1`` when IPv6 exists): an SSH tunnel may hold loopback
-    while the wildcard bind succeeds, making Unsloth unreachable via ``localhost``.
+    while the wildcard bind succeeds, making Hyposloth unreachable via ``localhost``.
     """
     import socket
 
@@ -962,7 +962,7 @@ def _resolve_port(
 
 def _abort_already_running(pid: int, port: int) -> "NoReturn":
     print(
-        f"Error: Unsloth Studio is already running on port {port} (PID {pid}). Run "
+        f"Error: Hyposloth Studio is already running on port {port} (PID {pid}). Run "
         "`unsloth studio stop` first, or start this one on a different --port.",
         file = sys.stderr,
         flush = True,
@@ -1366,7 +1366,7 @@ def _harden_console_close(stream):
     ipykernel versions joins that thread unconditionally and raises
     ``AttributeError: 'OutStream' object has no attribute 'watch_fd_thread'``
     (ipython/ipykernel#867). That AttributeError propagates out of
-    ``uvicorn.Config(...)`` and aborts startup ("Unsloth Studio failed to start").
+    ``uvicorn.Config(...)`` and aborts startup ("Hyposloth Studio failed to start").
 
     Wrap the stream's ``close()`` in a transparent pass-through that swallows
     ONLY that specific teardown AttributeError. A healthy close() (a real console
@@ -1494,7 +1494,7 @@ def _terminal_password_gate(
 ) -> Tuple[bool, bool]:
     """Force a terminal password change before the public tunnel goes up.
 
-    When the tunnel is about to publish Unsloth and the seeded admin password was
+    When the tunnel is about to publish Hyposloth and the seeded admin password was
     never changed, ask for a new one (masked, confirmed) before any public URL
     exists. The CLI normally does this before re-exec'ing the backend; this is
     the backstop for direct `python run.py` launches and older-CLI installs.
@@ -1554,7 +1554,7 @@ def _terminal_password_gate(
         )
         if not deadline_arms:
             print(
-                "Refusing to publish Unsloth on a public Cloudflare URL: the "
+                "Refusing to publish Hyposloth on a public Cloudflare URL: the "
                 "default admin password was never changed, no terminal is "
                 "attached to change it here, and the bootstrap shutdown "
                 "deadline does not apply to this launch (api-only, or "
@@ -1570,11 +1570,11 @@ def _terminal_password_gate(
         # terminal-attached run / reset-password instead of reading it from disk.
         print(
             "  WARNING: the default admin password is still active while "
-            "Unsloth is about to be published on a public Cloudflare URL, and "
+            "Hyposloth is about to be published on a public Cloudflare URL, and "
             "no terminal is attached to change it here. The public page will "
             "NOT auto-fill the bootstrap credential. Set a new password by "
             "running `unsloth studio` locally with a terminal attached, or "
-            "`unsloth studio reset-password`. Unsloth shuts down after the "
+            "`unsloth studio reset-password`. Hyposloth shuts down after the "
             "bootstrap deadline (UNSLOTH_STUDIO_BOOTSTRAP_TIMEOUT, default 1h) "
             "unless the password is changed.",
             file = sys.stderr,
@@ -1629,7 +1629,7 @@ def _apply_supplied_password(password_value: "Optional[str]") -> None:
     _auth_storage.ensure_default_admin()
     if not _auth_storage.requires_password_change(_admin):
         print(
-            "Error: an Unsloth admin password is already set; --password only sets "
+            "Error: a Hyposloth admin password is already set; --password only sets "
             "the initial password. Change it in the UI, or run `unsloth studio "
             "reset-password` for a new one.",
             file = sys.stderr,
@@ -1762,7 +1762,7 @@ def run_server(
             pass
 
     # Persist a session log + native-crash stacks BEFORE importing main, so
-    # even import-time failures leave evidence on disk. Field report: Unsloth
+    # even import-time failures leave evidence on disk. Field report: Hyposloth
     # "terminates without a warning" -- a native crash in the GPU runtime
     # kills the process with no Python traceback, and a desktop-shortcut
     # console closes before anything can be read. Console-only logging made
@@ -1803,10 +1803,10 @@ def run_server(
     # silent), so print a flushed heads-up (piped stdout is block-buffered).
     if not silent:
         print(
-            "Loading Unsloth Studio, please wait... (this can take a few minutes)",
+            "Loading Hyposloth Studio, please wait... (this can take a few minutes)",
             flush = True,
         )
-        print("  - loading PyTorch, Unsloth and Transformers...", flush = True)
+        print("  - loading PyTorch, Hyposloth and Transformers...", flush = True)
 
     import_started = time.perf_counter()
 
@@ -1831,7 +1831,7 @@ def run_server(
     ensure_studio_directories()
 
     logger.info(
-        "Ensured Unsloth directories in %.1fms",
+        "Ensured Hyposloth directories in %.1fms",
         (time.perf_counter() - boot_started) * 1000,
     )
 
@@ -1854,7 +1854,7 @@ def run_server(
                 print(f"Port {original_port} is already in use by {name} (PID {pid}).")
             else:
                 print(f"Port {original_port} is already in use.")
-            print(f"Unsloth Studio will use port {port} instead.")
+            print(f"Hyposloth Studio will use port {port} instead.")
             print(f"Open http://localhost:{port} in your browser.")
             print("=" * 50)
             print("")
@@ -1886,7 +1886,7 @@ def run_server(
                 installer_bin = home / "unsloth_studio" / "bin" / "unsloth"
             tried_lines = "\n".join(f"  - {p}" for p in attempted) or "  (none)"
             raise SystemExit(
-                "[ERROR] Unsloth frontend build not found.\n"
+                "[ERROR] Hyposloth frontend build not found.\n"
                 f"Tried:\n{tried_lines}\n"
                 "\n"
                 "Likely cause: another 'unsloth' on PATH is shadowing the "
@@ -1988,7 +1988,7 @@ def run_server(
     )
     if not _pw_proceed:
         print(
-            "Not starting Unsloth; set a new admin password first, or launch "
+            "Not starting Hyposloth; set a new admin password first, or launch "
             "without --secure/--cloudflare.",
             file = sys.stderr,
             flush = True,
@@ -2138,7 +2138,7 @@ def run_server(
                 logger = logger,
             )
             logger.info(
-                "Unsloth will shut down in %ds unless the default admin password is changed.",
+                "Hyposloth will shut down in %ds unless the default admin password is changed.",
                 _bootstrap_timeout,
             )
     except Exception as e:  # best-effort: never block startup on the timeout
@@ -2158,7 +2158,7 @@ def _build_arg_parser():
     """
     import argparse
 
-    parser = argparse.ArgumentParser(description = "Run Unsloth UI Backend server")
+    parser = argparse.ArgumentParser(description = "Run Hyposloth UI Backend server")
     parser.add_argument(
         "--host",
         default = "127.0.0.1",
@@ -2189,11 +2189,11 @@ def _build_arg_parser():
         "--cloudflare",
         action = argparse.BooleanOptionalAction,
         default = None,
-        help = "Expose Unsloth on a PUBLIC internet URL via a free Cloudflare HTTPS "
+        help = "Expose Hyposloth on a PUBLIC internet URL via a free Cloudflare HTTPS "
         "tunnel, for non-api-only wildcard binds (0.0.0.0 or ::). Off by default; "
         "pass --cloudflare to enable it (--secure implies it), --no-cloudflare to "
         "force it off. It does not change a raw wildcard bind. If the admin "
-        "password was never changed, Unsloth asks for a new one in the terminal "
+        "password was never changed, Hyposloth asks for a new one in the terminal "
         "before publishing the URL.",
     )
     parser.add_argument(
@@ -2203,7 +2203,7 @@ def _build_arg_parser():
         help = "Expose ONLY a Cloudflare HTTPS link: bind localhost and fail closed "
         "if the tunnel can't start. Without it, --no-secure also serves the raw "
         "0.0.0.0 port, which is reachable from anywhere on the network. If the "
-        "admin password was never changed, Unsloth asks for a new one in the "
+        "admin password was never changed, Hyposloth asks for a new one in the "
         "terminal before publishing the URL.",
     )
     # Back-compat: accept --not-secure as a hidden alias for --no-secure.
@@ -2301,7 +2301,7 @@ if __name__ == "__main__":
     except Exception:
         sys.stderr.write("\n")
         sys.stderr.write("=" * 60 + "\n")
-        sys.stderr.write("ERROR: Unsloth Studio failed to start.\n")
+        sys.stderr.write("ERROR: Hyposloth Studio failed to start.\n")
         sys.stderr.write("=" * 60 + "\n")
         traceback.print_exc(file = sys.stderr)
         sys.stderr.write("\n")

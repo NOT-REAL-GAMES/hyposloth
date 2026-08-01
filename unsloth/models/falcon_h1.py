@@ -45,7 +45,7 @@ except:
     transformers_version = Version(transformers_version)
     if not transformers_version >= Version("4.53.0"):  # TODO: Update when transformers is updated
         raise ImportError(
-            f"Unsloth: Your transformers version of {transformers_version} does not support FalconH1.\n"
+            f"Hyposloth: Your transformers version of {transformers_version} does not support FalconH1.\n"
             f"The minimum required version is 4.53.0.\n"
             f'Try `pip install --upgrade "transformers>=4.53.0"`\n'
             f"to obtain the latest transformers build, then restart this session."
@@ -65,7 +65,7 @@ try:
 except ModuleNotFoundError:
     # FalconH1Attention unavailable or renamed (old transformers).
     raise ImportError(
-        "Unsloth: Could not import FalconH1Attention from transformers.models.falcon_h1.modeling_falcon_h1."
+        "Hyposloth: Could not import FalconH1Attention from transformers.models.falcon_h1.modeling_falcon_h1."
     )
 
 

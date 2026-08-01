@@ -4,8 +4,8 @@
 """Regression tests for the Colab "OutStream has no attribute 'watch_fd_thread'"
 startup crash.
 
-Field report (Colab): Unsloth Studio dies at server startup with
-``❌ Unsloth Studio failed to start: 'OutStream' object has no attribute
+Field report (Colab): Hyposloth Studio dies at server startup with
+``❌ Hyposloth Studio failed to start: 'OutStream' object has no attribute
 'watch_fd_thread'``.
 
 Root cause chain:

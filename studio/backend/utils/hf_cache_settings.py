@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Live, persisted Hugging Face cache routing for Unsloth Studio.
+"""Live, persisted Hugging Face cache routing for Hyposloth Studio.
 
 Hugging Face reads cache environment variables at import time.  Studio therefore
 owns an explicit cache snapshot for each operation instead of trying to refresh

@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Standalone llm-compressor runner for Unsloth's FP8/FP4 export.
+"""Standalone llm-compressor runner for Hyposloth's FP8/FP4 export.
 
-Launched as a subprocess by file path (not `python -m`) so the Unsloth package, which patches
+Launched as a subprocess by file path (not `python -m`) so the Hyposloth package, which patches
 transformers attention, is not imported here; llm-compressor needs an unpatched forward for
 calibration (e.g. NVFP4). Reads a merged 16bit checkpoint, writes a compressed-tensors one.
 """
@@ -60,7 +60,7 @@ def _build_calibration_dataset(tokenizer, kind, value, num_samples, max_seq_leng
 
     if kind == "none":
         print(
-            f"Unsloth: NVFP4 needs calibration data. Defaulting to {num_samples} samples of "
+            f"Hyposloth: NVFP4 needs calibration data. Defaulting to {num_samples} samples of "
             "HuggingFaceH4/ultrachat_200k. For best accuracy pass your own training data via "
             "`calibration_dataset=...`.",
             flush = True,
@@ -95,7 +95,7 @@ def _build_calibration_dataset(tokenizer, kind, value, num_samples, max_seq_leng
                 ds = next(iter(ds.values()))
             else:
                 raise RuntimeError(
-                    "Unsloth: disk calibration_dataset is a DatasetDict with multiple splits; "
+                    "Hyposloth: disk calibration_dataset is a DatasetDict with multiple splits; "
                     "pass a single split, e.g. calibration_dataset=dataset['train']."
                 )
         if num_samples and len(ds) > num_samples:
@@ -106,7 +106,7 @@ def _build_calibration_dataset(tokenizer, kind, value, num_samples, max_seq_leng
     try:
         if len(ds) == 0:
             raise RuntimeError(
-                "Unsloth: the calibration dataset is empty after loading/subsampling; "
+                "Hyposloth: the calibration dataset is empty after loading/subsampling; "
                 "pass a non-empty calibration_dataset."
             )
     except TypeError:
@@ -153,7 +153,7 @@ def _build_calibration_dataset(tokenizer, kind, value, num_samples, max_seq_leng
         ds = ds.map(_prep)
     elif "text" not in cols:
         raise RuntimeError(
-            "Unsloth: calibration_dataset must contain a 'messages', 'text', or 'input_ids' "
+            "Hyposloth: calibration_dataset must contain a 'messages', 'text', or 'input_ids' "
             f"column (got: {sorted(cols)})."
         )
 
@@ -222,7 +222,7 @@ def main():
                 from transformers import AutoModelForVision2Seq as _VLMModel
             except ImportError as e:
                 raise RuntimeError(
-                    "Unsloth: this transformers version has no VLM auto-model class for "
+                    "Hyposloth: this transformers version has no VLM auto-model class for "
                     "compressed multimodal export. Please upgrade transformers."
                 ) from e
         auto_model, auto_proc = _VLMModel, AutoProcessor
@@ -241,7 +241,7 @@ def main():
     except Exception:
         if args.needs_calibration:
             raise RuntimeError(
-                f"Unsloth: calibration export needs a tokenizer but none was found in {args.model}. "
+                f"Hyposloth: calibration export needs a tokenizer but none was found in {args.model}. "
                 "Pass tokenizer=... to save_pretrained_merged."
             )
         tokenizer = None
@@ -271,7 +271,7 @@ def main():
             args.max_seq_length,
         )
         # Use the sequential pipeline: it onloads layer-by-layer, so models that do not fit in
-        # memory at once can still calibrate. Running here in a clean process (Unsloth's attention
+        # memory at once can still calibrate. Running here in a clean process (Hyposloth's attention
         # patches are absent) means tracing works; fall back to the memory-hungry "basic" pipeline
         # only if tracing fails.
         try:
@@ -286,7 +286,7 @@ def main():
             )
         except Exception as e:
             print(
-                f"Unsloth: sequential calibration pipeline failed ({type(e).__name__}: {e}); "
+                f"Hyposloth: sequential calibration pipeline failed ({type(e).__name__}: {e}); "
                 "retrying with the 'basic' pipeline (needs the full model to fit in memory).",
                 flush = True,
             )
@@ -329,7 +329,7 @@ def main():
 
     if _has_mtp(getattr(model, "config", None)):
         print(
-            "Unsloth: WARNING - this model has MTP / speculative-decoding tensors that are not "
+            "Hyposloth: WARNING - this model has MTP / speculative-decoding tensors that are not "
             "included in the compressed export (only the main model is quantized and saved). Use "
             "the non-compressed save path if you need the MTP weights.",
             flush = True,
@@ -341,7 +341,7 @@ def main():
         with open(cfg_path, "r", encoding = "utf-8") as f:
             cfg = json.load(f)
     if "quantization_config" not in cfg:
-        print(f"Unsloth: ERROR - no quantization_config written to {cfg_path}", flush = True)
+        print(f"Hyposloth: ERROR - no quantization_config written to {cfg_path}", flush = True)
         sys.exit(2)
     shards = glob.glob(os.path.join(args.out, "*.safetensors"))
     qfmt = cfg["quantization_config"].get("format")

@@ -22,8 +22,8 @@ const EASE_OUT_QUART: [number, number, number, number] = [0.165, 0.84, 0.44, 1];
 function Logo() {
   return (
     <div className="flex flex-col items-center gap-4">
-      <img src="/sticker.png" alt="Unsloth" className="h-[72px] w-[72px] object-contain" />
-      <img src="/studio.png" alt="Unsloth Studio" className="h-auto w-[250px] object-contain dark:invert" />
+      <img src="/sticker.png" alt="Hyposloth" className="h-[72px] w-[72px] object-contain" />
+      <img src="/studio.png" alt="Hyposloth Studio" className="h-auto w-[250px] object-contain dark:invert" />
     </div>
   );
 }

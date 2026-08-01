@@ -236,7 +236,7 @@ def test_status_source_build_suppressed_when_newer(monkeypatch, tmp_path):
 
 def test_status_source_build_offers_same_base_mix(monkeypatch, tmp_path):
     # The reported banner bug: a source build at the same upstream base as a new
-    # Unsloth prebuilt that adds a mix-<sha> suffix. The base build numbers match
+    # Hyposloth prebuilt that adds a mix-<sha> suffix. The base build numbers match
     # (9596 == 9596) but the mix carries extra patches the source build lacks, so
     # the update must still surface -- mirroring the marker path's is_behind.
     binary = tmp_path / "llama.cpp" / "build" / "bin" / "llama-server"

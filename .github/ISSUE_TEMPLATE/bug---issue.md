@@ -11,7 +11,7 @@ Note: Please do not remove the questions. Answer beside them.
 2. `Colab` or `Kaggle` or local / cloud
 3. Number GPUs used, use `nvidia-smi`
 4. Which notebook? Please link!
-5. Which Unsloth version, TRL version, transformers version, PyTorch version?
+5. Which Hyposloth version, TRL version, transformers version, PyTorch version?
 6. Which trainer? `SFTTrainer`, `GRPOTrainer` etc
 
 ```python

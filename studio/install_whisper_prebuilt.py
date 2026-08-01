@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Cross-platform whisper.cpp (whisper-server) prebuilt installer for Unsloth Studio.
+"""Cross-platform whisper.cpp (whisper-server) prebuilt installer for Hyposloth Studio.
 
-Downloads a per-platform whisper.cpp bundle published by the Unsloth fork
+Downloads a per-platform whisper.cpp bundle published by the Hyposloth fork
 (``unslothai/whisper.cpp``) into an isolated ``<UNSLOTH_HOME>/whisper.cpp``,
 never a system whisper.cpp. The canonical install target matches the
 sidecar/build-script contract in ``stt_ggml_sidecar.py``:
@@ -1277,7 +1277,7 @@ DESCRIPTOR = core.ComponentDescriptor(
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description = "Install a prebuilt whisper.cpp (whisper-server) for Unsloth Studio"
+        description = "Install a prebuilt whisper.cpp (whisper-server) for Hyposloth Studio"
     )
     parser.add_argument(
         "--install-dir",

@@ -29,7 +29,7 @@ if str(_backend_root) not in sys.path:
 def pytest_addoption(parser):
     group = parser.getgroup(
         "unsloth-e2e",
-        "Unsloth Studio end-to-end test options",
+        "Hyposloth Studio end-to-end test options",
     )
     group.addoption(
         "--unsloth-model",
@@ -121,13 +121,13 @@ def studio_server(request):
 
 @pytest.fixture
 def base_url(studio_server):
-    """Base URL for the e2e Unsloth server (from ``studio_server``)."""
+    """Base URL for the e2e Hyposloth server (from ``studio_server``)."""
     return studio_server[0]
 
 
 @pytest.fixture
 def api_key(studio_server):
-    """API key for the e2e Unsloth server (from ``studio_server``)."""
+    """API key for the e2e Hyposloth server (from ``studio_server``)."""
     return studio_server[1]
 
 

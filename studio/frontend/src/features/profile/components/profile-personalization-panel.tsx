@@ -88,7 +88,7 @@ export function ProfilePersonalizationPanel() {
   const lastNicknameRef = useRef(nickname);
 
   const sessionSub = decodeJwtSubject(getAuthToken()) ?? "";
-  const previewName = draftName.trim() || sessionSub || "Unsloth";
+  const previewName = draftName.trim() || sessionSub || "Hyposloth";
 
   useEffect(() => {
     const previous = lastDisplayNameRef.current;
@@ -385,7 +385,7 @@ export function ProfilePersonalizationPanel() {
                 }
               }}
               autoComplete="off"
-              placeholder={sessionSub || "Unsloth"}
+              placeholder={sessionSub || "Hyposloth"}
               className="h-9 w-full rounded-full text-sm"
             />
           </div>

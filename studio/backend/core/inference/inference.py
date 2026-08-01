@@ -327,7 +327,7 @@ class InferenceBackend:
         # Keep the token so the native-template fallback can fetch a
         # gated model's repo template later during generation.
         self._hf_token = hf_token
-        # GGUF uses max_seq_length=0 as "model default"; Unsloth crashes on it.
+        # GGUF uses max_seq_length=0 as "model default"; Hyposloth crashes on it.
         if max_seq_length <= 0:
             max_seq_length = 2048
 
@@ -655,7 +655,7 @@ class InferenceBackend:
                 import sys as _sys
                 from utils.cache_cleanup import clear_unsloth_compiled_cache
 
-                _preserve = ["Unsloth*Trainer.py"] if _sys.platform in ("win32", "darwin") else None
+                _preserve = ["Hyposloth*Trainer.py"] if _sys.platform in ("win32", "darwin") else None
                 clear_unsloth_compiled_cache(preserve_patterns = _preserve)
 
                 logger.info(f"Model '{model_name}' successfully unloaded.")
@@ -1093,7 +1093,7 @@ class InferenceBackend:
                     logger.warning(f"Could not refresh chat turn-end eos after template: {e}")
             else:
                 logger.info(
-                    f"No registered Unsloth template for {self.active_model_name}, using tokenizer default"
+                    f"No registered Hyposloth template for {self.active_model_name}, using tokenizer default"
                 )
         except Exception as e:
             logger.warning(f"Could not apply get_chat_template: {e}")
@@ -2270,7 +2270,7 @@ class InferenceBackend:
             return
 
         try:
-            # Common pattern for Unsloth/Hugging Face models
+            # Common pattern for Hyposloth/Hugging Face models
             if hasattr(model, "past_key_values"):
                 model.past_key_values = None
             if hasattr(model, "generation_config"):

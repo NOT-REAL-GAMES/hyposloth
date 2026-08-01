@@ -62,7 +62,7 @@ export function redactDiagnosticsText(text: string): string {
     "$1$2<redacted>",
   );
 
-  // Redact Unsloth paths before broader home-directory paths.
+  // Redact Hyposloth paths before broader home-directory paths.
   redacted = redacted.replace(
     /(?:\/Users|\/home)\/[^\s/]+\/\.unsloth\/studio/gi,
     "<studio_home>",

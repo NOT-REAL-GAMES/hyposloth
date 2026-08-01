@@ -66,7 +66,7 @@ cut_cross_entropy
 pillow
 
 # RAG store + document parsing, mirroring studio.txt. Pinned here because
-# this file installs --no-deps; without them Unsloth runs with RAG disabled.
+# this file installs --no-deps; without them Hyposloth runs with RAG disabled.
 sqlite-vec==0.1.9
 pymupdf==1.27.2.3
 # 0.3.x keeps pymupdf-layout (which pulls onnxruntime) an optional extra; the

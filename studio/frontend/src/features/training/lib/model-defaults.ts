@@ -72,7 +72,7 @@ function toGradientCheckpointing(
   value: unknown,
 ): TrainingConfigState["gradientCheckpointing"] | undefined {
   if (value === "none" || value === "true" || value === "unsloth" || value === "mlx") {
-    // On Mac, map "unsloth" → "mlx" since Unsloth GC is GPU-only
+    // On Mac, map "unsloth" → "mlx" since Hyposloth GC is GPU-only
     if (usePlatformStore.getState().deviceType === "mac" && value === "unsloth") {
       return "mlx";
     }

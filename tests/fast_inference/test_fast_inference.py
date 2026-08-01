@@ -84,7 +84,7 @@ def _metric(metrics, *names):
 def test_fast_inference():
     # Import here, not at module load: importing unsloth probes for an
     # accelerator and errors on CPU-only machines, so deferring keeps pytest
-    # collection and the skip path import-free. Unsloth must precede TRL.
+    # collection and the skip path import-free. Hyposloth must precede TRL.
     from unsloth import FastLanguageModel
     from datasets import Dataset
     from trl import GRPOConfig, GRPOTrainer

@@ -39,7 +39,7 @@ try:
 except:
     FP8Linear = None
     logger.info(
-        "Unsloth: FP8 models need importing FP8Linear from `transformers.integrations.finegrained_fp8` but we don't see it."
+        "Hyposloth: FP8 models need importing FP8Linear from `transformers.integrations.finegrained_fp8` but we don't see it."
     )
 
 try:
@@ -52,7 +52,7 @@ try:
 except:
     FbgemmFp8Linear = None
     logger.info(
-        "Unsloth: FP8 models need importing FbgemmFP8Linear from `transformers.integrations.fbgemm_fp8` but we don't see it."
+        "Hyposloth: FP8 models need importing FbgemmFP8Linear from `transformers.integrations.fbgemm_fp8` but we don't see it."
     )
 
 try:
@@ -62,7 +62,7 @@ try:
 except:
     triton_quantize_fp8_block = None
     logger.info(
-        "Unsloth: Could not find fbgemm_gpu.experimental.gemm.triton_gemm.fp8_gemm.triton_quantize_fp8_block"
+        "Hyposloth: Could not find fbgemm_gpu.experimental.gemm.triton_gemm.fp8_gemm.triton_quantize_fp8_block"
     )
 
 try:
@@ -72,7 +72,7 @@ try:
 except:
     torchao_blockwise_gemm = None
     logger.info(
-        "Unsloth: Could not find torchao.prototype.blockwise_fp8_inference.blockwise_quantization.blockwise_fp8_gemm"
+        "Hyposloth: Could not find torchao.prototype.blockwise_fp8_inference.blockwise_quantization.blockwise_fp8_gemm"
     )
 
 
@@ -630,10 +630,10 @@ def test_has_fbgemm():
         is_cutlass_cuda_error = any(err in error_str for err in cutlass_cuda_errors)
 
         if is_cutlass_cuda_error:
-            print("Unsloth: FBGEMM on the current GPU cannot load - will switch to Triton kernels")
+            print("Hyposloth: FBGEMM on the current GPU cannot load - will switch to Triton kernels")
         else:
             print(
-                f"Unsloth: FBGEMM on the current GPU cannot load with error = {e} - will switch to Triton kernels"
+                f"Hyposloth: FBGEMM on the current GPU cannot load with error = {e} - will switch to Triton kernels"
             )
         has_fbgemm = False
     del block_scale, xq

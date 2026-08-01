@@ -65,7 +65,7 @@ _rocm_install_args = _flow.rocm_install_args
 
 def _find_binary() -> Optional[str]:
     """Locate the active whisper-server binary via the STT sidecar's own resolver
-    so update targets exactly what Unsloth runs. Lazy import keeps the heavy
+    so update targets exactly what Hyposloth runs. Lazy import keeps the heavy
     inference module off this module's import path."""
     try:
         from core.inference.stt_ggml_sidecar import find_whisper_server_binary
@@ -138,7 +138,7 @@ def _installed_whisper_version(binary: Optional[str]) -> Optional[str]:
 
 
 def _whisper_install_root(binary: Optional[str]) -> Optional[Path]:
-    """The Unsloth-managed whisper.cpp root the active binary lives under, or None
+    """The Hyposloth-managed whisper.cpp root the active binary lives under, or None
     when the binary is unmanaged (see update_flow.managed_install_root)."""
     return _flow.managed_install_root(
         binary,

@@ -389,7 +389,7 @@ def test_windows_full_offload_flags_use_current_llama_server_args():
     assert stale_checkpoint_flag not in src
 
 
-# Backend-wide guard: Unsloth must never inject --no-cache-prompt into a llama-server
+# Backend-wide guard: Hyposloth must never inject --no-cache-prompt into a llama-server
 # command. It disables in-VRAM prompt-prefix reuse, re-prefilling every repeated prompt
 # (#5692 only needed --cache-ram / --ctx-checkpoints off; #7260 dropped the stray flag).
 # Detecting it (_is_real) or honouring a user-supplied one (_prompt_cache_off) is fine.
@@ -433,7 +433,7 @@ def test_unsloth_never_injects_no_cache_prompt_into_any_command():
             continue
     assert files, "no backend source files were scanned"
     assert violations == [], (
-        "Unsloth must never add --no-cache-prompt to a llama-server command "
+        "Hyposloth must never add --no-cache-prompt to a llama-server command "
         "(it disables prompt-prefix reuse); detecting or honouring a user-supplied "
         f"one is fine. Offending sites: {violations}"
     )
@@ -569,7 +569,7 @@ def test_already_in_target_state_vision_off_matches_vision_backend():
 @pytest.mark.parametrize(
     "arch, nextn",
     [
-        # Verified against real Unsloth MTP GGUFs (qwen35 / qwen35moe).
+        # Verified against real Hyposloth MTP GGUFs (qwen35 / qwen35moe).
         ("qwen35", 1),
         ("qwen35moe", 1),
         # Future-proofing: any arch + n>0 should match.
@@ -1215,7 +1215,7 @@ def test_already_in_target_state_2b_falls_back_to_ngram_below_threshold(monkeypa
     )
 
 
-# usage backfill from timings (Unsloth UI t/s widget fix).
+# usage backfill from timings (Hyposloth UI t/s widget fix).
 
 
 def test_backfill_usage_from_timings_fills_when_completion_tokens_zero():
@@ -1809,7 +1809,7 @@ def test_reload_forced_mtp_bounces_auto_mla():
     )
 
 
-# ── Full named-repo resolver matrix (the shipping Unsloth families) ─────
+# ── Full named-repo resolver matrix (the shipping Hyposloth families) ─────
 #
 # Locks auto / off / forced-mtp routing for every Qwen3.5 (MTP + plain) and
 # gemma-4 (regular + QAT) GGUF repo, including the giant MoEs that stay

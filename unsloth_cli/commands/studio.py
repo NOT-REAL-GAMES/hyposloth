@@ -25,7 +25,7 @@ import typer
 from unsloth_cli import _studio_deps
 from unsloth_cli.commands import _password_prompt
 
-studio_app = typer.Typer(help = "Unsloth Studio commands.")
+studio_app = typer.Typer(help = "Hyposloth Studio commands.")
 
 
 def _enable_verbose_access_logs() -> None:
@@ -41,7 +41,7 @@ def _enable_verbose_access_logs() -> None:
 # UNSLOTH_STUDIO_HOME wins when both env vars are set.
 def _looks_like_installer_managed_studio_home(candidate: Path) -> bool:
     """Sentinel check (studio.conf or bin shim) so a dev venv named
-    unsloth_studio is not misidentified as a custom Unsloth root.
+    unsloth_studio is not misidentified as a custom Hyposloth root.
     """
     shim_name = "unsloth.exe" if platform.system() == "Windows" else "unsloth"
     return (candidate / "share" / "studio.conf").is_file() or (
@@ -220,7 +220,7 @@ def _find_run_py() -> Optional[Path]:
     run_py = _PACKAGE_ROOT / "studio" / "backend" / "run.py"
     if run_py.is_file():
         return run_py
-    # 2. Unsloth venv's site-packages (Linux + Windows layouts)
+    # 2. Hyposloth venv's site-packages (Linux + Windows layouts)
     for pattern in (
         "lib/python*/site-packages/studio/backend/run.py",
         "Lib/site-packages/studio/backend/run.py",
@@ -290,7 +290,7 @@ def _find_setup_script() -> Optional[Path]:
     s = _PACKAGE_ROOT / "studio" / name
     if s.is_file():
         return s
-    # 2. Unsloth venv's site-packages
+    # 2. Hyposloth venv's site-packages
     for pattern in (
         f"lib/python*/site-packages/studio/{name}",
         f"Lib/site-packages/studio/{name}",
@@ -668,7 +668,7 @@ def _create_desktop_secret_in_cli() -> str:
 def _should_prompt_password_change(
     *, cloudflare: Optional[bool], host: str, secure: bool, api_only: bool
 ) -> bool:
-    """Whether this launch will expose Unsloth through the Cloudflare tunnel.
+    """Whether this launch will expose Hyposloth through the Cloudflare tunnel.
 
     CLI mirror of run.py's _cloudflare_tunnel_should_start, minus the Colab
     case (Colab launches never come through this CLI path). --secure implies
@@ -794,7 +794,7 @@ def _apply_supplied_password_before_launch(supplied_password: "str | None") -> N
         conn = _connect_auth_db()
     except (OSError, sqlite3.Error) as exc:
         typer.echo(
-            f"Error: --password could not open the Unsloth auth database ({exc}); not starting.",
+            f"Error: --password could not open the Hyposloth auth database ({exc}); not starting.",
             err = True,
         )
         raise typer.Exit(1)
@@ -814,7 +814,7 @@ def _apply_supplied_password_before_launch(supplied_password: "str | None") -> N
             raise typer.Exit(1)
         if not row[2]:
             typer.echo(
-                "Error: an Unsloth admin password is already set; --password only sets "
+                "Error: a Hyposloth admin password is already set; --password only sets "
                 "the initial password. Change it in the UI, or run `unsloth studio "
                 "reset-password` for a new one.",
                 err = True,
@@ -837,7 +837,7 @@ def _apply_supplied_password_before_launch(supplied_password: "str | None") -> N
         # Any DB failure fails closed (typer.Exit is not caught here, so the
         # deliberate Exit(1) branches above propagate unchanged).
         typer.echo(
-            f"Error: --password could not update the Unsloth auth database ({exc}); not starting.",
+            f"Error: --password could not update the Hyposloth auth database ({exc}); not starting.",
             err = True,
         )
         raise typer.Exit(1)
@@ -860,9 +860,9 @@ def _strip_seeded_bootstrap_password_or_exit(*, context: str) -> None:
         bootstrap_file.unlink(missing_ok = True)
     except OSError as exc:
         typer.echo(
-            "Error: refusing to publish Unsloth on a public Cloudflare URL: "
+            "Error: refusing to publish Hyposloth on a public Cloudflare URL: "
             f"could not remove the seeded bootstrap password file ({exc}), so an "
-            f"older Unsloth child could still serve the default credential ({context}). "
+            f"older Hyposloth child could still serve the default credential ({context}). "
             "Delete it manually or change the admin password (run `unsloth studio` "
             "locally with a terminal attached, or `unsloth studio reset-password`), "
             "then retry.",
@@ -898,7 +898,7 @@ def _require_servable_frontend_or_exit(
             return frontend
         typer.echo(
             "Error: --frontend points at a directory with no index.html, so a "
-            "public Unsloth launch would have no login page to change the seeded "
+            "public Hyposloth launch would have no login page to change the seeded "
             "admin password. Point --frontend at a built dist, rebuild it (re-run "
             "install.sh), or use --api-only.",
             err = True,
@@ -909,7 +909,7 @@ def _require_servable_frontend_or_exit(
     if resolved is not None:
         return resolved
     typer.echo(
-        "Error: the Unsloth frontend is not built, so a public launch would have "
+        "Error: the Hyposloth frontend is not built, so a public launch would have "
         "no login page to change the seeded admin password. Build it (re-run "
         "install.sh), pass --frontend PATH to a built dist, or use --api-only.",
         err = True,
@@ -939,8 +939,8 @@ def _validate_inproc_backend_before_strip(
         _load_run_module()
     except Exception as exc:
         typer.echo(
-            f"Error: the Unsloth backend could not be loaded ({exc}); refusing to "
-            "expose Unsloth publicly before it is confirmed runnable. Re-run: "
+            f"Error: the Hyposloth backend could not be loaded ({exc}); refusing to "
+            "expose Hyposloth publicly before it is confirmed runnable. Re-run: "
             "unsloth studio setup",
             err = True,
         )
@@ -949,7 +949,7 @@ def _validate_inproc_backend_before_strip(
 
 def _tunnel_binary_confirmed_unavailable() -> bool:
     """True only if cloudflared is provably unavailable (found nowhere on PATH or
-    in the Unsloth cache AND the download failed), so the tunnel cannot start.
+    in the Hyposloth cache AND the download failed), so the tunnel cannot start.
 
     Used on the --secure path (loopback bind, so the tunnel is the ONLY public
     exposure) to skip stripping the seeded recovery password before a public URL
@@ -968,7 +968,7 @@ def _tunnel_binary_confirmed_unavailable() -> bool:
     if not tunnel_py.is_file():
         return False
     # ensure_cloudflared() lazily imports utils.paths.storage_roots to resolve the
-    # Unsloth bin cache. The outer CLI hasn't added studio/backend to sys.path yet,
+    # Hyposloth bin cache. The outer CLI hasn't added studio/backend to sys.path yet,
     # so that import would fail and return None (a false "unavailable" that wrongly
     # refuses --secure). Add the backend dir so the cache path resolves as in the child.
     added_backend_path = False
@@ -993,7 +993,7 @@ def _tunnel_binary_confirmed_unavailable() -> bool:
 
 
 def _child_self_suppresses(*, in_studio_venv: bool, child_run_py: Optional[Path]) -> bool:
-    """True when the child that will serve Unsloth is provably THIS install's
+    """True when the child that will serve Hyposloth is provably THIS install's
     backend, whose pre-bind gate sets app.state.suppress_bootstrap_injection and
     so never serves the seeded credential publicly -- even with .bootstrap_password
     on disk. The parent-side strip is then unnecessary and can be skipped to avoid
@@ -1049,8 +1049,8 @@ def _enforce_password_change_before_exposure(
         # Refuse rather than risk a child serving the default login; a transient
         # lock clears on retry.
         typer.echo(
-            "Error: refusing to publish Unsloth on a public Cloudflare URL: could "
-            f"not open the Unsloth auth database ({exc}) to confirm the admin "
+            "Error: refusing to publish Hyposloth on a public Cloudflare URL: could "
+            f"not open the Hyposloth auth database ({exc}) to confirm the admin "
             "password was changed. Retry (a transient database lock clears), or "
             "change the password first (run `unsloth studio` locally with a "
             "terminal attached, or `unsloth studio reset-password`).",
@@ -1075,8 +1075,8 @@ def _enforce_password_change_before_exposure(
             except OSError:
                 pass
             typer.echo(
-                "Error: refusing to publish Unsloth on a public Cloudflare URL: could "
-                f"not initialize the admin account ({exc}), so a re-exec'd Unsloth "
+                "Error: refusing to publish Hyposloth on a public Cloudflare URL: could "
+                f"not initialize the admin account ({exc}), so a re-exec'd Hyposloth "
                 "child could regenerate and serve a default credential. Retry (a "
                 "transient database lock clears), or change the password first (run "
                 "`unsloth studio` locally with a terminal attached, or `unsloth "
@@ -1100,7 +1100,7 @@ def _enforce_password_change_before_exposure(
             # regenerate; we just couldn't read must_change back. Strip the seeded
             # file so nothing serves it, failing closed if the strip itself fails.
             typer.echo(
-                f"Warning: could not read the Unsloth admin state back ({exc}); "
+                f"Warning: could not read the Hyposloth admin state back ({exc}); "
                 "removing the seeded bootstrap password before public exposure.",
                 err = True,
             )
@@ -1113,7 +1113,7 @@ def _enforce_password_change_before_exposure(
             # the launch: it never arms for api-only, and TIMEOUT=0 disables it.
             if api_only or not _bootstrap_deadline_active():
                 typer.echo(
-                    "Error: refusing to publish Unsloth on a public Cloudflare "
+                    "Error: refusing to publish Hyposloth on a public Cloudflare "
                     "URL: the default admin password was never changed, no "
                     "terminal is attached to change it here, and the bootstrap "
                     "shutdown deadline does not apply to this launch (api-only, "
@@ -1132,12 +1132,12 @@ def _enforce_password_change_before_exposure(
                 # fails). Keep the file for LOCAL recovery; must_change stays set
                 # and the deadline arms.
                 typer.echo(
-                    "Warning: Unsloth is being exposed publicly while the admin "
+                    "Warning: Hyposloth is being exposed publicly while the admin "
                     "account still uses its auto-generated bootstrap password. The "
                     "login page forces a change and the credential is never served "
                     "on the public page. Set a new password by running `unsloth "
                     "studio` locally with a terminal attached, or `unsloth studio "
-                    "reset-password`; Unsloth shuts down after ~1h if the password "
+                    "reset-password`; Hyposloth shuts down after ~1h if the password "
                     "stays unchanged (UNSLOTH_STUDIO_BOOTSTRAP_TIMEOUT).",
                     err = True,
                 )
@@ -1151,7 +1151,7 @@ def _enforce_password_change_before_exposure(
             # uncertainty.)
             if secure and _tunnel_binary_confirmed_unavailable():
                 typer.echo(
-                    "Error: refusing to expose Unsloth: the Cloudflare tunnel binary "
+                    "Error: refusing to expose Hyposloth: the Cloudflare tunnel binary "
                     "(cloudflared) is unavailable and could not be downloaded, so no "
                     "public URL can start. The seeded bootstrap password is preserved "
                     "for recovery; fix connectivity and retry, or change the password "
@@ -1168,11 +1168,11 @@ def _enforce_password_change_before_exposure(
             # forces a change and the timer still arms; only the on-disk copy goes.
             _strip_seeded_bootstrap_password_or_exit(context = "no terminal to change it")
             typer.echo(
-                "Warning: Unsloth is being exposed publicly while the admin account "
+                "Warning: Hyposloth is being exposed publicly while the admin account "
                 "still uses its auto-generated bootstrap password. The seeded password "
                 "file has been removed so it is not served on the public page. Set a new "
                 "password by running `unsloth studio` locally with a terminal attached, "
-                "or `unsloth studio reset-password`; Unsloth shuts down after ~1h if the "
+                "or `unsloth studio reset-password`; Hyposloth shuts down after ~1h if the "
                 "password stays unchanged (UNSLOTH_STUDIO_BOOTSTRAP_TIMEOUT).",
                 err = True,
             )
@@ -1185,7 +1185,7 @@ def _enforce_password_change_before_exposure(
             )
 
         typer.echo(
-            "Unsloth Studio will be exposed on the public internet, so set a "
+            "Hyposloth Studio will be exposed on the public internet, so set a "
             "password now. Ctrl+C to abort.",
             err = True,
         )
@@ -1193,7 +1193,7 @@ def _enforce_password_change_before_exposure(
             new_password = _password_prompt.prompt_new_password(_is_current_password)
         except (KeyboardInterrupt, EOFError):
             typer.echo(
-                "\nError: password change aborted; refusing to expose Unsloth "
+                "\nError: password change aborted; refusing to expose Hyposloth "
                 "with the default admin password. Re-run and set a password, "
                 "or launch without --secure/--cloudflare.",
                 err = True,
@@ -1308,7 +1308,7 @@ def studio_default(
     cloudflare: Optional[bool] = typer.Option(
         None,
         "--cloudflare/--no-cloudflare",
-        help = "Expose Unsloth on a PUBLIC internet URL via a free Cloudflare HTTPS "
+        help = "Expose Hyposloth on a PUBLIC internet URL via a free Cloudflare HTTPS "
         "tunnel, for non-api-only wildcard binds (0.0.0.0 or ::). Off by default; "
         "pass --cloudflare to enable it (--secure implies it). --no-cloudflare forces "
         "it off but does not change a raw wildcard bind.",
@@ -1354,7 +1354,7 @@ def studio_default(
         "process list and shell history. Rotate later with `unsloth studio reset-password`.",
     ),
 ):
-    """Launch the Unsloth Studio server."""
+    """Launch the Hyposloth Studio server."""
     # Back-compat: --not-secure is a deprecated alias for --no-secure.
     secure = _resolve_secure(secure, not_secure)
     # Runs before every subcommand (run/setup/update/...).
@@ -1484,7 +1484,7 @@ def studio_default(
         studio_python = _studio_venv_python()
         run_py = _find_run_py()
         if not (studio_python and run_py):
-            typer.echo("Unsloth Studio not set up. Run install.sh first.")
+            typer.echo("Hyposloth Studio not set up. Run install.sh first.")
             raise typer.Exit(1)
         # A public UI launch must have a servable login page BEFORE the gate can
         # strip the seeded .bootstrap_password, or the child has no way to change
@@ -1544,7 +1544,7 @@ def studio_default(
     if not in_studio_venv:
         if studio_python and run_py:
             if not silent:
-                typer.echo("Launching Unsloth Studio... Please wait...")
+                typer.echo("Launching Hyposloth Studio... Please wait...")
             args = [
                 str(studio_python),
                 str(run_py),
@@ -1590,7 +1590,7 @@ def studio_default(
                     rc = proc.wait()
                 if rc != 0:
                     typer.echo(
-                        f"\nError: Unsloth server exited unexpectedly (code {rc}).",
+                        f"\nError: Hyposloth server exited unexpectedly (code {rc}).",
                         err = True,
                     )
                     typer.echo(
@@ -1602,7 +1602,7 @@ def studio_default(
             else:
                 os.execvp(str(studio_python), args)
         else:
-            typer.echo("Unsloth Studio not set up. Run install.sh first.")
+            typer.echo("Hyposloth Studio not set up. Run install.sh first.")
             raise typer.Exit(1)
 
     with _studio_deps.studio_backend_imports("unsloth studio"):
@@ -1788,7 +1788,7 @@ def run(
         "--gpu-memory-mode",
         rich_help_panel = _RUN_PANEL_MODEL,
         help = (
-            "GPU memory strategy for GGUF models. Auto lets Unsloth select GPUs "
+            "GPU memory strategy for GGUF models. Auto lets Hyposloth select GPUs "
             "and cap context to fit VRAM. Manual with default layers and context "
             "delegates placement and sizing to llama.cpp --fit."
         ),
@@ -1927,7 +1927,7 @@ def run(
         None,
         "--cloudflare/--no-cloudflare",
         rich_help_panel = _RUN_PANEL_SERVER,
-        help = "Expose Unsloth on a PUBLIC internet URL via a free Cloudflare HTTPS "
+        help = "Expose Hyposloth on a PUBLIC internet URL via a free Cloudflare HTTPS "
         "tunnel, for non-api-only wildcard binds (0.0.0.0 or ::). Off by default; "
         "pass --cloudflare to enable it (--secure implies it). --no-cloudflare forces "
         "it off but does not change a raw wildcard bind.",
@@ -1972,16 +1972,16 @@ def run(
         "process list and shell history. Rotate later with `unsloth studio reset-password`.",
     ),
 ):
-    """Start Unsloth, load a model, print an API key -- one-liner server.
+    """Start Hyposloth, load a model, print an API key -- one-liner server.
 
-    Unknown flags pass through to llama-server (GGUF only). Unsloth
+    Unknown flags pass through to llama-server (GGUF only). Hyposloth
     rejects managed flags with HTTP 400: model identity, network
     (--host/--port/--path/--api-prefix/--reuse-port), auth/TLS
     (--api-key/--ssl-*), single-model UI (--ui/--models-*/--webui),
     and parallel slots (use --parallel above). Full denylist in
     studio/backend/core/inference/llama_server_args.py. Other knobs
     (-c, -ngl, --jinja, --flash-attn, -t, ...) pass through and
-    last-wins-override Unsloth's auto-set value.
+    last-wins-override Hyposloth's auto-set value.
 
     Example:
         unsloth studio run --model unsloth/Qwen3-1.7B-GGUF --gguf-variant UD-Q4_K_XL
@@ -2031,7 +2031,7 @@ def run(
 
     # Set before any re-exec so the in-venv server inherits it via the env.
     # `run --verbose` used to pass through to llama-server (its own -v); keep
-    # that by forwarding --log-verbose so we add Unsloth logs without dropping it.
+    # that by forwarding --log-verbose so we add Hyposloth logs without dropping it.
     if verbose:
         _enable_verbose_access_logs()
         if not any(a in ("--verbose", "-v", "--log-verbose") for a in extra_llama_args):
@@ -2121,14 +2121,14 @@ def run(
     if not in_studio_venv:
         studio_python = _studio_venv_python()
         if not studio_python:
-            typer.echo("Unsloth Studio not set up. Run install.sh first.")
+            typer.echo("Hyposloth Studio not set up. Run install.sh first.")
             raise typer.Exit(1)
         # Re-exec via the studio venv's `unsloth` console-script.
         studio_bin = studio_python.parent / "unsloth"
         if not studio_bin.is_file():
-            typer.echo("Unsloth venv missing 'unsloth' entry point. Re-run: unsloth studio setup")
+            typer.echo("Hyposloth venv missing 'unsloth' entry point. Re-run: unsloth studio setup")
             raise typer.Exit(1)
-        # `run` serves the same Unsloth UI (unless --api-only); a public launch must
+        # `run` serves the same Hyposloth UI (unless --api-only); a public launch must
         # have a servable login page BEFORE the gate strips the seeded password, or
         # the child has no way to change it. Validate here and forward the resolved
         # dist so a shadowed child that can't self-resolve one still serves it.
@@ -2293,7 +2293,7 @@ def run(
     try:
         # 3. Wait for server health.
         if not silent:
-            typer.echo("Starting Unsloth Studio...")
+            typer.echo("Starting Hyposloth Studio...")
         if not _wait_for_server(actual_port):
             typer.echo("Error: server did not become healthy within 30 seconds.", err = True)
             raise typer.Exit(1)
@@ -2369,10 +2369,10 @@ def run(
         typer.echo("")
         typer.echo("=" * 56)
         if secure and _cf_url:
-            typer.echo(f"  Unsloth Studio running (secure) at {_cf_url}")
+            typer.echo(f"  Hyposloth Studio running (secure) at {_cf_url}")
             typer.echo(f"  On this machine only: {base_url}")
         else:
-            typer.echo(f"  Unsloth Studio running at {base_url}")
+            typer.echo(f"  Hyposloth Studio running at {base_url}")
             _emit_run_cloudflare_notice(run_mod, host, display_host, actual_port, secure)
         typer.echo(f"  Model loaded: {loaded_model}{display_variant}")
         if context_length_line:
@@ -2614,7 +2614,7 @@ def _signal_stop(pid: int) -> "str | None":
 
 @studio_app.command()
 def stop():
-    """Stop every running Unsloth Studio server for this STUDIO_HOME.
+    """Stop every running Hyposloth Studio server for this STUDIO_HOME.
 
     The port fallback can leave more than one running, so stop them all.
     """
@@ -2626,7 +2626,7 @@ def stop():
             # read are kept, and the servers behind them are still serving.
             _report_unreadable(unreadable)
             raise typer.Exit(1)
-        typer.echo("No running Unsloth server found (no PID file).")
+        typer.echo("No running Hyposloth server found (no PID file).")
         raise typer.Exit(0)
 
     signalled, failed = [], []
@@ -2638,16 +2638,16 @@ def stop():
         error = _signal_stop(pid)
         if error is not None:
             failed.append((pid, error))
-            typer.echo(f"Failed to stop Unsloth server (PID {pid}): {error}", err = True)
+            typer.echo(f"Failed to stop Hyposloth server (PID {pid}): {error}", err = True)
             continue
-        typer.echo(f"Sent shutdown signal to Unsloth server (PID {pid}).")
+        typer.echo(f"Sent shutdown signal to Hyposloth server (PID {pid}).")
         signalled.append((pid, paths))
 
     if not signalled and not failed:
         if unreadable:
             _report_unreadable(unreadable)
             raise typer.Exit(1)
-        typer.echo("No running Unsloth server found (cleaned up stale PID files).")
+        typer.echo("No running Hyposloth server found (cleaned up stale PID files).")
         raise typer.Exit(0)
 
     pending = list(signalled)
@@ -2664,9 +2664,9 @@ def stop():
 
     stopped = len(signalled) - len(pending)
     if stopped:
-        typer.echo(f"Unsloth server{'s' if stopped > 1 else ''} stopped ({stopped}).")
+        typer.echo(f"Hyposloth server{'s' if stopped > 1 else ''} stopped ({stopped}).")
     for pid, _paths in pending:
-        typer.echo(f"Unsloth server (PID {pid}) is shutting down (may take a few seconds).")
+        typer.echo(f"Hyposloth server (PID {pid}) is shutting down (may take a few seconds).")
     if unreadable:
         _report_unreadable(unreadable)
     if failed or unreadable:
@@ -2885,7 +2885,7 @@ def setup(
         help = "Full pip/build output during setup for troubleshooting.",
     ),
 ):
-    """Run Unsloth setup (called by install.ps1 / install.sh)."""
+    """Run Hyposloth setup (called by install.ps1 / install.sh)."""
     _run_setup_script(verbose = verbose)
 
 
@@ -2902,7 +2902,7 @@ def update(
         help = "Full pip/build output during update for troubleshooting.",
     ),
 ):
-    """Update Unsloth Studio dependencies and rebuild."""
+    """Update Hyposloth Studio dependencies and rebuild."""
     # Re-export UNSLOTH_STUDIO_HOME for env-mode installs so the refresh
     # subprocess resolves the same install root the user originally chose.
     _ensure_studio_env_exported()
@@ -3049,7 +3049,7 @@ def verify_install(
         help = "Emit machine-readable JSON.",
     ),
 ):
-    """Check that the Unsloth Studio dependency install completed.
+    """Check that the Hyposloth Studio dependency install completed.
 
     Exits 0 when complete, 1 otherwise. setup.sh / setup.ps1 use the exit code
     to decide whether the "already up to date" fast path may be taken.
@@ -3061,10 +3061,10 @@ def verify_install(
         raise typer.Exit(0 if state["ok"] else 1)
 
     if state["ok"]:
-        typer.echo("Unsloth Studio install is complete.")
+        typer.echo("Hyposloth Studio install is complete.")
         raise typer.Exit(0)
 
-    typer.echo(f"Unsloth Studio install is incomplete ({state['reason']}).")
+    typer.echo(f"Hyposloth Studio install is incomplete ({state['reason']}).")
     if state["missing"]:
         typer.echo(f"  missing packages: {', '.join(state['missing'])}")
     typer.echo("  repair with: unsloth studio update")
@@ -3082,9 +3082,9 @@ def provision_desktop_auth():
 
 @studio_app.command("reset-password")
 def reset_password():
-    """Reset the Unsloth admin password.
+    """Reset the Hyposloth admin password.
 
-    Rotates the credential in place: a running Unsloth accepts the new password on
+    Rotates the credential in place: a running Hyposloth accepts the new password on
     its next request, so there is nothing to restart. Shared /p preview links are
     not revoked -- rotate those in Settings if the old password leaked.
     """
@@ -3095,7 +3095,7 @@ def reset_password():
         typer.echo(
             f"Error: could not open the auth database ({exc}). Check that "
             f"{STUDIO_HOME / 'auth'} is writable; if auth.db itself is unreadable, stop "
-            "Unsloth, delete it, and start again to re-seed.",
+            "Hyposloth, delete it, and start again to re-seed.",
             err = True,
         )
         raise typer.Exit(1)
@@ -3111,6 +3111,6 @@ def reset_password():
 
     typer.echo(f"New password for '{DEFAULT_ADMIN_USERNAME}': {new_password}")
     typer.echo(
-        "Sessions and API keys revoked. A running Unsloth takes it on the next request, "
+        "Sessions and API keys revoked. A running Hyposloth takes it on the next request, "
         "though repeated failed logins can hold the rate limit shut for up to a minute."
     )

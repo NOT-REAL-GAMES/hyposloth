@@ -74,7 +74,7 @@ _rocm_install_args = _flow.rocm_install_args
 
 def _find_binary() -> Optional[str]:
     """Locate the active llama-server binary via the inference backend's own
-    resolver, so update targets exactly what Unsloth runs. Lazy import keeps the
+    resolver, so update targets exactly what Hyposloth runs. Lazy import keeps the
     heavy inference module off this module's import path."""
     try:
         from core.inference.llama_cpp import LlamaCppBackend
@@ -173,7 +173,7 @@ def get_installed_llama_version() -> Optional[str]:
 
 
 def _llama_install_root(binary: Optional[str]) -> Optional[Path]:
-    """The Unsloth-managed llama.cpp root the active binary lives under, or None
+    """The Hyposloth-managed llama.cpp root the active binary lives under, or None
     when the binary is unmanaged (see update_flow.managed_install_root)."""
     return _flow.managed_install_root(
         binary,
@@ -552,7 +552,7 @@ def _plan_llama_phase() -> dict:
                 "reason": "local_link",
                 "message": (
                     "llama.cpp is a local directory linked with --with-llama-cpp-dir; "
-                    "Unsloth won't replace it. Update your own llama.cpp checkout instead."
+                    "Hyposloth won't replace it. Update your own llama.cpp checkout instead."
                 ),
             },
         }

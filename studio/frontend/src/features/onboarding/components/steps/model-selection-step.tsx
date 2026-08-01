@@ -113,7 +113,7 @@ export function ModelSelectionStep() {
     return applyPriorityOrdering(ids);
   }, [hfResults]);
 
-  // Match Unsloth: only show exception signals (OOM/TIGHT) in training flows.
+  // Match Hyposloth: only show exception signals (OOM/TIGHT) in training flows.
   const vramMap = useMemo(() => {
     const fitMap = buildModelVramMap(
       hfResults,

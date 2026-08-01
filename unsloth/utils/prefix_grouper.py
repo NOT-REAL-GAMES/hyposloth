@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-"""PrefixGrouper layout builder + completion-logprob extraction for the Unsloth GRPO
+"""PrefixGrouper layout builder + completion-logprob extraction for the Hyposloth GRPO
 packed path (all archs that route through the varlen attention dispatch).
 
 Given the de-padded, LEFT-PACKED input_ids the packed GRPO path already works with, this

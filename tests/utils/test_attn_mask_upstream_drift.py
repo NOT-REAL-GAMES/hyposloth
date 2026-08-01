@@ -272,7 +272,7 @@ def test_vendored_module_has_not_drifted_from_upstream():
 
 
 def test_vendored_module_exports_everything_unsloth_imports():
-    """The copy may be a subset of upstream, but not of what Unsloth uses."""
+    """The copy may be a subset of upstream, but not of what Hyposloth uses."""
     upstream_src = _upstream_source()
     upstream = _symbols(upstream_src, False, False)
     vendored = _symbols(_COMPAT_PATH.read_text(encoding = "utf-8"), False, False)

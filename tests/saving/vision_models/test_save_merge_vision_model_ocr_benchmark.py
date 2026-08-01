@@ -79,7 +79,7 @@ model, tokenizer = FastVisionModel.from_pretrained(
 )
 
 # Benchmark base model.
-model_name = "Unsloth Base model"
+model_name = "Hyposloth Base model"
 FastVisionModel.for_inference(model)
 avg_wer, avg_cer = ocr_evaluator.evaluate_model(
     model, tokenizer, eval_dataset, output_dir = "unsloth_base_model_results"
@@ -154,7 +154,7 @@ model.save_pretrained("unsloth-qwen2-7vl-french-ocr-adapter", tokenizer)
 tokenizer.save_pretrained("unsloth-qwen2-7vl-french-ocr-adapter")
 
 # Benchmark lora adapter model.
-model_name = "Unsloth lora adapter model"
+model_name = "Hyposloth lora adapter model"
 FastVisionModel.for_inference(model)
 avg_wer, avg_cer = ocr_evaluator.evaluate_model(
     model, tokenizer, eval_dataset, output_dir = "unsloth_lora_model_results"
@@ -186,7 +186,7 @@ model, tokenizer = FastVisionModel.from_pretrained(
     "./qwen2-ocr-merged-finetune-merge-16bit", load_in_4bit = False, load_in_8bit = False
 )
 
-model_name = "Unsloth 16bits-merged model load-16bits"
+model_name = "Hyposloth 16bits-merged model load-16bits"
 model.config.use_cache = True
 
 avg_wer, avg_cer = ocr_evaluator.evaluate_model(
@@ -202,7 +202,7 @@ model, tokenizer = FastVisionModel.from_pretrained(
     "./qwen2-ocr-merged-finetune-merge-16bit", load_in_4bit = True, load_in_8bit = False
 )
 
-model_name = "Unsloth 16bits-merged model load-4bits"
+model_name = "Hyposloth 16bits-merged model load-4bits"
 model.config.use_cache = True
 
 avg_wer, avg_cer = ocr_evaluator.evaluate_model(
@@ -218,7 +218,7 @@ model, tokenizer = FastVisionModel.from_pretrained(
     "./qwen2-ocr-merged-finetune-merge-16bit", load_in_4bit = False, load_in_8bit = True
 )
 
-model_name = "Unsloth 16bits-merged model load-8bits"
+model_name = "Hyposloth 16bits-merged model load-8bits"
 avg_wer, avg_cer = ocr_evaluator.evaluate_model(
     model,
     tokenizer,
@@ -233,7 +233,7 @@ ocr_evaluator.add_to_comparison(model_name, avg_wer, avg_cer)
 # model, tokenizer = FastVisionModel.from_pretrained("./qwen2-ocr-merged-finetune-merge-4bit",load_in_4bit=True, load_in_8bit=False)
 #
 # # benchmark 4bit loaded, 4bits merged model performance
-# model_name = "Unsloth 4bits-merged model load-4bits"
+# model_name = "Hyposloth 4bits-merged model load-4bits"
 #
 # avg_wer, avg_cer = ocr_evaluator.evaluate_model(model, tokenizer, eval_dataset, output_dir="unsloth_4bits_merged_model_load_4bits_results")
 # ocr_evaluator.add_to_comparison(model_name, avg_wer, avg_cer)
@@ -242,7 +242,7 @@ ocr_evaluator.add_to_comparison(model_name, avg_wer, avg_cer)
 # model, tokenizer = FastVisionModel.from_pretrained("./qwen2-ocr-merged-finetune-merge-4bit",load_in_4bit=False, load_in_8bit=True)
 #
 # # benchmark 8bit loaded, 4bits merged model performance
-# model_name = "Unsloth 4bits-merged model load-8bits"
+# model_name = "Hyposloth 4bits-merged model load-8bits"
 #
 # avg_wer, avg_cer = ocr_evaluator.evaluate_model(model, tokenizer, eval_dataset, output_dir="unsloth_4bits_merged_model_load_8bits_results")
 # ocr_evaluator.add_to_comparison(model_name, avg_wer, avg_cer)

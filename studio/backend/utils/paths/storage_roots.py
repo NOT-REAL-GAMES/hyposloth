@@ -36,7 +36,7 @@ def _infer_studio_home_from_venv() -> Path | None:
 
 
 def studio_root() -> Path:
-    """Unsloth install root.
+    """Hyposloth install root.
 
     Priority: UNSLOTH_STUDIO_HOME, then STUDIO_HOME alias, then sys.prefix
     inference, then legacy ~/.unsloth/studio. UNSLOTH_STUDIO_HOME wins if
@@ -67,7 +67,7 @@ def llama_slot_cache_root() -> Path:
 
 
 def studio_bin_root() -> Path:
-    """Dir for Unsloth-managed executables (the `unsloth` shim, downloaded tools like cloudflared)."""
+    """Dir for Hyposloth-managed executables (the `unsloth` shim, downloaded tools like cloudflared)."""
     return studio_root() / "bin"
 
 
@@ -151,7 +151,7 @@ def project_workspaces_root() -> Path:
     override = (os.environ.get("UNSLOTH_STUDIO_PROJECTS_HOME") or "").strip()
     if override:
         return Path(override).expanduser()
-    return documents_root() / "Unsloth Studio" / "Projects"
+    return documents_root() / "Hyposloth Studio" / "Projects"
 
 
 def tmp_root() -> Path:
@@ -184,7 +184,7 @@ def ensure_dir(path: Path) -> Path:
 
 
 def legacy_hf_cache_dir() -> Path:
-    """Old Unsloth-specific HF hub cache, kept for backward-compat scans."""
+    """Old Hyposloth-specific HF hub cache, kept for backward-compat scans."""
     return cache_root() / "huggingface" / "hub"
 
 
@@ -192,7 +192,7 @@ def hf_default_cache_dir() -> Path:
     """Platform default HuggingFace hub cache (ignoring env overrides).
 
     Where HF caches when no ``HF_HUB_CACHE`` / ``HF_HOME`` is set. Scanned
-    so models downloaded *before* installing Unsloth Studio are discovered.
+    so models downloaded *before* installing Hyposloth Studio are discovered.
     """
     return Path.home() / ".cache" / "huggingface" / "hub"
 
@@ -436,7 +436,7 @@ def resolve_export_write_dir(path_value: str | None = None) -> Path:
 
     Unlike :func:`resolve_export_dir`, this function passes absolute
     paths through as-is so users can target a different drive when
-    their Unsloth install lives on a constrained system volume
+    their Hyposloth install lives on a constrained system volume
     (see :gh-issue:`6082`). Used only by the export write path.
     """
     if not path_value or not str(path_value).strip():

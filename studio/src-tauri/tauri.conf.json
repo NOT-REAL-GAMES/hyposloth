@@ -1,5 +1,5 @@
 {
-  "productName": "Unsloth Studio (Desktop)",
+  "productName": "Hyposloth Studio (Desktop)",
   "identifier": "ai.unsloth.studio",
   "build": {
     "beforeDevCommand": {
@@ -21,7 +21,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Unsloth Studio (Desktop)",
+        "title": "Hyposloth Studio (Desktop)",
         "width": 760,
         "height": 560,
         "center": true,
@@ -53,7 +53,7 @@
   "bundle": {
     "active": true,
     "createUpdaterArtifacts": true,
-    "publisher": "Unsloth AI",
+    "publisher": "Hyposloth AI",
     "homepage": "https://unsloth.ai/",
     "copyright": "© 2026 Unsloth AI. All rights reserved.",
     "license": "AGPL-3.0-only",

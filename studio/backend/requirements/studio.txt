@@ -1,4 +1,4 @@
-# Unsloth UI backend dependencies
+# Hyposloth UI backend dependencies
 typer
 fastapi
 uvicorn
@@ -9,7 +9,7 @@ pandas
 nest_asyncio
 datasets==4.3.0
 pyjwt
-# gradio>=4.0.0                  # 148 MB - Unsloth uses React + FastAPI, not Gradio
+# gradio>=4.0.0                  # 148 MB - Hyposloth uses React + FastAPI, not Gradio
 huggingface-hub==0.36.2
 structlog>=24.1.0
 diceware

@@ -1,4 +1,4 @@
-# Unsloth Studio Installer for Windows PowerShell
+# Hyposloth Studio Installer for Windows PowerShell
 #
 # Usage:  irm https://unsloth.ai/install.ps1 | iex
 #         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; .\install.ps1 --local
@@ -206,7 +206,7 @@ function Install-UnslothStudio {
         $envOverride = $env:STUDIO_HOME.Trim()
     }
 
-    # Custom Unsloth roots are not supported with --tauri (desktop app still
+    # Custom Hyposloth roots are not supported with --tauri (desktop app still
     # resolves %USERPROFILE%\.unsloth\studio). Pass through if override == legacy.
     if ($TauriMode -and $envOverride) {
         $_tauriOverride = $envOverride
@@ -242,7 +242,7 @@ function Install-UnslothStudio {
     # LOCALAPPDATA may be unset in service / CI contexts; Join-Path would abort
     # under ErrorActionPreference=Stop without this guard.
     $defaultDataDir = if ($env:LOCALAPPDATA -and -not [string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
-        Join-Path $env:LOCALAPPDATA "Unsloth Studio"
+        Join-Path $env:LOCALAPPDATA "Hyposloth Studio"
     } else { $null }
 
     if ($envOverride) {
@@ -324,10 +324,10 @@ function Install-UnslothStudio {
 
     Write-Host ""
     if ($script:StudioVtOk -and -not $env:NO_COLOR) {
-        Write-Host ("  " + (Get-StudioAnsi Title) + $Sloth + " Unsloth Studio Installer (Windows)" + (Get-StudioAnsi Reset))
+        Write-Host ("  " + (Get-StudioAnsi Title) + $Sloth + " Hyposloth Studio Installer (Windows)" + (Get-StudioAnsi Reset))
         Write-Host ("  {0}{1}{2}" -f (Get-StudioAnsi Dim), $Rule, (Get-StudioAnsi Reset))
     } else {
-        Write-Host ("  {0} Unsloth Studio Installer (Windows)" -f $Sloth) -ForegroundColor DarkGreen
+        Write-Host ("  {0} Hyposloth Studio Installer (Windows)" -f $Sloth) -ForegroundColor DarkGreen
         Write-Host "  $Rule" -ForegroundColor DarkGray
     }
     Write-Host ""
@@ -395,10 +395,10 @@ function Install-UnslothStudio {
                     $matchIndices.Count -eq 1 -and $matchIndices[0] -eq 0) {
                     return $false
                 }
-                # One-time backup under HKCU\Software\Unsloth\PathBackup
+                # One-time backup under HKCU\Software\Hyposloth\PathBackup
                 if ($rawPath) {
                     try {
-                        $backupKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Unsloth')
+                        $backupKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Hyposloth')
                         try {
                             $existingBackup = $backupKey.GetValue('PathBackup', $null)
                             if (-not $existingBackup) {
@@ -612,7 +612,7 @@ function Install-UnslothStudio {
             # This prevents runtime variable expansion for paths containing '$'.
             $SingleQuotedExePath = $UnslothExePath -replace "'", "''"
 
-            # $StudioDataDir = LOCALAPPDATA\Unsloth Studio, or $StudioHome\share in env-mode.
+            # $StudioDataDir = LOCALAPPDATA\Hyposloth Studio, or $StudioHome\share in env-mode.
             if (-not $StudioDataDir -or [string]::IsNullOrWhiteSpace($StudioDataDir)) {
                 substep "DataDir path unavailable; skipped shortcut creation" "Yellow"
                 return
@@ -621,7 +621,7 @@ function Install-UnslothStudio {
             $launcherPs1 = Join-Path $appDir "launch-studio.ps1"
             $desktopDir = [Environment]::GetFolderPath("Desktop")
             $desktopLink = if ($desktopDir -and $desktopDir.Trim()) {
-                Join-Path $desktopDir "Unsloth Studio.lnk"
+                Join-Path $desktopDir "Hyposloth Studio.lnk"
             } else {
                 $null
             }
@@ -631,7 +631,7 @@ function Install-UnslothStudio {
                 $null
             }
             $startMenuLink = if ($startMenuDir -and $startMenuDir.Trim()) {
-                Join-Path $startMenuDir "Unsloth Studio.lnk"
+                Join-Path $startMenuDir "Hyposloth Studio.lnk"
             } else {
                 $null
             }
@@ -726,7 +726,7 @@ function Test-StudioHealth {
     try {
         `$url = "http://127.0.0.1:`$Port/api/health"
         `$resp = Invoke-RestMethod -Uri `$url -TimeoutSec 1 -Method Get
-        if (-not (`$resp -and `$resp.status -eq 'healthy' -and `$resp.service -eq 'Unsloth UI Backend')) { return `$false }
+        if (-not (`$resp -and `$resp.status -eq 'healthy' -and `$resp.service -eq 'Hyposloth UI Backend')) { return `$false }
         # why: verify the backend belongs to THIS install via the install-time
         # hex digest; raw path is not leaked over /api/health.
         if (`$_ExpectedStudioRootId -and `$resp.studio_root_id -ne `$_ExpectedStudioRootId) { return `$false }
@@ -813,7 +813,7 @@ function Find-FreeLaunchPort {
     return `$null
 }
 
-# If Unsloth is already healthy on any expected port, just open it and exit.
+# If Hyposloth is already healthy on any expected port, just open it and exit.
 `$existingPort = Find-HealthyStudioPort
 if (`$existingPort) {
     Start-Process "http://localhost:`$existingPort"
@@ -829,7 +829,7 @@ try {
         `$haveMutex = `$true
     }
     if (-not `$haveMutex) {
-        # Another launcher is already running; wait for it to bring Unsloth up
+        # Another launcher is already running; wait for it to bring Hyposloth up
         `$deadline = (Get-Date).AddSeconds(`$timeoutSec)
         while ((Get-Date) -lt `$deadline) {
             `$port = Find-HealthyStudioPort
@@ -846,7 +846,7 @@ try {
         `$msg = "No free port found in range `$basePort-`$(`$basePort + `$maxPortOffset)"
         try {
             Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
-            [System.Windows.Forms.MessageBox]::Show(`$msg, 'Unsloth Studio') | Out-Null
+            [System.Windows.Forms.MessageBox]::Show(`$msg, 'Hyposloth Studio') | Out-Null
         } catch {}
         exit 1
     }
@@ -865,10 +865,10 @@ try {
     try {
         `$proc = Start-Process -FilePath `$powershellExe -ArgumentList `$launchArgs -WorkingDirectory `$env:USERPROFILE -PassThru
     } catch {
-        `$msg = "Could not launch Unsloth Studio terminal.`n`nError: `$(`$_.Exception.Message)"
+        `$msg = "Could not launch Hyposloth Studio terminal.`n`nError: `$(`$_.Exception.Message)"
         try {
             Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
-            [System.Windows.Forms.MessageBox]::Show(`$msg, 'Unsloth Studio') | Out-Null
+            [System.Windows.Forms.MessageBox]::Show(`$msg, 'Hyposloth Studio') | Out-Null
         } catch {}
         exit 1
     }
@@ -891,13 +891,13 @@ try {
     }
     if (-not `$browserOpened) {
         if (`$proc.HasExited) {
-            `$msg = "Unsloth Studio exited before becoming healthy. Check terminal output for errors."
+            `$msg = "Hyposloth Studio exited before becoming healthy. Check terminal output for errors."
         } else {
-            `$msg = "Unsloth Studio is still starting but did not become healthy within `$timeoutSec seconds. Check the terminal window for the selected port and open it manually."
+            `$msg = "Hyposloth Studio is still starting but did not become healthy within `$timeoutSec seconds. Check the terminal window for the selected port and open it manually."
         }
         try {
             Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
-            [System.Windows.Forms.MessageBox]::Show(`$msg, 'Unsloth Studio') | Out-Null
+            [System.Windows.Forms.MessageBox]::Show(`$msg, 'Hyposloth Studio') | Out-Null
         } catch {}
     }
 } finally {
@@ -1025,7 +1025,7 @@ exit 0
                         $shortcut.WorkingDirectory = $appDir
                         # Start minimized so the brief PowerShell console flash is muted.
                         $shortcut.WindowStyle = 7
-                        $shortcut.Description = "Launch Unsloth Studio"
+                        $shortcut.Description = "Launch Hyposloth Studio"
                         if ($hasValidIcon) {
                             $shortcut.IconLocation = "$iconPath,0"
                         }
@@ -1037,7 +1037,7 @@ exit 0
                     }
                 }
                 if ($createdShortcutCount -gt 0) {
-                    substep "Created Unsloth Studio shortcut"
+                    substep "Created Hyposloth Studio shortcut"
                     # Always do the cheap, non-disruptive per-item refresh so a
                     # rewritten same-name .lnk renders with its new target/icon
                     # immediately (a same-name .lnk recreated across reinstalls keeps
@@ -1080,7 +1080,7 @@ exit 0
                         } catch {}
                     }
                 } else {
-                    substep "no Unsloth Studio shortcuts were created" "Yellow"
+                    substep "no Hyposloth Studio shortcuts were created" "Yellow"
                 }
             } catch {
                 substep "shortcut creation unavailable: $($_.Exception.Message)" "Yellow"
@@ -1675,7 +1675,7 @@ exit 0
     if (Test-Path -LiteralPath $VenvPython) {
         # why: matching guard to the .venv branch below -- in env-mode
         # $StudioHome is a user-chosen workspace, so refuse to nuke an
-        # existing $StudioHome\unsloth_studio that lacks Unsloth sentinels.
+        # existing $StudioHome\unsloth_studio that lacks Hyposloth sentinels.
         # -PathType Leaf rejects a directory at the sentinel path. Accept the
         # in-VENV ownership marker so partial-install retries are not blocked.
         if (
@@ -1684,9 +1684,9 @@ exit 0
             -not (Test-Path -LiteralPath (Join-Path $StudioHome "share\studio.conf") -PathType Leaf) -and
             -not (Test-Path -LiteralPath (Join-Path $StudioHome "bin\unsloth.exe") -PathType Leaf)
         ) {
-            Write-Host "[ERROR] $VenvDir already exists but does not look like an Unsloth Studio install." -ForegroundColor Red
+            Write-Host "[ERROR] $VenvDir already exists but does not look like a Hyposloth Studio install." -ForegroundColor Red
             Write-Host "        Move it aside or choose an empty UNSLOTH_STUDIO_HOME." -ForegroundColor Yellow
-            throw "Refusing to delete non-Unsloth venv at $VenvDir"
+            throw "Refusing to delete non-Hyposloth venv at $VenvDir"
         }
         # New layout already exists -- replace only after preserving rollback copy.
         substep "preserving existing environment for rollback..."
@@ -1705,7 +1705,7 @@ exit 0
         # workspace root (e.g. user's existing project Python venv).
         $OldVenv = Join-Path $StudioHome ".venv"
         $OldPy = Join-Path $OldVenv "Scripts\python.exe"
-        substep "found legacy Unsloth environment, validating..."
+        substep "found legacy Hyposloth environment, validating..."
         $prevEAP2 = $ErrorActionPreference
         $ErrorActionPreference = "Continue"
         try {
@@ -1735,7 +1735,7 @@ exit 0
         # Skip in env-mode so we don't relocate the default-install venv into
         # the workspace root.
         $CwdVenv = Join-Path $env:USERPROFILE "unsloth_studio"
-        substep "found CWD-relative Unsloth environment, migrating to $VenvDir..."
+        substep "found CWD-relative Hyposloth environment, migrating to $VenvDir..."
         Move-Item -LiteralPath $CwdVenv -Destination $VenvDir -Force
         substep "moved ~/unsloth_studio -> ~/.unsloth/studio/unsloth_studio"
         $_Migrated = $true
@@ -1754,7 +1754,7 @@ exit 0
         substep "$VenvDir"
     }
 
-    # Mark the freshly-created venv as Unsloth-owned so a partial install can be
+    # Mark the freshly-created venv as Hyposloth-owned so a partial install can be
     # repaired by re-running install.ps1; the env-mode deletion guard above
     # accepts this marker as the primary sentinel.
     if (Test-Path -LiteralPath $VenvDir -PathType Container) {
@@ -1763,7 +1763,7 @@ exit 0
 
     # ── Helper: run amd-smi without triggering a UAC elevation prompt ──
     # amd-smi on Windows auto-elevates to read GPU/APU memory, surfacing a confusing
-    # DiskPart UAC prompt mid-install (Unsloth backend amd.py hits the same).
+    # DiskPart UAC prompt mid-install (Hyposloth backend amd.py hits the same).
     # __COMPAT_LAYER=RunAsInvoker forces it (and helpers it spawns) to run
     # un-elevated; on failure the WMI name -> gfx fallback still resolves the arch.
     function Invoke-AmdSmiNoElevate {
@@ -1890,7 +1890,7 @@ exit 0
         function Test-HipinfoIsVenvInternal {
             param([AllowNull()][string]$HipinfoPath)
             if ([string]::IsNullOrWhiteSpace($HipinfoPath)) { return $false }
-            # Also derive the venv from the setup python + default Unsloth home, so
+            # Also derive the venv from the setup python + default Hyposloth home, so
             # the venv hipInfo is caught when VenvDir/VIRTUAL_ENV are unset.
             $venvRoots = @()
             if ($env:VIRTUAL_ENV) { $venvRoots += $env:VIRTUAL_ENV }
@@ -1900,7 +1900,7 @@ exit 0
                 try { $venvRoots += (Split-Path -Parent (Split-Path -Parent $env:UNSLOTH_SETUP_PYTHON)) } catch {}
             }
             if ($env:USERPROFILE) { $venvRoots += (Join-Path $env:USERPROFILE ".unsloth\studio\unsloth_studio") }
-            # A custom Unsloth home (UNSLOTH_STUDIO_HOME / STUDIO_HOME alias) moves the
+            # A custom Hyposloth home (UNSLOTH_STUDIO_HOME / STUDIO_HOME alias) moves the
             # venv off the default path; seed it too or its hipInfo escapes the filter.
             $studioHomeEnv = if (-not [string]::IsNullOrWhiteSpace($env:UNSLOTH_STUDIO_HOME)) { $env:UNSLOTH_STUDIO_HOME.Trim() } elseif (-not [string]::IsNullOrWhiteSpace($env:STUDIO_HOME)) { $env:STUDIO_HOME.Trim() } else { $null }
             if ($studioHomeEnv) {
@@ -2181,7 +2181,7 @@ exit 0
         substep "       Ensure the ROCm compute driver is installed alongside the display driver:" "Yellow"
         substep "       https://rocm.docs.amd.com/en/latest/deploy/windows/index.html" "Yellow"
     } elseif ($ROCmGfxArch) {
-        # Known arch: Unsloth setup installs AMD's bundled-runtime ROCm PyTorch wheels
+        # Known arch: Hyposloth setup installs AMD's bundled-runtime ROCm PyTorch wheels
         # (repo.amd.com), which ship their own runtime -- HIP SDK optional.
         step "gpu" "AMD ROCm ($ROCmGfxArch)" "Cyan"
         substep "Detected: $ROCmGpuLabel" "Cyan"
@@ -2541,11 +2541,11 @@ exit 0
             $audioSpec = if ($PinnedRocmAudioSpec) { $PinnedRocmAudioSpec } elseif ($ROCmGfxArch -and $torchaudioFloorMap -and $torchaudioFloorMap.ContainsKey($ROCmGfxArch)) { $torchaudioFloorMap[$ROCmGfxArch] } else { "torchaudio" }
             $torchInstallExit = Invoke-InstallCommandRetry -Label "install PyTorch (AMD ROCm)" { uv pip install --python $VenvPython --force-reinstall --default-index $ROCmIndexUrl $torchSpec $visionSpec $audioSpec }
             if ($torchInstallExit -ne 0) {
-                # Transient AMD-index failure: fall back to a CPU base (Unsloth setup retries
+                # Transient AMD-index failure: fall back to a CPU base (Hyposloth setup retries
                 # ROCm). Use an explicit CPU index -- for a pinned ROCm index $TorchIndexUrl IS
                 # the ROCm mirror, so reusing it would just retry it.
                 $CpuFallbackIndexUrl = if ($env:UNSLOTH_PYTORCH_MIRROR) { "$($env:UNSLOTH_PYTORCH_MIRROR.TrimEnd('/'))/cpu" } else { "https://download.pytorch.org/whl/cpu" }
-                substep "ROCm PyTorch install failed (exit $torchInstallExit); using a CPU base, Unsloth setup retries ROCm." "Yellow"
+                substep "ROCm PyTorch install failed (exit $torchInstallExit); using a CPU base, Hyposloth setup retries ROCm." "Yellow"
                 # --force-reinstall: a failed ROCm install can leave an unpinned ROCm
                 # torch (e.g. 2.10.0+rocm on gfx110X/gfx90a) that still satisfies the CPU
                 # torch>= range, so without it uv would keep the ROCm build and only swap
@@ -2756,7 +2756,7 @@ exit 0
         Write-TauriLog "ERROR" "unsloth CLI was not installed correctly"
         Write-Host "[ERROR] unsloth CLI was not installed correctly." -ForegroundColor Red
         Write-Host "        Expected: $UnslothExe" -ForegroundColor Yellow
-        Write-Host "        This usually means an older unsloth version was installed that does not include the Unsloth CLI." -ForegroundColor Yellow
+        Write-Host "        This usually means an older unsloth version was installed that does not include the Hyposloth CLI." -ForegroundColor Yellow
         Write-Host "        Try re-running the installer or see: https://github.com/unslothai/unsloth?tab=readme-ov-file#-quickstart" -ForegroundColor Yellow
         return (Exit-InstallFailure "unsloth CLI was not installed correctly")
     }
@@ -2878,7 +2878,7 @@ exit 0
         Write-Host "        Move or remove it manually, then re-run the installer." -ForegroundColor Yellow
         throw "Cannot create unsloth launcher: $ShimExe is a directory."
     }
-    # try/catch: if unsloth.exe is locked (Unsloth running), keep the old shim.
+    # try/catch: if unsloth.exe is locked (Hyposloth running), keep the old shim.
     $shimUpdated = $false
     try {
         if (Test-Path -LiteralPath $ShimExe) { Remove-Item -LiteralPath $ShimExe -Force -ErrorAction Stop }
@@ -2896,7 +2896,7 @@ exit 0
         if (Test-Path -LiteralPath $ShimExe) {
             Write-Host "[WARN] Could not refresh unsloth launcher at $ShimExe." -ForegroundColor Yellow
             Write-Host "       This usually means a running 'unsloth studio' process still holds the file open." -ForegroundColor Yellow
-            Write-Host "       Close Unsloth and re-run the installer to pick up the latest launcher." -ForegroundColor Yellow
+            Write-Host "       Close Hyposloth and re-run the installer to pick up the latest launcher." -ForegroundColor Yellow
             Write-Host "       Continuing with the existing launcher." -ForegroundColor Yellow
         } else {
             Write-Host "[WARN] Could not create unsloth launcher at $ShimExe" -ForegroundColor Yellow
@@ -2968,13 +2968,13 @@ exit 0
         # Diagnostic only; never block install on a probe failure.
     }
 
-    # In interactive terminals, ask the user before starting Unsloth unless the
+    # In interactive terminals, ask the user before starting Hyposloth unless the
     # caller explicitly disabled the post-install prompt.
     # In non-interactive environments (CI, Docker) just print instructions.
     $IsInteractive = (-not $SkipAutostart) -and [Environment]::UserInteractive -and (-not [Console]::IsInputRedirected)
     if ($IsInteractive) {
         Write-Host ""
-        $reply = Read-Host "  Start Unsloth Studio now? [Y/n]"
+        $reply = Read-Host "  Start Hyposloth Studio now? [Y/n]"
         if ([string]::IsNullOrWhiteSpace($reply) -or $reply -match '^[Yy]') {
             & $UnslothExe studio -p 8888
         } else {

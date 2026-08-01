@@ -78,7 +78,7 @@ jobs:
           # detection, and a delay only bets on how long the phase runs. The bet lost twice,
           # both times turning a leg into a duplicate of the next one: a flat 3s wait moved
           # 5 of the 12 legs of staging run 30419729244, and in 30426111484 it carried the
-          # macOS torch leg into "Installing Unsloth" because the PyTorch step, called
+          # macOS torch leg into "Installing Hyposloth" because the PyTorch step, called
           # minutes long here, finished in under three seconds.
           #
           # Every leg is a hard gate, with no continue-on-error cell: a leg allowed to fail
@@ -96,8 +96,8 @@ jobs:
           # interruption at this resolution, and the only loss -- the torch leg lands at the
           # top of the PyTorch step, so it leaves a complete venv with nothing in it.
           - {os: macos-14, label: torch,       marker: '\[TAURI:STEP\] Installing PyTorch'}
-          - {os: macos-14, label: unsloth,     marker: '\[TAURI:STEP\] Installing Unsloth'}
-          - {os: macos-14, label: setup,       marker: '\[TAURI:STEP\] Running Unsloth setup'}
+          - {os: macos-14, label: unsloth,     marker: '\[TAURI:STEP\] Installing Hyposloth'}
+          - {os: macos-14, label: setup,       marker: '\[TAURI:STEP\] Running Hyposloth setup'}
           # Other dependency-pass sub-steps around the named one. No pip-bootstrap cell, same
           # reason as venv: "1/10 pip bootstrap" is over before a poll can see it, so in both
           # 30419729244 and 30424366953 the signal landed in "2/10 unsloth extras", the next
@@ -205,7 +205,7 @@ jobs:
           exit "$rc"
 
       - name: A re-run must repair, not short-circuit
-        # NO_CLI included: a kill at torch lands before "Installing Unsloth"
+        # NO_CLI included: a kill at torch lands before "Installing Hyposloth"
         # (install.sh:2125 / :3667 / :3961), so those legs always take NO_CLI and skipping
         # the re-run left three of them asserting only that a marker appeared. The bug's
         # second half is install.sh seeing a "current" version and no-opping over a broken

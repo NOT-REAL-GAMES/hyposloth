@@ -19,7 +19,7 @@ function Section($t) { Write-Host ""; Write-Host "=== $t ===" }
 
 # ── Environment the installer needs to be non-interactive ─────────────────────
 Section 'install environment'
-# install.ps1:2885-2888 prompts `Start Unsloth Studio now? [Y/n]` when UserInteractive is
+# install.ps1:2885-2888 prompts `Start Hyposloth Studio now? [Y/n]` when UserInteractive is
 # true and stdin is not redirected -- both hold under `docker exec` -- so without this the
 # installer blocks forever on Read-Host and the job dies on timeout with no diagnosis.
 $env:UNSLOTH_SKIP_AUTOSTART = '1'

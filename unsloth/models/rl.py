@@ -202,7 +202,7 @@ def PatchRL(FastLanguageModel):
             # Put the model in inference mode.
             FastLanguageModel.for_inference(model)
 
-            # We must use .clone for Unsloth since we force inference_mode
+            # We must use .clone for Hyposloth since we force inference_mode
             # Rather we should have used no_grad
             original_generate = unwrapped_model.generate
 
@@ -475,7 +475,7 @@ torch_compile_options = {{
 {RL_pre}
 
 @dataclass
-class Unsloth{RLConfig_name}({RLConfig_name}):
+class Hyposloth{RLConfig_name}({RLConfig_name}):
     """
     {__RLConfig_doc__}
     """
@@ -513,7 +513,7 @@ class Unsloth{RLConfig_name}({RLConfig_name}):
                 self.unsloth_grpo_mini_batch = unsloth_grpo_mini_batch
             else:
                 raise ValueError(
-                    f"Unsloth GRPO mini batch size needs to be less than or equal to the effective generation batch size, "
+                    f"Hyposloth GRPO mini batch size needs to be less than or equal to the effective generation batch size, "
                     f"which is self.per_device_train_batch_size * gradient_accumulation_steps."
                 )
         self.unsloth_logit_chunk_multiplier = unsloth_logit_chunk_multiplier
@@ -523,14 +523,14 @@ pass
 
 {RLTrainer_extras}
 
-class Unsloth{RLTrainer_name}(_Unsloth{RLTrainer_name}):
+class Hyposloth{RLTrainer_name}(_Unsloth{RLTrainer_name}):
     """
     {__RLTrainer_doc__}
     """
     def __init__({RLTrainer_arguments},
         **kwargs
     ):
-        if args is None: args = Unsloth{RLConfig_name}()
+        if args is None: args = Hyposloth{RLConfig_name}()
 {RLTrainer_extra_args}
         # [TODO] Fix up DataParallel multiplying batch sizes
         # [TODO] DDP works, but DP seems to not work? [TODO]
@@ -653,7 +653,7 @@ def _get_num_logits_to_keep(forward_signature, args, kwargs):
         return max(num_logits_to_keep, logits_to_keep)
     except TypeError:
         logger.debug(
-            "Unsloth: Could not bind forward arguments for GRPO hidden-state fallback.",
+            "Hyposloth: Could not bind forward arguments for GRPO hidden-state fallback.",
             exc_info = True,
         )
 
@@ -711,7 +711,7 @@ def _install_grpo_hidden_states_forward_wrapper(model):
                 raise
             _warn_grpo_hidden_states_fallback_once(
                 target_model,
-                f"Unsloth: GRPO fallback could not request hidden states for unsupported model {model_name}; using logits directly.",
+                f"Hyposloth: GRPO fallback could not request hidden states for unsupported model {model_name}; using logits directly.",
             )
             return original_forward(*args, **kwargs)
 
@@ -719,7 +719,7 @@ def _install_grpo_hidden_states_forward_wrapper(model):
         if hidden_states is None or len(hidden_states) == 0:
             _warn_grpo_hidden_states_fallback_once(
                 target_model,
-                f"Unsloth: GRPO fallback did not receive hidden states for unsupported model {model_name}; using logits directly.",
+                f"Hyposloth: GRPO fallback did not receive hidden states for unsupported model {model_name}; using logits directly.",
             )
             return outputs
 
@@ -757,20 +757,20 @@ def _patch_trl_rl_trainers(trainer_file = "grpo_trainer"):
         return _patch_trl_rl_trainers_impl(trainer_file)
     except Exception as e:
         logger.info(
-            f"Unsloth: Could not patch trl.trainer.{trainer_file}: " f"{type(e).__name__}: {e}"
+            f"Hyposloth: Could not patch trl.trainer.{trainer_file}: " f"{type(e).__name__}: {e}"
         )
         return
 
 
 def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
-    # Patch for vLLM and Unsloth PEFT
+    # Patch for vLLM and Hyposloth PEFT
     import trl
     import trl.trainer
 
     try:
         trainer = eval(f"trl.trainer.{trainer_file}")
     except Exception as error:
-        logger.info(f"Unsloth: Could not import trl.trainer.{trainer_file}: {error}")
+        logger.info(f"Hyposloth: Could not import trl.trainer.{trainer_file}: {error}")
         return
 
     # Get SFTTrainer and SFTConfig names
@@ -792,7 +792,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
     ]
     if len(name) != 1:
         logger.info(
-            f"Unsloth: Could not find Trainer class in trl.trainer.{trainer_file}. Found: {name}"
+            f"Hyposloth: Could not find Trainer class in trl.trainer.{trainer_file}. Found: {name}"
         )
         return
     if len(config) != 1:
@@ -835,7 +835,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             pass
     if len(config) != 1:
         logger.info(
-            f"Unsloth: Could not find Config class in trl.trainer.{trainer_file}. Found: {config}"
+            f"Hyposloth: Could not find Config class in trl.trainer.{trainer_file}. Found: {config}"
         )
         return
 
@@ -846,7 +846,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
         RLTrainer = eval(f"trl.trainer.{trainer_file}.{RLTrainer_name}")
     except Exception as e:
         logger.info(
-            f"Unsloth: Could not load {RLTrainer_name} from trl.trainer.{trainer_file}: {e}"
+            f"Hyposloth: Could not load {RLTrainer_name} from trl.trainer.{trainer_file}: {e}"
         )
         return
     _config_resolved_module = None
@@ -876,15 +876,15 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             except Exception:
                 pass
             if not _config_loaded:
-                logger.info(f"Unsloth: Could not load {RLConfig_name}")
+                logger.info(f"Hyposloth: Could not load {RLConfig_name}")
                 return
 
     # Check name
-    if RLTrainer.__name__.startswith("Unsloth"):
-        print(f"Unsloth: {RLTrainer.__name__} is already patched.")
+    if RLTrainer.__name__.startswith("Hyposloth"):
+        print(f"Hyposloth: {RLTrainer.__name__} is already patched.")
         return
-    if RLConfig.__name__.startswith("Unsloth"):
-        print(f"Unsloth: {RLConfig.__name__} is already patched.")
+    if RLConfig.__name__.startswith("Hyposloth"):
+        print(f"Hyposloth: {RLConfig.__name__} is already patched.")
         return
 
     # TRL 0.26+: Resolve thin wrappers to their experimental parent class.
@@ -1013,7 +1013,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             # faster and uses less memory; LoRA/QLoRA keep float32 when forced.
             "full_finetuning = os.environ.get('UNSLOTH_ENABLE_FULL_FINETUNING', '0') == '1'\n"
             "if os.environ.get('UNSLOTH_FORCE_FLOAT32', '0') == '1' and not (full_finetuning and _bf16_supported()):\n"
-            "    print('Unsloth: Switching to float32 training since model cannot work with float16')\n"
+            "    print('Hyposloth: Switching to float32 training since model cannot work with float16')\n"
             "    force_float32 = True\n"
             "mixed_precision_dtype = os.environ.get('UNSLOTH_MIXED_PRECISION', 'float32')\n"
             "dtype = getattr(model.config, 'dtype', None) or getattr(model.config, 'torch_dtype', None)\n"
@@ -1025,8 +1025,8 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             "if full_finetuning:\n"
             "    if bfloat16 and use_fp16: use_fp16 = False\n"
             "    if float16 and use_bf16: use_bf16 = False\n"
-            "if not force_float32 and (float16 and use_bf16): raise TypeError('Unsloth: Model is in float16 precision but you want to use bfloat16 precision. Set fp16 to `True` and bf16 to `False`')\n"
-            "if not force_float32 and (bfloat16 and use_fp16): raise TypeError('Unsloth: Model is in bfloat16 precision but you want to use float16 precision. Set fp16 to `False` and bf16 to `True`')\n"
+            "if not force_float32 and (float16 and use_bf16): raise TypeError('Hyposloth: Model is in float16 precision but you want to use bfloat16 precision. Set fp16 to `True` and bf16 to `False`')\n"
+            "if not force_float32 and (bfloat16 and use_fp16): raise TypeError('Hyposloth: Model is in bfloat16 precision but you want to use float16 precision. Set fp16 to `False` and bf16 to `True`')\n"
             "if force_float32:\n"
             "    # Forced float32 training\n"
             "    args.fp16 = False\n"
@@ -1078,7 +1078,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             "if ga_steps is not None and ga_steps > 1:\n"
             "    from transformers import __version__ as transformers_version\n"
             "    if Version(transformers_version) <= Version('4.45.2'):\n"
-            "        print('**** Unsloth: Please use our fixed gradient_accumulation_steps by updating transformers, TRL and Unsloth!\\n'\n"
+            "        print('**** Hyposloth: Please use our fixed gradient_accumulation_steps by updating transformers, TRL and Hyposloth!\\n'\n"
             "              '`pip install --upgrade --no-cache-dir --force-reinstall --no-deps unsloth transformers trl unsloth_zoo`')\n"
         )
         extra_args += check_ga
@@ -1142,7 +1142,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             "        if hasattr(args, 'max_seq_length'): args.max_seq_length = max_seq_length\n"
             "    elif args_max_seq_length is not None and model_max_seq_length is not None:\n"
             "        if args_max_seq_length > model_max_seq_length:\n"
-            "            print('Unsloth: You set `max_seq_length` as ' + str(args_max_seq_length) + ' but '\n"
+            "            print('Hyposloth: You set `max_seq_length` as ' + str(args_max_seq_length) + ' but '\n"
             "                   'the maximum the model supports is ' + str(model_max_seq_length) + '. We shall reduce it.')\n"
             "            args.max_seq_length = model_max_seq_length\n"
         )
@@ -1169,7 +1169,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
                 "            # if we are here, then we are in a weird case where max_length is set but max_seq_length is not set\n"
                 "            setattr(model, 'max_seq_length', max_length)\n"
                 "        else:\n"
-                "            print('Unsloth: We did not find `max_seq_length` or `max_length` in the model or args. We will set it to 1024.')\n"
+                "            print('Hyposloth: We did not find `max_seq_length` or `max_length` in the model or args. We will set it to 1024.')\n"
                 "            args.max_length = 1024\n"
             )
             extra_args += max_length_check
@@ -1389,9 +1389,9 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
     # Warn on too large or too small learning rate
     if "learning_rate" in call_args:
         learning_rate_check = (
-            "if learning_rate < 1e-7: print(f'Unsloth: Your learning rate of `{learning_rate}` is too small and less than 1e-7! "
+            "if learning_rate < 1e-7: print(f'Hyposloth: Your learning rate of `{learning_rate}` is too small and less than 1e-7! "
             "Consider increasing it, otherwise gradient updates will be close to 0!')\n"
-            "if learning_rate > 1: print(f'Unsloth: Your learning rate of `{learning_rate}` is way too larger > 1! "
+            "if learning_rate > 1: print(f'Hyposloth: Your learning rate of `{learning_rate}` is way too larger > 1! "
             "Consider decreasing it to 1e-1, otherwise gradient updates will explode!')\n"
         )
         extra_args += learning_rate_check
@@ -1469,15 +1469,15 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             "    if scale_rewards == None:\n"
             "        scale_rewards = True\n"
             "    elif scale_rewards == True:\n"
-            "        print('Unsloth: The Dr GRPO paper recommends setting `scale_rewards` to False! Will override. Set it to `None` to force False.')\n"
+            "        print('Hyposloth: The Dr GRPO paper recommends setting `scale_rewards` to False! Will override. Set it to `None` to force False.')\n"
             "        scale_rewards = False\n"
             "elif loss_type.lower() == 'dapo':\n"
             "    if mask_truncated_completions != True:\n"
-            "        print('Unsloth: The DAPO paper recommends `mask_truncated_completions = True` - we will set it.')\n"
+            "        print('Hyposloth: The DAPO paper recommends `mask_truncated_completions = True` - we will set it.')\n"
             "    if epsilon_high != 0.28:\n"
-            "        print('Unsloth: The DAPO paper recommends `epsilon_high = 0.28` - we will set it.')\n"
+            "        print('Hyposloth: The DAPO paper recommends `epsilon_high = 0.28` - we will set it.')\n"
             "    if beta != 0.0:\n"
-            "        print(f'[WARNING] Unsloth: The DAPO paper recommends setting `beta = 0.0` to remove the KL term - You have set it to {beta}.')\n"
+            "        print(f'[WARNING] Hyposloth: The DAPO paper recommends setting `beta = 0.0` to remove the KL term - You have set it to {beta}.')\n"
             "    mask_truncated_completions = True\n"
             "    epsilon_high = 0.28\n"
             "\n"
@@ -1497,7 +1497,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             "    ga = gradient_accumulation_steps\n"
             "    world_size = int(os.environ.get('WORLD_SIZE', '1'))\n"
             "    if (ga * world_size * per_device_train_batch_size) % num_generations != 0:\n"
-            "        print('Unsloth: We now expect `per_device_train_batch_size` * `gradient_accumulation_steps` * `world_size` to be a multiple of `num_generations`.\\n"
+            "        print('Hyposloth: We now expect `per_device_train_batch_size` * `gradient_accumulation_steps` * `world_size` to be a multiple of `num_generations`.\\n"
             "We will change the batch size of ' + str(per_device_train_batch_size) + ' to the `num_generations` of ' + str(num_generations))\n"
             "        per_device_train_batch_size = num_generations\n"
             "\n"
@@ -1505,13 +1505,13 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
         extra_args += check_num_generations
     elif "per_device_train_batch_size" in call_args and "num_generations" in call_args:
         if "steps_per_generation" not in call_args:
-            print(f"Unsloth: Could not find `steps_per_generation` in {trainer_file}")
+            print(f"Hyposloth: Could not find `steps_per_generation` in {trainer_file}")
         if "generation_batch_size" not in call_args:
-            print(f"Unsloth: Could not find `generation_batch_size` in {trainer_file}")
+            print(f"Hyposloth: Could not find `generation_batch_size` in {trainer_file}")
 
         check_num_generations = (
             "if (per_device_train_batch_size // num_generations) * num_generations != per_device_train_batch_size:\n"
-            "    print('Unsloth: We now expect `per_device_train_batch_size` to be a multiple of `num_generations`.\\n"
+            "    print('Hyposloth: We now expect `per_device_train_batch_size` to be a multiple of `num_generations`.\\n"
             "We will change the batch size of ' + str(per_device_train_batch_size) + ' to the `num_generations` of ' + str(num_generations))\n"
             "    per_device_train_batch_size = num_generations\n"
             "\n"
@@ -1522,9 +1522,9 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
     if "temperature" in call_args:
         check_temperature = (
             "if temperature <= 0:\n"
-            "    raise ValueError('Unsloth: Please set a positive non-zero temperature since your results will be wrong.')\n"
+            "    raise ValueError('Hyposloth: Please set a positive non-zero temperature since your results will be wrong.')\n"
             "elif temperature >= 10:\n"
-            "    raise ValueError('Unsloth: Please set a positive non-zero temperature less than 10, since sampling will be quite erratic.')\n"
+            "    raise ValueError('Hyposloth: Please set a positive non-zero temperature less than 10, since sampling will be quite erratic.')\n"
             "\n"
         )
         extra_args += check_temperature
@@ -1543,12 +1543,12 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
     RLConfig_call_args = call_args
 
     # TRL 0.27.0+ forces use_reentrant=False in gradient_checkpointing_kwargs.
-    # Unsloth gradient checkpointing requires use_reentrant=True, so we remove
+    # Hyposloth gradient checkpointing requires use_reentrant=True, so we remove
     # the setting after super().__init__() when it gets auto-applied.
     RLConfig_post = ""
     if trl_version >= Version("0.27.0"):
         RLConfig_post = (
-            "        # Unsloth: Remove use_reentrant=False forced by TRL 0.27.0+\n"
+            "        # Hyposloth: Remove use_reentrant=False forced by TRL 0.27.0+\n"
             "        if getattr(self, 'gradient_checkpointing_kwargs', None) is not None:\n"
             "            if 'use_reentrant' in self.gradient_checkpointing_kwargs:\n"
             "                del self.gradient_checkpointing_kwargs['use_reentrant']\n"
@@ -1677,13 +1677,13 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             )
 
             if trl_version >= Version("1.7.0"):
-                # router_aux_loss_coef / aux_loss_enabled were added in TRL 1.7.0. Unsloth's
+                # router_aux_loss_coef / aux_loss_enabled were added in TRL 1.7.0. Hyposloth's
                 # optimized GRPO forward cannot compute the MoE router aux loss, so reject
                 # explicit opt-in (router_aux_loss_coef > 0) at init rather than silently ignoring it.
                 RLTrainer_source = RLTrainer_source.replace(
                     "self.aux_loss_enabled = is_moe and args.router_aux_loss_coef != 0.0",
                     "self.aux_loss_enabled = is_moe and args.router_aux_loss_coef != 0.0\n"
-                    '        if self.aux_loss_enabled: raise NotImplementedError("Unsloth GRPO does not compute the MoE router auxiliary loss; set router_aux_loss_coef = 0 (the Unsloth default).")',
+                    '        if self.aux_loss_enabled: raise NotImplementedError("Hyposloth GRPO does not compute the MoE router auxiliary loss; set router_aux_loss_coef = 0 (the Hyposloth default).")',
                 )
 
         elif trl_version >= Version("0.27.0"):
@@ -1717,7 +1717,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
 
     # Remove TRL 0.26.0's unconditional bfloat16 cast of trainable params. It
     # hardcodes bfloat16 for QLoRA, ignoring the user's dtype and breaking
-    # GradScaler with fp16=True. Unsloth already handles adapter dtype via
+    # GradScaler with fp16=True. Hyposloth already handles adapter dtype via
     # patch_model_and_tokenizer, so the block is unnecessary (and already a
     # no-op for GRPO, whose peft init block is removed above).
     RLTrainer_source = RLTrainer_source.replace(
@@ -1750,7 +1750,7 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
         )
         _vlm_check_patched = (
             '        self._is_vision_dataset = "image" in dataset_sample or "images" in dataset_sample\n'
-            "        # Unsloth: override _is_vlm for VLM models that pass a bare tokenizer\n"
+            "        # Hyposloth: override _is_vlm for VLM models that pass a bare tokenizer\n"
             "        if not self._is_vlm and self._is_vision_dataset:\n"
             "            _m = model\n"
             '            if hasattr(_m, "model"): _m = _m.model\n'
@@ -1817,46 +1817,46 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
         _resolved_module.__name__ if _resolved_module is not None else f"trl.trainer.{trainer_file}"
     )
     created_module = create_new_function(
-        f"Unsloth{RLTrainer_name}",
+        f"Hyposloth{RLTrainer_name}",
         RLTrainer_source,
         _model_location,
         imports,
         overwrite = False,
     )
-    patched_trainer = getattr(created_module, f"Unsloth{RLTrainer_name}")
+    patched_trainer = getattr(created_module, f"Hyposloth{RLTrainer_name}")
     if trainer_file == "grpo_trainer":
         _patch_resume_from_checkpoint_memory(patched_trainer)
 
     # Patch Trainer
     exec(
-        f"trl.{RLTrainer_name} = created_module.Unsloth{RLTrainer_name}",
+        f"trl.{RLTrainer_name} = created_module.Hyposloth{RLTrainer_name}",
         locals(),
         globals(),
     )
     exec(
-        f"trl.trainer.{RLTrainer_name} = created_module.Unsloth{RLTrainer_name}",
+        f"trl.trainer.{RLTrainer_name} = created_module.Hyposloth{RLTrainer_name}",
         locals(),
         globals(),
     )
     exec(
-        f"trl.trainer.{trainer_file}.{RLTrainer_name} = created_module.Unsloth{RLTrainer_name}",
+        f"trl.trainer.{trainer_file}.{RLTrainer_name} = created_module.Hyposloth{RLTrainer_name}",
         locals(),
         globals(),
     )
 
     # Patch Config
     exec(
-        f"trl.{RLConfig_name} = created_module.Unsloth{RLConfig_name}",
+        f"trl.{RLConfig_name} = created_module.Hyposloth{RLConfig_name}",
         locals(),
         globals(),
     )
     exec(
-        f"trl.trainer.{RLConfig_name} = created_module.Unsloth{RLConfig_name}",
+        f"trl.trainer.{RLConfig_name} = created_module.Hyposloth{RLConfig_name}",
         locals(),
         globals(),
     )
     exec(
-        f"trl.trainer.{trainer_file}.{RLConfig_name} = created_module.Unsloth{RLConfig_name}",
+        f"trl.trainer.{trainer_file}.{RLConfig_name} = created_module.Hyposloth{RLConfig_name}",
         locals(),
         globals(),
     )
@@ -1867,23 +1867,23 @@ def _patch_trl_rl_trainers_impl(trainer_file = "grpo_trainer"):
             setattr(
                 config_module,
                 RLConfig_name,
-                getattr(created_module, f"Unsloth{RLConfig_name}"),
+                getattr(created_module, f"Hyposloth{RLConfig_name}"),
             )
     except Exception:
         pass
 
     if trainer_file == "grpo_trainer":
         try:
-            _wrap_grpo_generate_and_score(getattr(created_module, f"Unsloth{RLTrainer_name}"))
+            _wrap_grpo_generate_and_score(getattr(created_module, f"Hyposloth{RLTrainer_name}"))
         except Exception as e:
             logger.info(
-                f"Unsloth: Could not wrap _generate_and_score_completions for {RLTrainer_name}: {e}"
+                f"Hyposloth: Could not wrap _generate_and_score_completions for {RLTrainer_name}: {e}"
             )
         try:
-            _wrap_grpo_hidden_states_fallback(getattr(created_module, f"Unsloth{RLTrainer_name}"))
+            _wrap_grpo_hidden_states_fallback(getattr(created_module, f"Hyposloth{RLTrainer_name}"))
         except Exception as e:
             logger.info(
-                f"Unsloth: Could not wrap GRPO hidden-state fallback for {RLTrainer_name}: {e}"
+                f"Hyposloth: Could not wrap GRPO hidden-state fallback for {RLTrainer_name}: {e}"
             )
 
 
@@ -1918,7 +1918,7 @@ def patch_functions(RLTrainer, trainer_file, RLTrainer_name, all_imports, import
     init = init.replace("model = prepare_peft_model(model, peft_config, args)", "pass")
 
     # Skip add_adapter("ref") for reference model computation
-    # Unsloth: We comment out the "ref" adapter creation because:
+    # Hyposloth: We comment out the "ref" adapter creation because:
     # 1. We want to use the original BASE MODEL as the reference model, not the SFT/LoRA model
     # 2. PEFT doesn't allow multiple adapters when target_parameters is used (MoE models)
     # When "ref" is not in peft_config, GRPO/RLOO fallback uses disable_adapter()
@@ -1938,7 +1938,7 @@ def patch_functions(RLTrainer, trainer_file, RLTrainer_name, all_imports, import
         commented_lines = []
         # Add explanation comment first
         commented_lines.append(
-            f"{indent}# Unsloth: Commented out - use base model as reference, not SFT/LoRA model"
+            f"{indent}# Hyposloth: Commented out - use base model as reference, not SFT/LoRA model"
         )
         # Comment out each line - insert # after leading whitespace to preserve indentation
         for line in lines:
@@ -2229,7 +2229,7 @@ def patch_trl_rl_trainers():
         try:
             _patch_trl_rl_trainers(trainer)
         except Exception as e:
-            logger.warning_once(f"Unsloth: Could not patch trl.trainer.{trainer}: {e}")
+            logger.warning_once(f"Hyposloth: Could not patch trl.trainer.{trainer}: {e}")
     return
 
 
@@ -2238,11 +2238,11 @@ def patch_trl_disable_gradient_checkpointing():
     #   with torch.no_grad(), disable_gradient_checkpointing(self.model, ...):
     # The toggle only suppresses a cosmetic PyTorch warning; under no_grad it
     # has no functional effect. But on exit it calls
-    # gradient_checkpointing_enable(), overwriting Unsloth's custom
+    # gradient_checkpointing_enable(), overwriting Hyposloth's custom
     # "unsloth" wrapper -- for Gemma-4 this corrupts forward numerics and
     # blows GRPO KL divergence up to ~10^12 at step 1.
     #
-    # Replacing the context manager with a no-op preserves Unsloth's wrapper.
+    # Replacing the context manager with a no-op preserves Hyposloth's wrapper.
     # trl < 1.0.0 (no disable_gradient_checkpointing): early return.
     # trl >= 1.0.0: noop is correct; only loss is the cosmetic warning.
     try:
@@ -2290,8 +2290,8 @@ def patch_trl_disable_gradient_checkpointing():
 
     if os.environ.get("UNSLOTH_ENABLE_LOGGING", "0") == "1":
         logger.warning_once(
-            "Unsloth: Patched trl.models.utils.disable_gradient_checkpointing with "
-            "a no-op to preserve Unsloth gradient checkpointing across TRL "
+            "Hyposloth: Patched trl.models.utils.disable_gradient_checkpointing with "
+            "a no-op to preserve Hyposloth gradient checkpointing across TRL "
             "generation passes."
         )
     return
@@ -2299,7 +2299,7 @@ def patch_trl_disable_gradient_checkpointing():
 
 def patch_trl_openenv():
     for function in RL_ADDITIONAL_FUNCTIONS["openenv"]:
-        logger.info(f"Unsloth: Patching trl openenv with function: {function.__name__}")
+        logger.info(f"Hyposloth: Patching trl openenv with function: {function.__name__}")
         function()  # Call the function to apply the patch
     return
 
@@ -2309,7 +2309,7 @@ def patch_trl_vllm_generation():
     # We need to min_p patch it to not instantiate another vLLM instance if we already have one with fast_inference
     # Find the instance of self.llm = LLM(..) (multiline) and wrap it around an if clause
     for function in RL_ADDITIONAL_FUNCTIONS["vllm_generation"]:
-        logger.info(f"Unsloth: Patching trl VLLMGeneration with function: {function.__name__}")
+        logger.info(f"Hyposloth: Patching trl VLLMGeneration with function: {function.__name__}")
         function()
     return
 
@@ -2319,7 +2319,7 @@ def patch_trl_vllm_generation():
     # We need to min_p patch it to not instantiate another vLLM instance if we already have one with fast_inference
     # Find the instance of self.llm = LLM(..) (multiline) and wrap it around an if clause
     for function in RL_ADDITIONAL_FUNCTIONS["vllm_generation"]:
-        logger.info(f"Unsloth: Patching trl VLLMGeneration with function: {function.__name__}")
+        logger.info(f"Hyposloth: Patching trl VLLMGeneration with function: {function.__name__}")
         function()
     return
 
@@ -2329,7 +2329,7 @@ def PatchFastRL(algorithm = None, FastLanguageModel = None):
         PatchRL(FastLanguageModel)
     # Under UNSLOTH_ALLOW_CPU=1 (CPU-only CI), skip TRL trainer rewriting so
     # downstream `inspect.getsource(trl.SFTTrainer)` drift detectors see the
-    # pristine upstream class, not the compiled Unsloth* wrappers.
+    # pristine upstream class, not the compiled Hyposloth* wrappers.
     if os.environ.get("UNSLOTH_ALLOW_CPU", "0") == "1":
         return
     # Install the disable_gradient_checkpointing noop BEFORE

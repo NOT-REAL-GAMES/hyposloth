@@ -510,7 +510,7 @@ fn liveness_verifies_metadata(
     metadata: &DesktopBackendMetadata,
 ) -> bool {
     let alive = matches!(liveness.status.as_deref(), Some("alive") | Some("healthy"))
-        && liveness.service.as_deref() == Some("Unsloth UI Backend");
+        && liveness.service.as_deref() == Some("Hyposloth UI Backend");
     let Some(owner) = liveness.desktop_owner.as_ref() else {
         return false;
     };
@@ -1020,7 +1020,7 @@ mod tests {
     fn owned_liveness(manageability: u16) -> DesktopLiveness {
         DesktopLiveness {
             status: Some("alive".to_string()),
-            service: Some("Unsloth UI Backend".to_string()),
+            service: Some("Hyposloth UI Backend".to_string()),
             desktop_protocol_version: Some(1),
             desktop_manageability_version: Some(manageability),
             supports_desktop_auth: Some(true),

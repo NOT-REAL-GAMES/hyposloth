@@ -219,19 +219,19 @@ fi
 echo "${ROCM_DIR}/lib" | $SUDO tee /etc/ld.so.conf.d/rocm.conf >/dev/null
 $SUDO ldconfig
 
-# ── Step 4: persist environment (system-wide so Unsloth's worker inherits it) ──
+# ── Step 4: persist environment (system-wide so Hyposloth's worker inherits it) ──
 say "Persisting ROCm-on-WSL environment"
 _envfile="/etc/profile.d/unsloth-rocm-wsl.sh"
 $SUDO tee "$_envfile" >/dev/null <<EOF
-# >>> Unsloth ROCm-on-WSL >>>
+# >>> Hyposloth ROCm-on-WSL >>>
 export HSA_ENABLE_DXG_DETECTION=1
 export TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1
 export PATH="${ROCM_DIR}/bin:\${PATH}"
 export LD_LIBRARY_PATH="${ROCM_DIR}/lib:\${LD_LIBRARY_PATH:-}"
-# <<< Unsloth ROCm-on-WSL <<<
+# <<< Hyposloth ROCm-on-WSL <<<
 EOF
 # also drop into ~/.bashrc for interactive shells
-if [ -n "${HOME:-}" ] && ! grep -q "Unsloth ROCm-on-WSL" "${HOME}/.bashrc" 2>/dev/null; then
+if [ -n "${HOME:-}" ] && ! grep -q "Hyposloth ROCm-on-WSL" "${HOME}/.bashrc" 2>/dev/null; then
     cat "$_envfile" >> "${HOME}/.bashrc"
 fi
 # export into the current process so verification below works immediately
@@ -305,6 +305,6 @@ PY
 fi
 
 say "Done."
-note "ROCm-on-WSL is ready for ${GFX}. If you ran this standalone, install Unsloth"
+note "ROCm-on-WSL is ready for ${GFX}. If you ran this standalone, install Hyposloth"
 note "in THIS distro and it will detect the GPU automatically:"
 note "  curl -fsSL https://unsloth.ai/install.sh | sh"

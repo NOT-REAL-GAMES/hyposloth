@@ -76,7 +76,7 @@ validate_extra_args = _lsa.validate_extra_args
         # Reasoning controls
         ["--reasoning-format", "deepseek"],
         ["-rea", "auto"],
-        # Soft-managed: user flags last-wins over Unsloth's auto-set version.
+        # Soft-managed: user flags last-wins over Hyposloth's auto-set version.
         # --parallel / -np / --n-parallel are hard-denied; use Parallel Slots.
         ["-c", "131072"],
         ["--ctx-size", "8192"],
@@ -158,7 +158,7 @@ def test_non_flag_token_passes_through():
         "--mmproj",
         "-mmu",
         "--mmproj-url",
-        # Networking (Unsloth binds + proxies)
+        # Networking (Hyposloth binds + proxies)
         "--host",
         "--port",
         "--path",
@@ -184,12 +184,12 @@ def test_non_flag_token_passes_through():
         "--models-autoload",
         "--no-models-autoload",
         # Server-mode flips: --embedding / --rerank restrict llama-server to
-        # those endpoints and break Unsloth's chat hop.
+        # those endpoints and break Hyposloth's chat hop.
         "--embedding",
         "--embeddings",
         "--rerank",
         "--reranking",
-        # llama-server's own --tools clashes with Unsloth's tool policy.
+        # llama-server's own --tools clashes with Hyposloth's tool policy.
         "--tools",
         # Slot-state dir: Studio owns it for KV persistence across idle unload.
         "--slot-save-path",
@@ -390,7 +390,7 @@ def test_strip_shadowing_flags_keeps_spec_when_spec_disabled():
 
 
 def test_strip_shadowing_flags_keeps_device_by_default():
-    # --device is pass-through by default (users may pin when Unsloth auto-selects).
+    # --device is pass-through by default (users may pin when Hyposloth auto-selects).
     out = strip_shadowing_flags(
         ["--device", "Vulkan1", "--top-k", "20"],
         strip_context = False,
@@ -745,7 +745,7 @@ def test_extra_args_disable_mmproj_last_wins():
 
 
 def test_strip_shadowing_flags_drops_model_draft_with_spec():
-    # --model-draft (and aliases) are Unsloth-managed since the separate
+    # --model-draft (and aliases) are Hyposloth-managed since the separate
     # MTP drafter support: an inherited copy must not last-wins-override
     # the auto-detected drafter.
     out = strip_shadowing_flags(
@@ -770,7 +770,7 @@ def test_strip_shadowing_flags_drops_model_draft_with_spec():
 )
 def test_strip_shadowing_flags_drops_hf_drafter_selectors_with_spec(selector):
     # HF drafter selectors must reset on inherit like local --model-draft, or a
-    # stale inherited HF drafter last-wins over Unsloth's re-derived spec choice.
+    # stale inherited HF drafter last-wins over Hyposloth's re-derived spec choice.
     out = strip_shadowing_flags(
         selector + ["--top-k", "20"],
         strip_context = False,
@@ -886,7 +886,7 @@ def test_strip_split_mode_only_preserves_none_and_empty():
 
 def test_strip_shadowing_flags_drops_tensor_split_with_split_mode():
     # --tensor-split is coupled to the split mode: stripped together so a stale
-    # ratio can't override Unsloth's computed tensor split. Other flags survive.
+    # ratio can't override Hyposloth's computed tensor split. Other flags survive.
     out = strip_shadowing_flags(
         ["--split-mode", "row", "--tensor-split", "1,1", "--top-k", "20"],
         strip_context = False,

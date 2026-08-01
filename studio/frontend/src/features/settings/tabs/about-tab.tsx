@@ -137,7 +137,7 @@ export function AboutTab() {
       </header>
 
       {/* llama.cpp row lives in the shared version section so it sits with the
-          Unsloth/Package rows; the prop keeps it About-only (General passes none). */}
+          Hyposloth/Package rows; the prop keeps it About-only (General passes none). */}
       <StudioVersionSection
         llamaCppVersion={hw.llamaCpp}
         desktopAppVersion={desktopAppVersion}

@@ -179,14 +179,14 @@ def _save_pretrained_gguf(
         except:
             pass
 
-    # Unsloth saves + converts here; absolute for later commonpath comparison
+    # Hyposloth saves + converts here; absolute for later commonpath comparison
     transformer_dir = os.path.join(save_directory, transformer_path)
     transformer_dir = os.path.abspath(transformer_dir)
 
     if tokenizer is None:
         tokenizer = self.tokenizer
 
-    # 4. Call Unsloth's GGUF saver on the inner model targeting the transformer subdirectory
+    # 4. Call Hyposloth's GGUF saver on the inner model targeting the transformer subdirectory
     # No rmtree guard here: the merge cleanup that deletes save_directory is gated on
     # push_to_hub, which is forced False below.
     result = unsloth_save_pretrained_gguf(
@@ -255,7 +255,7 @@ def _save_pretrained_gguf(
         api = HfApi(token = token)
         repo_id = save_directory  # Assuming save_directory is the repo name if pushing
 
-        print(f"Unsloth: Uploading to {repo_id}...")
+        print(f"Hyposloth: Uploading to {repo_id}...")
         try:
             api.create_repo(repo_id = repo_id, exist_ok = True, private = kwargs.get("private", False))
             api.upload_folder(
@@ -265,7 +265,7 @@ def _save_pretrained_gguf(
             )
             print(f"Unsloth: Uploaded to https://huggingface.co/{repo_id}")
         except Exception as e:
-            print(f"Unsloth: Upload failed: {e}")
+            print(f"Hyposloth: Upload failed: {e}")
 
     return result
 
@@ -278,8 +278,8 @@ def _push_to_hub_gguf(
     first_conversion = None,
     token = None,
     private = None,
-    commit_message = "Upload GGUF SentenceTransformer model trained with Unsloth",
-    commit_description = "Upload GGUF model trained with Unsloth 2x faster",
+    commit_message = "Upload GGUF SentenceTransformer model trained with Hyposloth",
+    commit_description = "Upload GGUF model trained with Hyposloth 2x faster",
     max_shard_size = "5GB",
     temporary_location = "_unsloth_temporary_saved_buffers",
     maximum_memory_usage = 0.85,
@@ -360,11 +360,11 @@ def _push_to_hub_gguf(
             repo_type = "model",
         )
     except Exception as e:
-        print(f"Unsloth Warning: Could not create repo: {e}")
+        print(f"Hyposloth Warning: Could not create repo: {e}")
 
     # Convert locally in a temp dir, then upload
     with tempfile.TemporaryDirectory(prefix = "unsloth_st_gguf_") as temp_dir:
-        print(f"Unsloth: Converting SentenceTransformer to GGUF format...")
+        print(f"Hyposloth: Converting SentenceTransformer to GGUF format...")
 
         result = _save_pretrained_gguf(
             self,
@@ -905,7 +905,7 @@ class FastSentenceTransformer(FastModel):
         token,
         tags = None,
     ):
-        """Add Unsloth + sentence-transformers tags to the HF Hub repo."""
+        """Add Hyposloth + sentence-transformers tags to the HF Hub repo."""
         from huggingface_hub import HfApi
 
         api = HfApi(token = token)
@@ -923,7 +923,7 @@ class FastSentenceTransformer(FastModel):
 
     @staticmethod
     def _add_unsloth_branding(save_directory):
-        """Add Unsloth branding to the sentence-transformers-generated README.md."""
+        """Add Hyposloth branding to the sentence-transformers-generated README.md."""
         readme_path = os.path.join(save_directory, "README.md")
         if not os.path.exists(readme_path):
             return
@@ -1018,7 +1018,7 @@ class FastSentenceTransformer(FastModel):
                 expected = os.fspath(model_name)
             except (TypeError, ValueError) as exception:
                 logging.debug(
-                    "Unsloth: Could not normalize SentenceTransformer model path: %s",
+                    "Hyposloth: Could not normalize SentenceTransformer model path: %s",
                     exception,
                 )
                 return False
@@ -1030,7 +1030,7 @@ class FastSentenceTransformer(FastModel):
                     return os.path.abspath(requested) == os.path.abspath(expected)
             except (OSError, TypeError, ValueError) as exception:
                 logging.debug(
-                    "Unsloth: Could not compare SentenceTransformer model paths: %s",
+                    "Hyposloth: Could not compare SentenceTransformer model paths: %s",
                     exception,
                 )
             return False
@@ -1184,7 +1184,7 @@ class FastSentenceTransformer(FastModel):
             return module_class is Transformer
         except (ImportError, AttributeError, TypeError, ValueError) as exception:
             logging.debug(
-                "Unsloth: Could not resolve SentenceTransformer module ref %r: %s",
+                "Hyposloth: Could not resolve SentenceTransformer module ref %r: %s",
                 class_ref,
                 exception,
             )
@@ -1251,7 +1251,7 @@ class FastSentenceTransformer(FastModel):
                                 revision = revision,
                             )
                         except Exception as e:
-                            print(f"Unsloth Warning: Could not download module {module_path}: {e}")
+                            print(f"Hyposloth Warning: Could not download module {module_path}: {e}")
                             continue
 
                     module_class = import_from_string(class_ref)
@@ -1259,13 +1259,13 @@ class FastSentenceTransformer(FastModel):
                         module = module_class.load(load_path)
                         modules[name] = module
                     except Exception as e:
-                        print(f"Unsloth Warning: Failed to load module {name} ({class_ref}): {e}")
+                        print(f"Hyposloth Warning: Failed to load module {name} ({class_ref}): {e}")
 
             return modules, False
 
         # fallback if no modules.json (non sentence-transformers models)
         print(
-            "Unsloth: No modules.json found, falling back to [Transformer, Pooling, Normalize]. This may or may not work."
+            "Hyposloth: No modules.json found, falling back to [Transformer, Pooling, Normalize]. This may or may not work."
         )
 
         transformer_module = FastSentenceTransformer._create_transformer_module(
@@ -1292,7 +1292,7 @@ class FastSentenceTransformer(FastModel):
 
         return modules, True
 
-    # Encoder model types that benefit from native torch.compile instead of Unsloth patching
+    # Encoder model types that benefit from native torch.compile instead of Hyposloth patching
     ENCODER_MODEL_TYPES = {
         "mpnet",
         "bert",
@@ -1469,7 +1469,7 @@ class FastSentenceTransformer(FastModel):
             from sentence_transformers.models import Transformer, Pooling, Normalize
         except ImportError:
             raise ImportError(
-                "Unsloth: To use `FastSentenceTransformer`, you must install `sentence-transformers`.\n"
+                "Hyposloth: To use `FastSentenceTransformer`, you must install `sentence-transformers`.\n"
                 "Run `pip install sentence-transformers` to install it."
             )
 
@@ -1479,7 +1479,7 @@ class FastSentenceTransformer(FastModel):
             # sanity check, thanks Etherl:
             if full_finetuning and (load_in_4bit or load_in_8bit):
                 print(
-                    "Unsloth: You selected full finetuning support, but 4bit / 8bit is enabled - disabling LoRA / QLoRA."
+                    "Hyposloth: You selected full finetuning support, but 4bit / 8bit is enabled - disabling LoRA / QLoRA."
                 )
                 load_in_4bit = False
                 load_in_8bit = False
@@ -1488,7 +1488,7 @@ class FastSentenceTransformer(FastModel):
 
             if int(load_in_4bit) + int(load_in_8bit) + int(load_in_16bit) >= 2:
                 raise RuntimeError(
-                    "Unsloth: Can only load in 4bit or 8bit or 16bit, not a combination!\n"
+                    "Hyposloth: Can only load in 4bit or 8bit or 16bit, not a combination!\n"
                     "Also, we by default set `load_in_16bit = True`.\n"
                     "If you want 4bit LoRA finetuning, set `load_in_16bit = False` and `load_in_4bit = True`\n"
                     "If you want 8bit finetuning, set both `load_in_16bit = False` and `load_in_8bit = True`"
@@ -1512,7 +1512,7 @@ class FastSentenceTransformer(FastModel):
         if _st_prefetched and kwargs.get("force_download", False):
             kwargs["force_download"] = False
 
-        # if for_inference == True, skip Unsloth optimizations to avoid torch compile issues
+        # if for_inference == True, skip Hyposloth optimizations to avoid torch compile issues
         if for_inference:
             st_device = device_map
             if isinstance(st_device, dict) or (
@@ -1567,9 +1567,9 @@ class FastSentenceTransformer(FastModel):
             pass
 
         # Fast encoder path: Use native torch.compile for encoder models (6x speedup)
-        # This bypasses Unsloth's auto-compiler which adds @torch.compiler.disable decorators
+        # This bypasses Hyposloth's auto-compiler which adds @torch.compiler.disable decorators
         # that interfere with torch.compile and cause runtime errors for encoder models.
-        # NOTE: The old Unsloth path is BROKEN for encoder models with torch 2.9+ due to
+        # NOTE: The old Hyposloth path is BROKEN for encoder models with torch 2.9+ due to
         # conflicting @torch.compile and @torch.compiler.disable decorators.
         # Set UNSLOTH_COMPILE_DISABLE=1 to disable torch.compile and use the old path.
         is_encoder_model = model_type.lower() in FastSentenceTransformer.ENCODER_MODEL_TYPES
@@ -1586,7 +1586,7 @@ class FastSentenceTransformer(FastModel):
                 else:
                     dtype = torch.float32
             elif dtype == torch.bfloat16 and not SUPPORTS_BFLOAT16:
-                print("Unsloth: Device does not support bfloat16. Using float16 instead.")
+                print("Hyposloth: Device does not support bfloat16. Using float16 instead.")
                 dtype = torch.float16
 
             # Determine device
@@ -1613,11 +1613,11 @@ class FastSentenceTransformer(FastModel):
             sdpa_str = " + SDPA" if supports_sdpa else ""
             if load_in_4bit:
                 print(
-                    f"Unsloth: Using fast encoder path for {model_type} with 4-bit quantization{sdpa_str}"
+                    f"Hyposloth: Using fast encoder path for {model_type} with 4-bit quantization{sdpa_str}"
                 )
             else:
                 print(
-                    f"Unsloth: Using fast encoder path for {model_type} (torch.compile{sdpa_str})"
+                    f"Hyposloth: Using fast encoder path for {model_type} (torch.compile{sdpa_str})"
                 )
 
             # Handle 4-bit quantization via BitsAndBytesConfig
@@ -1637,7 +1637,7 @@ class FastSentenceTransformer(FastModel):
             # Handle gradient checkpointing - warn user it conflicts with torch.compile
             _use_gc = use_gradient_checkpointing
             if _use_gc and _use_gc != False:
-                print("Unsloth Warning: Gradient checkpointing is incompatible with torch.compile.")
+                print("Hyposloth Warning: Gradient checkpointing is incompatible with torch.compile.")
                 print("Disabling torch.compile to enable gradient checkpointing.")
                 compile_mode = None  # Disable compilation
 
@@ -1726,7 +1726,7 @@ class FastSentenceTransformer(FastModel):
 
         # Warn if using 4-bit with encoder (slow due to dequantization overhead)
         if is_encoder_model and load_in_4bit:
-            print("Unsloth Warning: 4-bit quantization adds ~2.3x overhead for encoder models.")
+            print("Hyposloth Warning: 4-bit quantization adds ~2.3x overhead for encoder models.")
             print("Consider using load_in_16bit=True for better performance.")
 
         # check if the model supports add_pooling_layer
@@ -1740,7 +1740,7 @@ class FastSentenceTransformer(FastModel):
         # fp8 is not supported, force it off
         fp8 = kwargs.pop("load_in_fp8", None)
         if fp8:
-            logging.info("Unsloth: Disabling fp8 for model")
+            logging.info("Hyposloth: Disabling fp8 for model")
         load_in_fp8 = False
 
         # this is a fix for Snowflake/snowflake-arctic-embed-l-v2.0
@@ -1778,7 +1778,7 @@ class FastSentenceTransformer(FastModel):
 
         if not has_modules_json and load_in_4bit:
             print(
-                "Unsloth: No modules.json found. This is not a sentence-transformers model.\n"
+                "Hyposloth: No modules.json found. This is not a sentence-transformers model.\n"
                 "Forcing 16-bit loading to simplify merged model saving."
             )
             load_in_4bit = False
@@ -1869,9 +1869,9 @@ class FastSentenceTransformer(FastModel):
             tokenizer = kwargs.pop("tokenizer", self.tokenizer)
             if self.no_modules:
                 # fallback for non-sentence-transformers models
-                print("Unsloth: No modules detected. Using standard merge_and_unload for saving...")
+                print("Hyposloth: No modules detected. Using standard merge_and_unload for saving...")
                 safe_kwargs = kwargs.copy()
-                # filter out Unsloth-specific args that are not in huggingface's save_pretrained
+                # filter out Hyposloth-specific args that are not in huggingface's save_pretrained
                 unsloth_args = [
                     "save_method",
                     "temporary_location",
@@ -1889,11 +1889,11 @@ class FastSentenceTransformer(FastModel):
                     save_directory, tokenizer = tokenizer, **kwargs
                 )
 
-            # add Unsloth branding to the generated README
+            # add Hyposloth branding to the generated README
             try:
                 FastSentenceTransformer._add_unsloth_branding(save_directory)
             except Exception as e:
-                print(f"Unsloth Warning: Failed to add branding to README: {e}")
+                print(f"Hyposloth Warning: Failed to add branding to README: {e}")
 
         st_model.save_pretrained_merged = types.MethodType(_save_pretrained_merged, st_model)
 
@@ -1973,7 +1973,7 @@ class FastSentenceTransformer(FastModel):
             print("Setting task_type to FEATURE_EXTRACTION")
 
         if isinstance(model, SentenceTransformer):
-            # Check if this is a fast encoder model (uses torch.compile instead of Unsloth patching)
+            # Check if this is a fast encoder model (uses torch.compile instead of Hyposloth patching)
             is_fast_encoder = getattr(model, "_unsloth_fast_encoder", False)
 
             if is_fast_encoder:
@@ -2015,20 +2015,20 @@ class FastSentenceTransformer(FastModel):
                             inner_model,
                             use_gradient_checkpointing = _gc_for_kbit,
                         )
-                        print("Unsloth: Prepared quantized model for k-bit training")
+                        print("Hyposloth: Prepared quantized model for k-bit training")
                         gc_enabled = bool(_gc_for_kbit)
                     except ValueError as e:
                         if "does not support gradient checkpointing" in str(e):
                             # Model doesn't support gradient checkpointing, disable it
                             print(
-                                f"Unsloth Warning: {inner_model.__class__.__name__} does not support gradient checkpointing. Skipping."
+                                f"Hyposloth Warning: {inner_model.__class__.__name__} does not support gradient checkpointing. Skipping."
                             )
                             inner_model = prepare_model_for_kbit_training(
                                 inner_model,
                                 use_gradient_checkpointing = False,
                             )
                             print(
-                                "Unsloth: Prepared quantized model for k-bit training (without gradient checkpointing)"
+                                "Hyposloth: Prepared quantized model for k-bit training (without gradient checkpointing)"
                             )
                         else:
                             raise
@@ -2038,12 +2038,12 @@ class FastSentenceTransformer(FastModel):
                     if hasattr(inner_model, "gradient_checkpointing_enable"):
                         try:
                             inner_model.gradient_checkpointing_enable()
-                            print("Unsloth: Enabled gradient checkpointing")
+                            print("Hyposloth: Enabled gradient checkpointing")
                             gc_enabled = True
                         except ValueError as e:
                             if "does not support gradient checkpointing" in str(e):
                                 print(
-                                    f"Unsloth Warning: {inner_model.__class__.__name__} does not support gradient checkpointing. Skipping."
+                                    f"Hyposloth Warning: {inner_model.__class__.__name__} does not support gradient checkpointing. Skipping."
                                 )
 
                 # Create LoRA config
@@ -2072,7 +2072,7 @@ class FastSentenceTransformer(FastModel):
                 if compile_mode is None and not gc_enabled:
                     compile_mode = "default"
                     print(
-                        "Unsloth: Re-enabling torch.compile since gradient checkpointing is not supported"
+                        "Hyposloth: Re-enabling torch.compile since gradient checkpointing is not supported"
                     )
 
                 # Re-assign the peft model back to the transformer module.
@@ -2096,12 +2096,12 @@ class FastSentenceTransformer(FastModel):
                     # Flag to indicate compile has not been applied yet
                     model._compile_pending = True
                     print(
-                        f"Unsloth: torch.compile will be applied automatically if max_steps > {model._compile_threshold}"
+                        f"Hyposloth: torch.compile will be applied automatically if max_steps > {model._compile_threshold}"
                     )
                 else:
                     model._compile_mode = None
                     model._compile_pending = False
-                    print("Unsloth: torch.compile disabled (gradient checkpointing enabled)")
+                    print("Hyposloth: torch.compile disabled (gradient checkpointing enabled)")
 
                 return model
 
@@ -2220,12 +2220,12 @@ def _patch_sentence_transformer_trainer():
             model._compile_threshold = threshold
 
             if max_steps > 0 and max_steps >= threshold:
-                print(f"Unsloth: Auto-compiling model ({max_steps} steps >= {threshold} threshold)")
+                print(f"Hyposloth: Auto-compiling model ({max_steps} steps >= {threshold} threshold)")
                 FastSentenceTransformer._apply_torch_compile(model, mode = compile_mode)
                 model._compile_pending = False
             elif max_steps > 0:
                 print(
-                    f"Unsloth: Skipping torch.compile ({max_steps} steps < {threshold} threshold)"
+                    f"Hyposloth: Skipping torch.compile ({max_steps} steps < {threshold} threshold)"
                 )
                 model._compile_pending = False
 
@@ -2237,7 +2237,7 @@ def _patch_sentence_transformer_trainer():
             if hasattr(self, "args") and self.args is not None:
                 if self.args.fp16 or self.args.bf16:
                     print(
-                        "Unsloth: Switching to float32 training since model cannot work with float16"
+                        "Hyposloth: Switching to float32 training since model cannot work with float16"
                     )
                     self.args.fp16 = False
                     self.args.bf16 = False
@@ -2295,11 +2295,11 @@ def _patch_st_trainer_load_from_checkpoint():
             adapter_name = inner.active_adapters()
         if isinstance(adapter_name, (list, tuple, set)):
             if len(adapter_name) != 1:
-                raise RuntimeError("Unsloth: Cannot resume multiple active PEFT adapters.")
+                raise RuntimeError("Hyposloth: Cannot resume multiple active PEFT adapters.")
             adapter_name = next(iter(adapter_name))
         adapter_name = adapter_name or "default"
         if adapter_name not in getattr(inner, "peft_config", {}):
-            raise RuntimeError(f"Unsloth: PEFT adapter {adapter_name!r} is not loaded.")
+            raise RuntimeError(f"Hyposloth: PEFT adapter {adapter_name!r} is not loaded.")
 
         load_result = set_peft_model_state_dict(
             inner, load_peft_weights(checkpoint_path), adapter_name = adapter_name
@@ -2312,18 +2312,18 @@ def _patch_st_trainer_load_from_checkpoint():
         ]
         if unexpected or missing:
             raise RuntimeError(
-                "Unsloth: PEFT checkpoint does not match the active adapter "
+                "Hyposloth: PEFT checkpoint does not match the active adapter "
                 f"(missing={missing[:8]}, unexpected={unexpected[:8]})."
             )
 
         modules_json = os.path.join(checkpoint_path, "modules.json")
         if not os.path.isfile(modules_json):
-            raise RuntimeError("Unsloth: PEFT checkpoint is missing modules.json.")
+            raise RuntimeError("Hyposloth: PEFT checkpoint is missing modules.json.")
         try:
             with open(modules_json, "r", encoding = "utf-8") as f:
                 module_configs = json.load(f)
         except Exception as e:
-            raise RuntimeError("Unsloth: Cannot parse checkpoint modules.json.") from e
+            raise RuntimeError("Hyposloth: Cannot parse checkpoint modules.json.") from e
 
         root = os.path.abspath(os.fspath(checkpoint_path))
         restored = set()
@@ -2332,12 +2332,12 @@ def _patch_st_trainer_load_from_checkpoint():
             if idx == 0:
                 continue
             if idx < 0 or idx >= len(self.model):
-                raise RuntimeError(f"Unsloth: Bad module index in modules.json: {idx}.")
+                raise RuntimeError(f"Hyposloth: Bad module index in modules.json: {idx}.")
             module = self.model[idx]
             module_cls = type(module)
             saved_type = entry.get("type", "")
             if saved_type and not saved_type.endswith(f".{module_cls.__name__}"):
-                raise RuntimeError(f"Unsloth: Checkpoint module {idx} type mismatch.")
+                raise RuntimeError(f"Hyposloth: Checkpoint module {idx} type mismatch.")
             module_path = entry.get("path")
             module_dir = os.path.abspath(os.path.join(root, os.fspath(module_path or "")))
             try:
@@ -2345,12 +2345,12 @@ def _patch_st_trainer_load_from_checkpoint():
             except ValueError:
                 inside_root = False
             if not module_path or not inside_root or not os.path.isdir(module_dir):
-                raise RuntimeError(f"Unsloth: Bad checkpoint module path for index {idx}.")
+                raise RuntimeError(f"Hyposloth: Bad checkpoint module path for index {idx}.")
             if not hasattr(module_cls, "load"):
-                raise RuntimeError(f"Unsloth: Module {idx} cannot be reloaded.")
+                raise RuntimeError(f"Hyposloth: Module {idx} cannot be reloaded.")
             fresh = module_cls.load(module_dir)
             if not isinstance(fresh, module_cls):
-                raise RuntimeError(f"Unsloth: Module {idx} reload returned wrong type.")
+                raise RuntimeError(f"Hyposloth: Module {idx} reload returned wrong type.")
             # Parameterless modules (Pooling, Normalize) make
             # next(module.parameters()) raise StopIteration; route through
             # the SentenceTransformer's device property instead.
@@ -2363,7 +2363,7 @@ def _patch_st_trainer_load_from_checkpoint():
         missing_idx = sorted(set(range(1, len(self.model))) - restored)
         if missing_idx:
             raise RuntimeError(
-                f"Unsloth: Checkpoint modules.json is incomplete (missing idx={missing_idx[:8]})."
+                f"Hyposloth: Checkpoint modules.json is incomplete (missing idx={missing_idx[:8]})."
             )
 
     SentenceTransformerTrainer._load_from_checkpoint = _unsloth_load_from_checkpoint

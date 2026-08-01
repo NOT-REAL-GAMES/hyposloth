@@ -365,7 +365,7 @@ def test_a_forced_load_that_fails_preflight_leaves_the_chats_alone(monkeypatch):
 
 
 def _stub_standard_load_route(monkeypatch):
-    """Drive _load_model_impl down the Unsloth path as far as the pre-teardown drain."""
+    """Drive _load_model_impl down the Hyposloth path as far as the pre-teardown drain."""
     import contextlib
     from types import SimpleNamespace
 

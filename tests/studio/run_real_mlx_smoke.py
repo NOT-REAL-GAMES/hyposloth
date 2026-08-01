@@ -27,9 +27,9 @@ import numpy as np
 
 
 SEED = 3407
-TRAIN_TEXT = "<<HELLO!!>> My name is Unsloth!"
+TRAIN_TEXT = "<<HELLO!!>> My name is Hyposloth!"
 PROMPT = "<<HELLO!!>> My name is "
-EXPECT_IN_OUTPUT = "Unsloth"
+EXPECT_IN_OUTPUT = "Hyposloth"
 MODEL_NAME = "unsloth/gemma-3-270m-it"
 
 
@@ -106,7 +106,7 @@ def _compute_loss_and_grad_norm(model, tokenizer, text: str) -> tuple[float, flo
     import mlx.nn as nn
     from mlx.utils import tree_flatten
 
-    # Match Unsloth's text dataset path: no EOS appended behind the user's back.
+    # Match Hyposloth's text dataset path: no EOS appended behind the user's back.
     ids = list(tokenizer.encode(text))
     if len(ids) < 2:
         raise RuntimeError(f"text too short to compute loss: {len(ids)} tokens")

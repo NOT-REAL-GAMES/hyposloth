@@ -4,11 +4,11 @@
 # Windows counterpart to studio-ui-smoke.yml / studio-mac-ui-smoke.yml.
 # Same Playwright + Chromium end-to-end chat UI flow + extra UI flow,
 # but on the FREE windows-latest runner so we catch Windows-specific
-# regressions in the install path (install.ps1), the Unsloth CLI's
+# regressions in the install path (install.ps1), the Hyposloth CLI's
 # Windows process-management branches, and the llama.cpp prebuilt's
 # Windows HTTP layer.
 
-name: Windows Unsloth UI CI
+name: Windows Hyposloth UI CI
 
 on:
   pull_request:
@@ -50,7 +50,7 @@ jobs:
       GGUF_FILE: gemma-3-270m-it-UD-Q4_K_XL.gguf
       STUDIO_PORT: '18896'
       HF_HOME: ${{ github.workspace }}/hf-cache
-      # Force UTF-8 for stdio so Python tools (hf download, Unsloth
+      # Force UTF-8 for stdio so Python tools (hf download, Hyposloth
       # CLI, etc.) can print Unicode characters like the success
       # checkmark "✓". Windows defaults to cp1252 / charmap and
       # any tool that prints "OK ✓" hits a UnicodeEncodeError.
@@ -122,7 +122,7 @@ jobs:
           # studio-windows-update-smoke.yml for the full rationale --
           # creating an empty studio/frontend/dist trips setup.ps1's
           # mtime-based staleness check into "frontend up to date, skip
-          # rebuild" and Unsloth boots with an empty dist directory.
+          # rebuild" and Hyposloth boots with an empty dist directory.
           # Add-MpPreference accepts paths that do not yet exist.
           foreach ($p in @(
             "$env:USERPROFILE\.unsloth",
@@ -144,12 +144,12 @@ jobs:
         # Kaspersky-flagged file), not merely stops generating it.
         shell: pwsh
         run: |
-          $appDir = Join-Path $env:LOCALAPPDATA 'Unsloth Studio'
+          $appDir = Join-Path $env:LOCALAPPDATA 'Hyposloth Studio'
           New-Item -ItemType Directory -Force -Path $appDir | Out-Null
           Set-Content -LiteralPath (Join-Path $appDir 'launch-studio.vbs') -Value 'WScript.Echo "legacy"' -Encoding Unicode
           Write-Host "seeded legacy launch-studio.vbs at $appDir"
 
-      - name: Install Unsloth (--local, --no-torch)
+      - name: Install Hyposloth (--local, --no-torch)
         # install.ps1 is the supported Windows installer. install.sh
         # has no Windows branch (apt-get / brew calls). The PS1
         # script's `Install-UnslothStudio @args` line at the bottom
@@ -206,25 +206,25 @@ jobs:
           echo "install.ps1 installed the Windows prebuilt llama.cpp:"
           cat "$INFO"
 
-      - name: Assert Unsloth launcher chain (no VBS, hidden PowerShell shortcut)
+      - name: Assert Hyposloth launcher chain (no VBS, hidden PowerShell shortcut)
         # The shortcut launch path is otherwise untested here (the steps below
         # boot `unsloth studio` directly). Guard against re-introducing the VBS
         # that tripped Kaspersky HEUR:Trojan.VBS.Agent.gen and against the .lnk
         # pointing anywhere other than hidden PowerShell over launch-studio.ps1.
         shell: pwsh
         run: |
-          $appDir = Join-Path $env:LOCALAPPDATA 'Unsloth Studio'
+          $appDir = Join-Path $env:LOCALAPPDATA 'Hyposloth Studio'
           if (Test-Path -LiteralPath (Join-Path $appDir 'launch-studio.vbs')) {
             throw "regression: launch-studio.vbs exists (the Kaspersky VBS-FP shape)"
           }
           if (-not (Test-Path -LiteralPath (Join-Path $appDir 'launch-studio.ps1'))) {
             throw "missing launch-studio.ps1 in $appDir"
           }
-          $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Unsloth Studio.lnk'
+          $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Hyposloth Studio.lnk'
           if (-not (Test-Path -LiteralPath $lnk)) {
-            $lnk = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Unsloth Studio.lnk'
+            $lnk = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Hyposloth Studio.lnk'
           }
-          if (-not (Test-Path -LiteralPath $lnk)) { throw "no Unsloth Studio.lnk on Desktop or Start Menu" }
+          if (-not (Test-Path -LiteralPath $lnk)) { throw "no Hyposloth Studio.lnk on Desktop or Start Menu" }
           $sc = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk)
           Write-Host "shortcut target: $($sc.TargetPath)"
           Write-Host "shortcut args:   $($sc.Arguments)"
@@ -235,7 +235,7 @@ jobs:
           }
           Write-Host "launcher chain OK (no VBS; hidden powershell over launch-studio.ps1)"
 
-      - name: Launch Unsloth via the shortcut and assert health
+      - name: Launch Hyposloth via the shortcut and assert health
         # Run the exact command the .lnk stores (hidden PowerShell over
         # launch-studio.ps1) and confirm it brings the backend up. This is the
         # only step that proves the shortcut launch is not silently broken.
@@ -243,9 +243,9 @@ jobs:
         # there is no conflict, and we tear this server down before they boot.
         shell: pwsh
         run: |
-          $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Unsloth Studio.lnk'
+          $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Hyposloth Studio.lnk'
           if (-not (Test-Path -LiteralPath $lnk)) {
-            $lnk = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Unsloth Studio.lnk'
+            $lnk = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Hyposloth Studio.lnk'
           }
           $sc = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk)
           Write-Host "launching: $($sc.TargetPath) $($sc.Arguments)"
@@ -255,7 +255,7 @@ jobs:
             foreach ($port in 8888..8908) {
               try {
                 $r = Invoke-RestMethod -Uri "http://127.0.0.1:$port/api/health" -TimeoutSec 1
-                if ($r.status -eq 'healthy' -and $r.service -eq 'Unsloth UI Backend') { $foundPort = $port; break }
+                if ($r.status -eq 'healthy' -and $r.service -eq 'Hyposloth UI Backend') { $foundPort = $port; break }
               } catch {}
             }
             if ($foundPort) { break }
@@ -266,10 +266,10 @@ jobs:
             $owner = (Get-NetTCPConnection -LocalPort $foundPort -State Listen -ErrorAction Stop | Select-Object -First 1).OwningProcess
             if ($owner) { taskkill /PID $owner /T /F 2>$null | Out-Null }
           } catch {}
-          if (-not $foundPort) { throw "Unsloth did not become healthy when launched via the shortcut" }
-          Write-Host "Unsloth healthy on port $foundPort (launched via the shortcut)"
+          if (-not $foundPort) { throw "Hyposloth did not become healthy when launched via the shortcut" }
+          Write-Host "Hyposloth healthy on port $foundPort (launched via the shortcut)"
 
-      - name: Add Unsloth shim to GITHUB_PATH
+      - name: Add Hyposloth shim to GITHUB_PATH
         # install.ps1 puts unsloth.exe at $StudioHome\bin\unsloth.exe
         # and adds that dir to the User PATH via the Windows registry.
         # Registry-level PATH updates don't propagate to a running
@@ -285,7 +285,7 @@ jobs:
           fi
           # GITHUB_PATH wants Windows-style paths; convert via cygpath.
           cygpath -w "$SHIM_DIR" >> "$GITHUB_PATH"
-          echo "Added Unsloth shim dir to PATH: $(cygpath -w "$SHIM_DIR")"
+          echo "Added Hyposloth shim dir to PATH: $(cygpath -w "$SHIM_DIR")"
 
       - name: Install Playwright + Chromium
         # No --with-deps on Windows: that flag installs Linux apt
@@ -295,7 +295,7 @@ jobs:
           python -m pip install 'playwright>=1.45'
           python -m playwright install chromium
 
-      - name: Reset auth + boot Unsloth
+      - name: Reset auth + boot Hyposloth
         run: |
           # Wipe (not reset-password): the boot below must re-seed a fresh .bootstrap_password.
           rm -rf ~/.unsloth/studio/auth
@@ -341,7 +341,7 @@ jobs:
           mkdir -p logs/playwright
           python tests/studio/playwright_chat_ui.py
 
-      - name: Stop Unsloth (chat-ui ends with Shutdown click; this is belt-and-suspenders)
+      - name: Stop Hyposloth (chat-ui ends with Shutdown click; this is belt-and-suspenders)
         if: always()
         run: |
           kill "${STUDIO_PID}" 2>/dev/null || true
@@ -351,7 +351,7 @@ jobs:
         run: |
           bash .github/scripts/run-studio-permission-browser.sh 18895 chromium msedge
 
-      - name: Reset auth + boot Unsloth for extra UI tests (port 18897)
+      - name: Reset auth + boot Hyposloth for extra UI tests (port 18897)
         run: |
           rm -rf ~/.unsloth/studio/auth
           mkdir -p logs
@@ -378,7 +378,7 @@ jobs:
           echo "STUDIO_EXTRA_OLD_PW=$OLD" >> "$GITHUB_ENV"
           echo "STUDIO_EXTRA_NEW_PW=$NEW" >> "$GITHUB_ENV"
 
-      - name: Drive Compare/Recipes/Export/Unsloth/Settings with Playwright
+      - name: Drive Compare/Recipes/Export/Hyposloth/Settings with Playwright
         env:
           BASE_URL: http://127.0.0.1:18897
           STUDIO_OLD_PW: ${{ env.STUDIO_EXTRA_OLD_PW }}
@@ -392,7 +392,7 @@ jobs:
           mkdir -p logs/playwright_extra
           python tests/studio/playwright_extra_ui.py
 
-      - name: Stop second Unsloth
+      - name: Stop second Hyposloth
         if: always()
         run: |
           kill "${STUDIO_EXTRA_PID}" 2>/dev/null || true

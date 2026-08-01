@@ -365,7 +365,7 @@ class FastGLM47Model(FastLlamaModel):
     def pre_patch():
         if not HAS_GLM4_MOE:
             raise ImportError(
-                "Unsloth: GLM4 MoE Lite support requires transformers >= 5.0.0. "
+                "Hyposloth: GLM4 MoE Lite support requires transformers >= 5.0.0. "
                 "Please upgrade with: pip install --upgrade transformers"
             )
 

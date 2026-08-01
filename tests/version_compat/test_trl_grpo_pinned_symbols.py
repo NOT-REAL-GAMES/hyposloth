@@ -570,7 +570,7 @@ def test_trl_grpo_peft_ref_adapter_block_contract(tag: str):
     """rl.py (trl>=1.4.0) strips TRL's PEFT ref-adapter init with a re.DOTALL
     regex anchored on `elif is_peft_model(model) and args.beta != 0.0:` ...
     `ref_param.data.copy_(param.data)`. Both anchors must exist (else the
-    regex no-ops and the ref adapter is created under Unsloth), and the
+    regex no-ops and the ref adapter is created under Hyposloth), and the
     following `enable_input_require_grads` gradient-checkpointing block must
     remain present -- the tightened regex must NOT swallow it (PR #6904). The
     `elif` block shape appeared in TRL 1.4.0, so this contract runs from there."""
@@ -582,7 +582,7 @@ def test_trl_grpo_peft_ref_adapter_block_contract(tag: str):
     assert src is not None
     assert "elif is_peft_model(model) and args.beta != 0.0:" in src, (
         f"{tag}: PEFT ref-adapter `elif` anchor gone; unsloth/models/rl.py "
-        f"peft_pattern re.sub no-ops and TRL's ref adapter init runs under Unsloth"
+        f"peft_pattern re.sub no-ops and TRL's ref adapter init runs under Hyposloth"
     )
     assert "ref_param.data.copy_(param.data)" in src, (
         f"{tag}: `ref_param.data.copy_(param.data)` end-anchor gone; "
@@ -605,7 +605,7 @@ def test_trl_grpo_quantized_model_cast_contract(tag: str):
     assert src is not None
     assert "if _is_quantized_model:" in src, (
         f"{tag}: `if _is_quantized_model:` gone; unsloth/models/rl.py cannot "
-        f"neutralize TRL's hardcoded QLoRA bf16 cast and it runs under Unsloth"
+        f"neutralize TRL's hardcoded QLoRA bf16 cast and it runs under Hyposloth"
     )
 
 

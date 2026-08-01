@@ -86,7 +86,7 @@ for i in $(seq 1 $(( KILL_AT_SECONDS * 5 ))); do
     # kill is inside the phase the moment the line appears, and any wait is a bet on how
     # long that phase runs. The bet lost twice -- a flat 3s wait put 5 of the 12 legs of
     # staging run 30419729244 into a LATER phase, and in 30426111484 it carried the macOS
-    # torch leg from "Installing PyTorch" into "Installing Unsloth", a step the workflow
+    # torch leg from "Installing PyTorch" into "Installing Hyposloth", a step the workflow
     # called minutes long that finished in under three seconds.
     #
     # Between the grep and the signal the installer can still exit on its own, which would

@@ -365,7 +365,7 @@ def test_the_gated_message_names_the_header_that_actually_works(hub):
     hub["info"] = _Info(_gguf_repo_info().siblings, gated = "manual")
     hub["auth_denied"] = True
     refusal = _run("meta-llama/Llama-2-7b-hf")
-    assert "X-Unsloth-HF-Token" in refusal.message
+    assert "X-Hyposloth-HF-Token" in refusal.message
 
 
 def test_gated_repo_is_403(hub):
@@ -418,7 +418,7 @@ def test_remote_code_repo_is_refused(hub):
     hub["auto_map"] = True
     refusal = _run("someone/custom-arch-GGUF")
     assert refusal.status == 403 and refusal.code == "remote_code_consent_required"
-    assert "Unsloth Studio" in refusal.message
+    assert "Hyposloth Studio" in refusal.message
     assert hub["started"] == []
 
 
@@ -753,7 +753,7 @@ def _download_rows():
 
 def test_a_ui_session_download_is_not_marked_as_api_traffic(hub):
     """The monitor overlay auto-opens on via_api_key, which exists to separate
-    "someone is serving other clients" from "someone is using Unsloth". Studio's
+    "someone is serving other clients" from "someone is using Hyposloth". Studio's
     own chat hits these same /v1 endpoints with a session JWT, so hardcoding the
     flag on the download row popped the panel open mid-chat."""
     from fastapi import HTTPException
@@ -1130,7 +1130,7 @@ def test_the_servers_own_hf_token_is_never_borrowed(monkeypatch):
 
     monkeypatch.setattr(settings_route, "_ambient_hf_token", lambda: "hf_owner_secret")
     assert inference_route._auto_download_hf_token(_Req()) is None
-    caller = _Req(headers = {"X-Unsloth-HF-Token": "hf_caller_own"})
+    caller = _Req(headers = {"X-Hyposloth-HF-Token": "hf_caller_own"})
     assert inference_route._auto_download_hf_token(caller) == "hf_caller_own"
 
 
@@ -1522,7 +1522,7 @@ def test_an_advertised_alias_for_the_resident_weights_is_still_served(monkeypatc
 
 
 def test_a_rejected_token_says_so_instead_of_asking_for_a_retry(hub):
-    # Hugging Face 401s an expired X-Unsloth-HF-Token. Only 403/404 were handled, so it
+    # Hugging Face 401s an expired X-Hyposloth-HF-Token. Only 403/404 were handled, so it
     # fell through to a 503 telling the caller to retry something that cannot work.
     from huggingface_hub.utils import HfHubHTTPError
 

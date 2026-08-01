@@ -342,7 +342,7 @@ def _unsloth_reset_stray_compile_cache(self):
             markers.append(_m)
             if _m.get("seen"):
                 seen = True
-        # Follow the wrapper chain: Unsloth/HF (.model), PEFT (.base_model), DDP/FSDP (.module).
+        # Follow the wrapper chain: Hyposloth/HF (.model), PEFT (.base_model), DDP/FSDP (.module).
         _nxt = getattr(_curr, "model", None)
         if _nxt is None:
             _nxt = getattr(_curr, "base_model", None)
@@ -369,7 +369,7 @@ def _unsloth_reset_stray_compile_cache(self):
         import warnings
 
         warnings.warn(
-            "Unsloth: detected a manual forward/backward run before trainer.train(); "
+            "Hyposloth: detected a manual forward/backward run before trainer.train(); "
             "reset the torch.compile graph cache it poisoned so training starts clean. "
             "To avoid this, run any pre-train probe under `with torch.no_grad():`."
         )
@@ -691,7 +691,7 @@ def _disable_flash_attention_if_needed(
         if warning_key not in _FLASH_ATTENTION_DISABLED_WARNED:
             _FLASH_ATTENTION_DISABLED_WARNED.add(warning_key)
             print(
-                f"Unsloth: `{logged_attn_implementation}` is not supported "
+                f"Hyposloth: `{logged_attn_implementation}` is not supported "
                 f"for `{model_type}` because {disable_reason} - "
                 f"defaulting to `{fallback_attn_implementation}`."
             )
@@ -909,7 +909,7 @@ def resolve_attention_implementation(
     )
     if not supports_sdpa and final_attn_impl == "sdpa" and not honor_explicit_sdpa:
         print(
-            f"Unsloth: {(model_type_name or 'model').title()} does not support SDPA - switching to fast eager."
+            f"Hyposloth: {(model_type_name or 'model').title()} does not support SDPA - switching to fast eager."
         )
         final_attn_impl = _set_attn_impl(config, "eager")
 
@@ -1368,7 +1368,7 @@ def maybe_prefetch_hf_snapshot(
         raise
     except Exception as exception:
         logger.warning_once(
-            f"Unsloth: Could not pre-download {model_name} "
+            f"Hyposloth: Could not pre-download {model_name} "
             f"({type(exception).__name__}: {exception}); continuing with the normal load."
         )
         return False
@@ -1388,7 +1388,7 @@ class HideLoggingMessage(logging.Filter):
 # Replace warning messages (analogous to HideLoggingMessage but for warnings.warn)
 class ReplaceWarningMessage:
     """
-    Intercepts warnings.warn calls and replaces matching messages with Unsloth branded ones.
+    Intercepts warnings.warn calls and replaces matching messages with Hyposloth branded ones.
     Uses a list of registered (match_text, replacement, category) rules checked in order.
     """
 
@@ -1718,8 +1718,8 @@ class _RaiseUninitialized(logging.Handler):
             and (os.environ.get("UNSLOTH_WARN_UNINITIALIZED", "1") == "1")
         ):
             raise Exception(
-                f"Unsloth: Critical error since some weights are not initialized.\n"
-                f"Please try updating Unsloth, transformers and timm via:\n"
+                f"Hyposloth: Critical error since some weights are not initialized.\n"
+                f"Please try updating Hyposloth, transformers and timm via:\n"
                 f"`pip install --upgrade --force-reinstall --no-cache-dir --no-deps unsloth unsloth_zoo transformers timm`\n"
                 f"{str(record)}"
             )
@@ -1750,12 +1750,12 @@ try:
 except:
     pass
 
-# Replace PEFT target_parameters warning with Unsloth branded message for MoE models
+# Replace PEFT target_parameters warning with Hyposloth branded message for MoE models
 ReplaceWarningMessage.add_rule(
     match_text = "target_parameters",
     replacement = (
-        "Unsloth: PEFT set target_parameters but found no matching parameters.\n"
-        "This is expected for MoE models - Unsloth handles MoE expert LoRA targeting separately."
+        "Hyposloth: PEFT set target_parameters but found no matching parameters.\n"
+        "This is expected for MoE models - Hyposloth handles MoE expert LoRA targeting separately."
     ),
     category = RuntimeWarning,
 )
@@ -1946,7 +1946,7 @@ elif DEVICE_TYPE == "xpu":
 #     where = source.find("raise KeyError")
 #     source = source[:where] + \
 #         f"if len(self) == 0:\n{spaces}{spaces}"\
-#         "    raise RuntimeError('Unsloth: You must call `FastLanguageModel.for_inference(model)` before doing inference for Unsloth models.')\n" + \
+#         "    raise RuntimeError('Hyposloth: You must call `FastLanguageModel.for_inference(model)` before doing inference for Hyposloth models.')\n" + \
 #         f"{spaces}{spaces}else:\n{spaces}{spaces}{spaces}" + source[where:]
 #     source = source.replace("__getitem__", "__cache_utils_getitem__", 1)
 #     exec(source)
@@ -1962,7 +1962,7 @@ if is_openai_available():
     try:
         from openai import OpenAI
     except:
-        print("Unsloth: OpenAI failed to import - ignoring for now.")
+        print("Hyposloth: OpenAI failed to import - ignoring for now.")
         import transformers.utils
 
         def _is_openai_available():
@@ -2013,14 +2013,14 @@ if DEVICE_TYPE == "cuda":
                 HAS_FLASH_ATTENTION_SOFTCAPPING = Version(flash_attn_version) >= Version("2.6.3")
                 if not HAS_FLASH_ATTENTION_SOFTCAPPING:
                     print(
-                        "Unsloth: If you want to finetune Gemma 2, upgrade flash-attn to version 2.6.3 or higher!\n"
+                        "Hyposloth: If you want to finetune Gemma 2, upgrade flash-attn to version 2.6.3 or higher!\n"
                         "Newer versions support faster and less memory usage kernels for Gemma 2's attention softcapping!\n"
                         "To update flash-attn, do the below:\n"
                         '\npip install --no-deps --no-build-isolation --upgrade "flash-attn>=2.6.3"'
                     )
             except:
                 print(
-                    "Unsloth: Your Flash Attention 2 installation seems to be broken. "
+                    "Hyposloth: Your Flash Attention 2 installation seems to be broken. "
                     "Using Xformers instead. No performance changes will be seen."
                 )
 
@@ -2058,14 +2058,14 @@ elif DEVICE_TYPE == "hip":
             HAS_FLASH_ATTENTION_SOFTCAPPING = Version(flash_attn_version) >= Version("2.6.3")
             if not HAS_FLASH_ATTENTION_SOFTCAPPING:
                 print(
-                    "Unsloth: If you want to finetune Gemma 2, upgrade flash-attn to version 2.6.3 or higher!\n"
+                    "Hyposloth: If you want to finetune Gemma 2, upgrade flash-attn to version 2.6.3 or higher!\n"
                     "Newer versions support faster and less memory usage kernels for Gemma 2's attention softcapping!\n"
                     "To update flash-attn, do the below:\n"
                     '\npip install --no-deps --no-build-isolation --upgrade "flash-attn>=2.6.3"'
                 )
         except:
             print(
-                "Unsloth: Your Flash Attention 2 installation seems to be broken. "
+                "Hyposloth: Your Flash Attention 2 installation seems to be broken. "
                 "Using Xformers instead. No performance changes will be seen."
             )
 
@@ -2106,7 +2106,7 @@ try:
             Version(xformers_version) <= Version("0.0.32.post2")
         ):
             raise NotImplementedError(
-                f"Unsloth: Xformers {xformers_version} has a broken FA3 dispatch on "
+                f"Hyposloth: Xformers {xformers_version} has a broken FA3 dispatch on "
                 f"SM {major_version}.{minor_version} GPUs. Please upgrade to >= 0.0.33 or build from source via\n"
                 "```\n"
                 "pip install ninja\n"
@@ -2117,11 +2117,11 @@ try:
     # Temporarily disable 0.0.27 and higher - inference issues
     if False:  # Version(xformers_version) >= Version("0.0.27"):
         raise ImportError(
-            "Unsloth: If you are in Colab, we updated the top cell install instructions - please change it to below "
+            "Hyposloth: If you are in Colab, we updated the top cell install instructions - please change it to below "
             "then press Disconnect Runtime and then Restart it.\n"
             "\n"
             "%%capture\n"
-            "# Installs Unsloth, Xformers (Flash Attention) and all other packages!\n"
+            "# Installs Hyposloth, Xformers (Flash Attention) and all other packages!\n"
             '!pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"\n'
             '!pip install --no-deps "xformers<=0.0.27" trl peft accelerate bitsandbytes\n'
             "\n"
@@ -2131,21 +2131,21 @@ try:
 
     if Version(torch_version) < Version("2.2.0") and Version(xformers_version) >= Version("0.0.24"):
         raise ImportError(
-            f"Unsloth: You have torch = {torch_version} but xformers = {xformers_version}.\n"
+            f"Hyposloth: You have torch = {torch_version} but xformers = {xformers_version}.\n"
             f"Please install xformers < 0.0.24 for torch = {torch_version}."
         )
     elif Version(torch_version) < Version("2.3.0") and Version(xformers_version) >= Version(
         "0.0.26"
     ):
         raise ImportError(
-            f"Unsloth: You have torch = {torch_version} but xformers = {xformers_version}.\n"
+            f"Hyposloth: You have torch = {torch_version} but xformers = {xformers_version}.\n"
             f"Please install xformers < 0.0.26 for torch = {torch_version}."
         )
     elif Version(torch_version) < Version("2.4.0") and Version(xformers_version) > Version(
         "0.0.27"
     ):
         raise ImportError(
-            f"Unsloth: You have torch = {torch_version} but xformers = {xformers_version}.\n"
+            f"Hyposloth: You have torch = {torch_version} but xformers = {xformers_version}.\n"
             f"Please install xformers <= 0.0.27 for torch = {torch_version}."
         )
 
@@ -2155,7 +2155,7 @@ try:
         _register_extensions()  # Check if C++ modules are loaded correctly
     except Exception as error:
         raise ImportError(
-            "Unsloth: Xformers was not installed correctly.\n"
+            "Hyposloth: Xformers was not installed correctly.\n"
             "Please install xformers separately first.\n"
             "Then confirm if it's correctly installed by running:\n"
             "python -m xformers.info\n\n"
@@ -2179,14 +2179,14 @@ except Exception as e:
 # Check TRL version
 from trl import __version__ as trl_version
 
-# Unsloth now supports all TRL versions!
+# Hyposloth now supports all TRL versions!
 if False:  # Version(trl_version) >= Version("0.9.0"):
     raise ImportError(
-        "Unsloth: If you are in Colab, we updated the top cell install instructions - please change it to below "
+        "Hyposloth: If you are in Colab, we updated the top cell install instructions - please change it to below "
         "then press Disconnect Runtime and then Restart it.\n"
         "\n"
         "%%capture\n"
-        "# Installs Unsloth, Xformers (Flash Attention) and all other packages!\n"
+        "# Installs Hyposloth, Xformers (Flash Attention) and all other packages!\n"
         '!pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"\n'
         '!pip install --no-deps "xformers<=0.0.27" trl peft accelerate bitsandbytes\n'
         "\n"
@@ -2270,7 +2270,7 @@ import accelerate
 
 
 def torch_compile_kwargs(*args, **kwargs):
-    print("Unsloth: Enabled auto compiling")
+    print("Hyposloth: Enabled auto compiling")
     return {
         "dynamic": True,
         "fullgraph": False,
@@ -2369,7 +2369,7 @@ if Version(peft_version) < Version("0.12.0"):
         LoraLayer.update_layer = LoraLayer_update_layer
     except:
         logger.warning_once(
-            "Unsloth unsuccessfully patched LoraLayer.update_layer. Please file a bug report.\n"
+            "Hyposloth unsuccessfully patched LoraLayer.update_layer. Please file a bug report.\n"
             "Luckily, your training run will still work in the meantime!"
         )
 
@@ -2506,7 +2506,7 @@ def _get_statistics(statistics = None, force_download = True):
                 time_limited_stats_check()
             except TimeoutError:
                 raise TimeoutError(
-                    "Unsloth: HuggingFace seems to be down after trying for 120 seconds :(\n"
+                    "Hyposloth: HuggingFace seems to be down after trying for 120 seconds :(\n"
                     "Check https://status.huggingface.co/ for more details.\n"
                     "As a temporary measure, use modelscope with the same model name ie:\n"
                     "```\n"
@@ -2517,7 +2517,7 @@ def _get_statistics(statistics = None, force_download = True):
                     "```"
                 )
             except Exception:
-                logger.debug("Unsloth: stats_check failed with an exception.")
+                logger.debug("Hyposloth: stats_check failed with an exception.")
                 # Don't retry without a time limit — would freeze offline
 
 
@@ -2958,7 +2958,7 @@ def _unsloth_pre_compute_loss(self, model, inputs, *args, **kwargs):
         name = inner_model.__class__.__name__
 
         logger.warning_once(
-            f"Unsloth: Not an error, but {name} does not accept `num_items_in_batch`.\n"
+            f"Hyposloth: Not an error, but {name} does not accept `num_items_in_batch`.\n"
             "Using gradient accumulation will be very slightly less accurate.\n"
             "Read more on gradient accumulation issues here: https://unsloth.ai/blog/gradient"
         )
@@ -3005,7 +3005,7 @@ def patch_gradient_accumulation_fix(Trainer):
             .strip()
             .endswith("return batch_samples, num_items_in_batch")
         ):
-            raise NotImplementedError("Unsloth: Please make a Github issue immediately!!")
+            raise NotImplementedError("Hyposloth: Please make a Github issue immediately!!")
         else:
             if Trainer.get_batch_samples.__name__ != "_unsloth_get_batch_samples":
                 Trainer.get_batch_samples = _unsloth_get_batch_samples
@@ -3046,7 +3046,7 @@ def patch_gradient_accumulation_fix(Trainer):
                 Trainer.compute_loss = _unsloth_pre_compute_loss
     else:
         logger.warning_once(
-            "Unsloth: We fixed a gradient accumulation bug, "
+            "Hyposloth: We fixed a gradient accumulation bug, "
             "but it seems like you don't have the latest transformers version!\n"
             "Please update transformers, TRL and unsloth via:\n"
             "`pip install --upgrade --no-cache-dir --no-deps unsloth transformers git+https://github.com/huggingface/trl.git`"
@@ -3156,7 +3156,7 @@ def _unsloth_compile_cache_leaves():
 
 
 def _forward_is_unsloth_compiled(model):
-    # True iff forward was installed from the Unsloth compile cache directory.
+    # True iff forward was installed from the Hyposloth compile cache directory.
     # __module__ stays as the transformers module, so check co_filename.
     leaves = _unsloth_compile_cache_leaves()
 
@@ -3242,7 +3242,7 @@ def apply_accepts_loss_kwargs_fix(model):
     # in wrapper chain; else leave HF default. Issue #4982.
     if _forward_is_unsloth_compiled(model):
         _shadow_accepts_loss_kwargs(model, True)
-        return "True (Unsloth compiled forward)"
+        return "True (Hyposloth compiled forward)"
 
     value, reason = _find_concrete_accepts_loss_kwargs(model)
     if value is None:
@@ -3301,14 +3301,14 @@ def unsloth_compile_transformers(
         print(
             "="
             * 30
-            + "Unsloth: Unfortunately Unsloth vision and other newer optimized models need Torch 2.4 or later.\n"
+            + "Hyposloth: Unfortunately Hyposloth vision and other newer optimized models need Torch 2.4 or later.\n"
             f"You have Torch version {torch_version}. Please upgrade your Torch version by visiting https://pytorch.org/\n"
             "For now your models will not get optimized, but will still work for now!"
         )
         return
     if trust_remote_code and unsloth_force_compile == False:
         print(
-            "Unsloth: We can't trace models if `trust_remote_code = True`, "
+            "Hyposloth: We can't trace models if `trust_remote_code = True`, "
             "so turning off some optimizations!"
         )
         return model_types, False
@@ -3359,7 +3359,7 @@ def unsloth_compile_transformers(
 # We need an empty logits flag to warn people logits will not be returned anymore unless asked ie
 # os.environ['UNSLOTH_RETURN_LOGITS'] = '1'
 LOGITS_ERROR_STRING = (
-    "Unsloth: Logits are empty from 2024.11 onwards. To get raw logits again, please "
+    "Hyposloth: Logits are empty from 2024.11 onwards. To get raw logits again, please "
     'set the environment variable `UNSLOTH_RETURN_LOGITS` to `"1" BEFORE starting to train ie before `trainer.train()`. For example:\n'
     "```\nimport os\n"
     "os.environ['UNSLOTH_RETURN_LOGITS'] = '1'\n"
@@ -3432,14 +3432,14 @@ def validate_loftq_config(loftq_config, lora_dropout, bias, init_lora_weights, m
 
     if lora_dropout != 0:
         logger.warning_once(
-            f"Unsloth: Dropout = 0 is supported for fast patching. You are using dropout = {lora_dropout}.\n"
-            f"Unsloth will patch all other layers, except LoRA matrices, causing a performance hit."
+            f"Hyposloth: Dropout = 0 is supported for fast patching. You are using dropout = {lora_dropout}.\n"
+            f"Hyposloth will patch all other layers, except LoRA matrices, causing a performance hit."
         )
 
     if bias != "none":
         logger.warning_once(
-            f"Unsloth: bias = `none` is supported for fast patching. You are using bias = {bias}.\n"
-            f"Unsloth will patch all other layers, except LoRA matrices, causing a performance hit."
+            f"Hyposloth: bias = `none` is supported for fast patching. You are using bias = {bias}.\n"
+            f"Hyposloth will patch all other layers, except LoRA matrices, causing a performance hit."
         )
 
     if not (
@@ -3449,14 +3449,14 @@ def validate_loftq_config(loftq_config, lora_dropout, bias, init_lora_weights, m
         or init_lora_weights == "corda"
     ):
         raise ValueError(
-            'Unsloth: `init_lora_weights` must be either [True, False, "gaussian", "loftq", "corda"].'
+            'Hyposloth: `init_lora_weights` must be either [True, False, "gaussian", "loftq", "corda"].'
         )
 
     if init_lora_weights == "loftq":
         if not SUPPORTS_LOFTQ:
             import peft
             raise RuntimeError(
-                f"Unsloth: Your PEFT version of {peft.__version__} does not support LoftQ init.\n"
+                f"Hyposloth: Your PEFT version of {peft.__version__} does not support LoftQ init.\n"
                 "Please install PEFT 0.7.2 or higher.\n"
                 "You can also install from source: `pip install git+https://github.com/huggingface/peft.git"
             )
@@ -3464,14 +3464,14 @@ def validate_loftq_config(loftq_config, lora_dropout, bias, init_lora_weights, m
         if loftq_config == {}:
             from peft import LoftQConfig
             logger.warning_once(
-                "Unsloth: init_lora_weights = `loftq` is set, but `loftq_config` is None.\n"
+                "Hyposloth: init_lora_weights = `loftq` is set, but `loftq_config` is None.\n"
                 "We shall use `loftq_config = LoftQConfig(loftq_bits = 4, loftq_iter = 1)`."
             )
             loftq_config = LoftQConfig(loftq_bits = 4, loftq_iter = 1)
 
         if hasattr(model.config, "quantization_config"):
             raise ValueError(
-                "Unsloth: You are using `loftq` init, yet `load_in_4bit = True` was set.\n"
+                "Hyposloth: You are using `loftq` init, yet `load_in_4bit = True` was set.\n"
                 "Reload your model without any quantization by setting `load_in_4bit = False`."
             )
 
@@ -3481,7 +3481,7 @@ def validate_loftq_config(loftq_config, lora_dropout, bias, init_lora_weights, m
 def fast_inference_setup(model_name, model_config):
     fast_inference = True
     if not is_vLLM_available():
-        logger.warning_once("Unsloth: vLLM is not installed! Will use Unsloth inference!")
+        logger.warning_once("Hyposloth: vLLM is not installed! Will use Hyposloth inference!")
         fast_inference = False
     from unsloth_zoo.vllm_utils import (
         patch_vllm,
@@ -3493,7 +3493,7 @@ def fast_inference_setup(model_name, model_config):
         if not vllm_dynamic_quant_supported(model_name, model_config):
             # Instead use -bnb-4bit variant
             logger.warning_once(
-                f"Unsloth: Switching from Unsloth dynamic quant to normal quant since\n"
+                f"Hyposloth: Switching from Hyposloth dynamic quant to normal quant since\n"
                 f"we do not yet support fast inference for {model_name}"
             )
             model_name = model_name[: -len("unsloth-bnb-4bit")] + "bnb-4bit"
@@ -3516,7 +3516,7 @@ def patch_peft_fast_inference(model):
 
 def error_out_no_vllm(*args, **kwargs):
     raise NotImplementedError(
-        "Unsloth: vLLM is not yet supported for fast inference for this model! Please use `.generate` instead"
+        "Hyposloth: vLLM is not yet supported for fast inference for this model! Please use `.generate` instead"
     )
 
 
@@ -3525,7 +3525,7 @@ try:
     try:
         from torchao.quantization import Int4WeightOnlyConfig
     except:
-        print("Unsloth: TorchAO changed `torchao.quantization.Int4WeightOnlyConfig`")
+        print("Hyposloth: TorchAO changed `torchao.quantization.Int4WeightOnlyConfig`")
         Int4WeightOnlyConfig = None
 except:
     AOBaseConfig = None
@@ -3664,7 +3664,7 @@ def _prepare_model_for_qat(
         is_gemma3 = any("gemma3" in mt or "gemma_3" in mt for mt in model_types)
         if is_gemma3:
             print(
-                "Unsloth: Gemma3 has a large vocabulary causing int8 embedding issues. "
+                "Hyposloth: Gemma3 has a large vocabulary causing int8 embedding issues. "
                 "Switching to int4 weight-only QAT for training stability."
             )
             qat_scheme = "int4"
@@ -3785,7 +3785,7 @@ def _prepare_model_for_qat(
                 if len(skipped_cactus_layers) > 8:
                     preview += f", ... ({len(skipped_cactus_layers) - 8} more)"
                 warnings.warn(
-                    f"Unsloth: qat_scheme='cactus' uses PerGroup({group_size}) "
+                    f"Hyposloth: qat_scheme='cactus' uses PerGroup({group_size}) "
                     "which requires in_features to be divisible by "
                     f"{group_size}. The following Linear layers will be kept "
                     f"in full precision during QAT: {preview}",
@@ -3852,7 +3852,7 @@ def verify_fp8_support_if_applicable(model_config):
     quant_method = get_quant_type(model_config)
     if quant_method in ["fbgemm_fp8", "fp8"] and DEVICE_TYPE != "cuda":
         raise ValueError(
-            f"Unsloth: FP8 quantization is only supported on CUDA GPUs. You are using {DEVICE_TYPE}."
+            f"Hyposloth: FP8 quantization is only supported on CUDA GPUs. You are using {DEVICE_TYPE}."
         )
 
     # [TODO] Need to add FP8 support for Intel XPUs
@@ -3947,7 +3947,7 @@ def _resolve_moe_parameter_name(model, default_name: str, alternate_name: str) -
     """
     Resolve the actual parameter path for MoE expert weights.
 
-    Most current Unsloth MoE models expose expert weights under
+    Most current Hyposloth MoE models expose expert weights under
     ``mlp.experts.*``. Gemma4 stores them directly under ``experts.*``.
     Prefer the path that exists on the loaded module when possible.
     """
@@ -4085,7 +4085,7 @@ def get_moe_target_parameters(model, target_modules = None) -> Optional[List[str
 
     if moe_params:
         print(
-            f"Unsloth: Detected MoE model with {num_experts = } and {target_modules = }. Enabling LoRA on MoE parameters: {moe_params}"
+            f"Hyposloth: Detected MoE model with {num_experts = } and {target_modules = }. Enabling LoRA on MoE parameters: {moe_params}"
         )
         return moe_params
 
@@ -4190,7 +4190,7 @@ def warn_if_zoo_cannot_merge_moe_experts():
     except Exception:
         return  # cannot introspect zoo -> stay quiet rather than false-alarm
     logger.warning_once(
-        "Unsloth: the installed unsloth_zoo will not fold these per-expert experts into "
+        "Hyposloth: the installed unsloth_zoo will not fold these per-expert experts into "
         "a merged_16bit checkpoint, so save_pretrained_merged('merged_16bit') would drop "
         "the expert LoRA. Upgrade unsloth_zoo to merge them; saving the LoRA adapter is "
         "unaffected."
@@ -4252,14 +4252,14 @@ def make_fast_generate_wrapper(original_generate):
         # vLLM-only; also catch SamplingParams passed positionally (fast_generate(prompt, params))
         if "sampling_params" in kwargs or any(_has_sampling_params(a) for a in args):
             raise ValueError(
-                "Unsloth: `sampling_params` is only supported when `fast_inference=True` (vLLM). "
+                "Hyposloth: `sampling_params` is only supported when `fast_inference=True` (vLLM). "
                 "Since `fast_inference=False`, use HuggingFace generate arguments instead:\n"
                 "  model.fast_generate(**tokens.to('cuda'), max_new_tokens=64, temperature=1.0, top_p=0.95)"
             )
 
         if "lora_request" in kwargs:
             raise ValueError(
-                "Unsloth: `lora_request` is only supported when `fast_inference=True` (vLLM). "
+                "Hyposloth: `lora_request` is only supported when `fast_inference=True` (vLLM). "
                 "Since `fast_inference=False`, LoRA weights are already merged into the model."
             )
 
@@ -4274,7 +4274,7 @@ def make_fast_generate_wrapper(original_generate):
         )
         if (len(args) > 0 and _is_vllm_prompt(args[0])) or vllm_prompt_kwarg:
             raise ValueError(
-                "Unsloth: Passing vLLM-style prompts to `fast_generate` is only supported when "
+                "Hyposloth: Passing vLLM-style prompts to `fast_generate` is only supported when "
                 "`fast_inference=True` (vLLM). Since `fast_inference=False`, tokenize first:\n\n"
                 "  inputs = tokenizer.apply_chat_template(\n"
                 '      [{"role": "user", "content": "Your prompt here"}],\n'

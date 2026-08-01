@@ -271,14 +271,14 @@ def _response(
         def tool_definition(name: str, description: str, read_only: bool) -> dict:
             return {
                 "name": name,
-                "title": "Unsloth local plan agent" if read_only else "Unsloth local agent",
+                "title": "Hyposloth local plan agent" if read_only else "Hyposloth local agent",
                 "description": description,
                 "inputSchema": {
                     "type": "object",
                     "properties": {
                         "task": {
                             "type": "string",
-                            "description": "The complete task for the local Unsloth agent.",
+                            "description": "The complete task for the local Hyposloth agent.",
                         }
                     },
                     "required": ["task"],

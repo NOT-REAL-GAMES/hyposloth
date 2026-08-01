@@ -1,4 +1,4 @@
-"""Unsloth install-root inference must not crash under hostile filesystem conditions (PermissionError/OSError swallowed; custom root kept when resolve() fails)."""
+"""Hyposloth install-root inference must not crash under hostile filesystem conditions (PermissionError/OSError swallowed; custom root kept when resolve() fails)."""
 
 from __future__ import annotations
 

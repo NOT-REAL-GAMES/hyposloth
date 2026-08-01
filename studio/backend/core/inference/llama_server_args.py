@@ -3,10 +3,10 @@
 
 """Boundary validator for user-supplied llama-server pass-through args.
 
-Reject only flags Unsloth manages (model identity, auth, network, parallel
+Reject only flags Hyposloth manages (model identity, auth, network, parallel
 slots). Everything else (sampling, ``-c``, ``-ngl``, ``--flash-attn``,
 ``--cache-type-*``, ``--spec-*``, ``--jinja``, ...) is appended after
-Unsloth's auto-set flags so llama.cpp's last-wins parser lets the user override.
+Hyposloth's auto-set flags so llama.cpp's last-wins parser lets the user override.
 
 Ref: https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md
 """
@@ -29,12 +29,12 @@ _DENYLIST_GROUPS: tuple[frozenset[str], ...] = (
     # Parallel slots: owned by typer --parallel and LoadRequest.n_parallel; a
     # pass-through would desync the slot bookkeeping from llama-server.
     frozenset({"-np", "--parallel", "--n-parallel"}),
-    # Model identity: Unsloth resolves it from LoadRequest; a second -m would
-    # load a different model than Unsloth thinks it loaded.
+    # Model identity: Hyposloth resolves it from LoadRequest; a second -m would
+    # load a different model than Hyposloth thinks it loaded.
     frozenset({"-m", "--model"}),
-    # Public model id: Unsloth sets a sanitized --alias so the OpenAI API never
+    # Public model id: Hyposloth sets a sanitized --alias so the OpenAI API never
     # exposes the local .gguf path. A user-supplied alias is appended after
-    # Unsloth's and, with llama.cpp's last-wins parsing, would reintroduce the
+    # Hyposloth's and, with llama.cpp's last-wins parsing, would reintroduce the
     # path leak this is meant to prevent.
     frozenset({"-a", "--alias"}),
     frozenset({"-mu", "--model-url"}),
@@ -46,14 +46,14 @@ _DENYLIST_GROUPS: tuple[frozenset[str], ...] = (
     frozenset({"-hft", "--hf-token"}),
     frozenset({"-mm", "--mmproj"}),
     frozenset({"-mmu", "--mmproj-url"}),
-    # Networking: Unsloth binds + proxies; retargeting orphans the proxy.
+    # Networking: Hyposloth binds + proxies; retargeting orphans the proxy.
     frozenset({"--host"}),
     frozenset({"--port"}),
     frozenset({"--path"}),
     frozenset({"--api-prefix"}),
     frozenset({"--reuse-port"}),
-    # Auth / TLS: Unsloth terminates auth; upstream --api-key / TLS shadows
-    # Unsloth's key and breaks the proxy hop.
+    # Auth / TLS: Hyposloth terminates auth; upstream --api-key / TLS shadows
+    # Hyposloth's key and breaks the proxy hop.
     frozenset({"--api-key"}),
     frozenset({"--api-key-file"}),
     frozenset({"--ssl-key-file"}),
@@ -71,11 +71,11 @@ _DENYLIST_GROUPS: tuple[frozenset[str], ...] = (
     frozenset({"--models-max"}),
     frozenset({"--models-autoload", "--no-models-autoload"}),
     # Server-mode flips: --embedding / --rerank restrict llama-server to
-    # those endpoints, breaking Unsloth's /v1/chat/completions hop.
+    # those endpoints, breaking Hyposloth's /v1/chat/completions hop.
     frozenset({"--embedding", "--embeddings"}),
     frozenset({"--rerank", "--reranking"}),
     # llama-server's own built-in tools flag would silently stack on top of
-    # Unsloth's --enable-tools / --disable-tools policy resolver.
+    # Hyposloth's --enable-tools / --disable-tools policy resolver.
     frozenset({"--tools"}),
     # Slot-state dir: Studio owns it for KV persistence across idle unload.
     frozenset({"--slot-save-path"}),
@@ -121,7 +121,7 @@ def validate_extra_args(args: Optional[Iterable[str]]) -> list[str]:
         flag = _flag_name(token)
         if flag is not None and flag in _DENYLIST:
             raise ValueError(
-                f"llama-server flag '{flag}' is managed by Unsloth Studio "
+                f"llama-server flag '{flag}' is managed by Hyposloth Studio "
                 f"and cannot be passed as an extra arg"
             )
         out.append(token)
@@ -133,7 +133,7 @@ def validate_extra_args(args: Optional[Iterable[str]]) -> list[str]:
 
 
 def is_managed_flag(flag: str) -> bool:
-    """True if ``flag`` is Unsloth-managed. Normalises via ``_flag_name`` so
+    """True if ``flag`` is Hyposloth-managed. Normalises via ``_flag_name`` so
     `-np8` / `--parallel=8` classify like the canonical tokens."""
     normalised = _flag_name(flag)
     return normalised is not None and normalised in _DENYLIST
@@ -155,7 +155,7 @@ _SPEC_FLAGS: frozenset[str] = frozenset(
         "--draft-min",
         "--draft-max",
         # MTP path (llama.cpp #22673). The drafter selectors (local --model-draft
-        # and HF --spec-draft-hf aliases) are Unsloth-managed since the separate-
+        # and HF --spec-draft-hf aliases) are Hyposloth-managed since the separate-
         # drafter support (Gemma 4): an inherited copy must not last-wins-override
         # the auto-detected drafter. Explicit extras for the current load are never
         # stripped. The per-drafter tuning knobs (--spec-draft-type-*, -ngld,
@@ -192,9 +192,9 @@ _TEMPLATE_FLAGS: frozenset[str] = frozenset(
 # (--split-mode tensor). Pass-through stays allowed so users keep the
 # row/none/layer modes the toggle doesn't expose, but it's stripped on
 # inherit and reconciled into the round-tripped tensor_parallel state.
-# --tensor-split is coupled to the split mode and is stripped with it: Unsloth
+# --tensor-split is coupled to the split mode and is stripped with it: Hyposloth
 # owns the tensor-mode split ratios, so an inherited/stale --tensor-split must
-# not last-wins-override Unsloth's computed asymmetric split.
+# not last-wins-override Hyposloth's computed asymmetric split.
 _SPLIT_MODE_FLAGS: frozenset[str] = frozenset({"-sm", "--split-mode"})
 _TENSOR_SPLIT_FLAGS: frozenset[str] = frozenset({"-ts", "--tensor-split"})
 _SPLIT_SHADOWING_FLAGS: frozenset[str] = _SPLIT_MODE_FLAGS | _TENSOR_SPLIT_FLAGS
@@ -232,7 +232,7 @@ _BOOLEAN_SHADOWING_FLAGS: frozenset[str] = frozenset(
 def parse_ctx_override(args: Optional[Iterable[str]]) -> Optional[int]:
     """Return the last user-supplied ``-c`` / ``--ctx-size`` value.
 
-    Mirrors llama.cpp's last-wins parsing for the one numeric knob Unsloth's
+    Mirrors llama.cpp's last-wins parsing for the one numeric knob Hyposloth's
     load-time fit logic needs.
     """
     if not args:
@@ -321,7 +321,7 @@ def parse_cache_override(args: Optional[Iterable[str]]) -> Optional[str]:
     Mirrors parse_ctx_override but for cache type. Recognises both -ctk
     (key) and -ctv (value). When both flags appear, returns the last-wins
     value, treating key and value cache flags as the same setting because
-    Unsloth's KV estimate has a single cache_type_kv knob.
+    Hyposloth's KV estimate has a single cache_type_kv knob.
     """
     return _last_flag_value(args, _CACHE_FLAGS)
 
@@ -396,7 +396,7 @@ def resolve_tensor_parallel(args: Optional[Iterable[str]], fallback_tensor_paral
 
 
 def _env_split_mode_is_tensor(env: Optional[Mapping[str, str]] = None) -> bool:
-    """True when the inherited LLAMA_ARG_SPLIT_MODE env selects tensor. Unsloth
+    """True when the inherited LLAMA_ARG_SPLIT_MODE env selects tensor. Hyposloth
     emits --split-mode only on its tensor branch, so a tensor env on the layer
     path would run the child tensor-parallel unbudgeted; this flips the budget
     to tensor. Only tensor is heavier, so other modes are ignored."""
@@ -483,7 +483,7 @@ def strip_shadowing_flags(
     strip_offload: bool = False,
     strip_device: bool = False,
 ) -> list[str]:
-    """Strip flags that shadow first-class Unsloth settings.
+    """Strip flags that shadow first-class Hyposloth settings.
 
     Used when inheriting a previous load's ``llama_extra_args`` so an
     inherited `-c 4096` can't override the current `max_seq_length`

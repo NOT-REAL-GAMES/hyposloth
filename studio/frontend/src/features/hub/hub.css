@@ -686,7 +686,7 @@
 
   /* Canonical segmented-control look. Un-scoped from .hub-page so every
      segmented toggle in the app (Hub Discover/On Device, Models/Datasets,
-     Unsloth/All, Recent/Name/Size, plus Settings + Train tabs) shares one
+     Hyposloth/All, Recent/Name/Size, plus Settings + Train tabs) shares one
      design: a soft track with a white, softly-shadowed sliding pill. */
   html:not(.dark) .hub-tab-toggle {
     background-color: color-mix(in srgb, var(--foreground) 5%, transparent);
@@ -989,7 +989,7 @@
 
   /* Verified badge: solid badge shape with a check-shaped hole punched
 	   through, so whatever sits behind shows through the check. The badge
-	   fill follows currentColor (so `text-primary` makes it Unsloth green;
+	   fill follows currentColor (so `text-primary` makes it Hyposloth green;
 	   any text-* utility recolors it). Use as: `<span class="hub-verified-badge
 	   size-4 text-primary" />`. */
   .hub-verified-badge {

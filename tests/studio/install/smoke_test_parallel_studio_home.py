@@ -80,7 +80,7 @@ def _launch_backend(
     env = os.environ.copy()
     env["HOME"] = str(fake_home)
     # Pin UNSLOTH_STUDIO_HOME and clear the alias so the child can't inherit a
-    # Unsloth root from the caller's shell and resolve to the wrong install.
+    # Hyposloth root from the caller's shell and resolve to the wrong install.
     env["UNSLOTH_STUDIO_HOME"] = str(studio_home)
     env.pop("STUDIO_HOME", None)
     # Popen dups stdout into the child, so closing the parent's handle here is safe.
@@ -181,7 +181,7 @@ def _check_fake_home_clean(fake_home: Path) -> None:
         ".unsloth",
         Path(".local") / "share" / "applications" / "unsloth-studio.desktop",
         Path("Desktop") / "unsloth-studio.desktop",
-        Path("Applications") / "Unsloth Studio.app",
+        Path("Applications") / "Hyposloth Studio.app",
     ]
     leaked = [str(p) for p in forbidden if (fake_home / p).exists()]
     if leaked:

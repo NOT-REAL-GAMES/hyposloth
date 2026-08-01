@@ -2,8 +2,8 @@
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
 """
-Unsloth Training Backend
-Integrates Unsloth training with the FastAPI backend.
+Hyposloth Training Backend
+Integrates Hyposloth training with the FastAPI backend.
 """
 
 import gc
@@ -111,7 +111,7 @@ def _build_report_targets(training_args) -> list[str] | str:
 
 class UnslothTrainer:
     """
-    Unsloth Training Backend
+    Hyposloth Training Backend
     """
 
     def __new__(cls, *args, **kwargs):
@@ -527,10 +527,10 @@ class UnslothTrainer:
             # to prevent deadlocks when forking dataset.map() workers
             self._cleanup_audio_artifacts()
 
-            # Reload Unsloth-patched modeling modules before clearing the cache.
+            # Reload Hyposloth-patched modeling modules before clearing the cache.
             # __UNSLOTH_PATCHED__ blocks re-compilation, so clearing the disk
             # cache alone would leave files missing; reloading restores original
-            # class defs so Unsloth re-compiles cleanly.
+            # class defs so Hyposloth re-compiles cleanly.
             import importlib
 
             for _key, _mod in list(sys.modules.items()):
@@ -539,12 +539,12 @@ class UnslothTrainer:
                         try:
                             importlib.reload(_mod)
                         except Exception:
-                            pass  # Non-critical — Unsloth handles stale modules
+                            pass  # Non-critical — Hyposloth handles stale modules
 
             # Remove stale compiled cache so the new model gets a fresh one
             from utils.cache_cleanup import clear_unsloth_compiled_cache
 
-            _preserve = ["Unsloth*Trainer.py"] if sys.platform in ("win32", "darwin") else None
+            _preserve = ["Hyposloth*Trainer.py"] if sys.platform in ("win32", "darwin") else None
             clear_unsloth_compiled_cache(preserve_patterns = _preserve)
             # Detect audio model type dynamically (config.json + tokenizer)
             self._audio_type = detect_audio_type(model_name, hf_token)
@@ -803,7 +803,7 @@ class UnslothTrainer:
                 )
                 logger.info("Loaded text model")
 
-            raise_if_offloaded(self.model, device_map, "Unsloth training")
+            raise_if_offloaded(self.model, device_map, "Hyposloth training")
 
             if self.should_stop:
                 return False
@@ -820,7 +820,7 @@ class UnslothTrainer:
             if "could not get source code" in str(e) and not getattr(
                 self, "_source_code_retried", False
             ):
-                # Unsloth patching can leave stale state that breaks
+                # Hyposloth patching can leave stale state that breaks
                 # inspect.getsource() when switching model families (e.g. gemma3 →
                 # gemma3n); the first failure clears it, so a retry succeeds.
                 self._source_code_retried = True
@@ -1174,7 +1174,7 @@ class UnslothTrainer:
             logits_to_keep = 0,
             **kwargs,
         ):
-            # Strip non-standard kwargs from Unsloth/PEFT.
+            # Strip non-standard kwargs from Hyposloth/PEFT.
             output_attentions = kwargs.pop("output_attentions", None)
             output_hidden_states = kwargs.pop("output_hidden_states", None)
             kwargs.pop("return_dict", None)
@@ -2806,7 +2806,7 @@ class UnslothTrainer:
             self._update_progress(error = "Model not loaded")
             return False
 
-        # Pre-import heavy transformers modules on the main thread. Unsloth's
+        # Pre-import heavy transformers modules on the main thread. Hyposloth's
         # patched_import hook isn't thread-safe with importlib's cache, causing
         # KeyError: 'size' if first imported in the worker thread.
         import transformers  # noqa: F401 – ensures submodules are cached
@@ -3437,7 +3437,7 @@ class UnslothTrainer:
                         )
                     except ImportError as exc:
                         raise RuntimeError(
-                            "CPT requires a newer Unsloth install that exports "
+                            "CPT requires a newer Hyposloth install that exports "
                             "`UnslothTrainer` and `UnslothTrainingArguments` "
                             "(for embedding_learning_rate support). "
                             "Upgrade with: `pip install -U unsloth unsloth_zoo`."
@@ -3537,7 +3537,7 @@ class UnslothTrainer:
                     try:
                         # ── Safety net: check if all samples were filtered out ──
                         # train_on_responses_only masks non-response tokens with -100; a
-                        # row becomes all -100 (Unsloth drops it) when the response
+                        # row becomes all -100 (Hyposloth drops it) when the response
                         # template is not found in the formatted text. Usually a
                         # dataset/template mismatch (already-formatted data, or 'Train on
                         # completions' on data that doesn't match the model's chat

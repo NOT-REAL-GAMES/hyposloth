@@ -24,7 +24,7 @@ export const ar = {
   shell: {
     beta: "BETA",
     brand: "unsloth",
-    product: "Unsloth Studio",
+    product: "Hyposloth Studio",
     accountMenu: "قائمة حساب {name}",
     updateAvailable: "يتوفر تحديث",
     resize: {
@@ -33,7 +33,7 @@ export const ar = {
       drag: "اسحب لتغيير الحجم",
     },
     aria: {
-      home: "الصفحة الرئيسية لـ Unsloth",
+      home: "الصفحة الرئيسية لـ Hyposloth",
       closeSidebar: "إغلاق الشريط الجانبي",
       openSidebar: "فتح الشريط الجانبي",
       resizeSidebar: "تغيير حجم الشريط الجانبي أو طيه",
@@ -99,7 +99,7 @@ export const ar = {
     title: "الإعدادات",
     dialog: {
       title: "الإعدادات",
-      description: "إدارة تفضيلات Unsloth الخاصة بك.",
+      description: "إدارة تفضيلات Hyposloth الخاصة بك.",
       closeAriaLabel: "إغلاق الإعدادات",
     },
     tabs: {
@@ -114,7 +114,7 @@ export const ar = {
     },
     general: {
       title: "عام",
-      description: "التفضيلات العامة لـ Unsloth.",
+      description: "التفضيلات العامة لـ Hyposloth.",
       account: "الحساب",
       huggingFaceToken: "توكن Hugging Face",
       huggingFaceTokenDescription:
@@ -123,7 +123,7 @@ export const ar = {
       showToken: "إظهار التوكن",
       tokenValidated: "تم التحقق من الرمز",
       password: "كلمة المرور",
-      passwordDescription: "تغيير كلمة المرور لحساب Unsloth هذا.",
+      passwordDescription: "تغيير كلمة المرور لحساب Hyposloth هذا.",
       passwordDialog: {
         trigger: "تغيير كلمة المرور",
         title: "تغيير كلمة المرور",
@@ -241,16 +241,16 @@ export const ar = {
         action: "إعادة تعيين التفضيلات",
         confirmTitle: "إعادة تعيين جميع التفضيلات المحلية؟",
         confirmDescription:
-          "يمسح التفضيلات المحلية فقط ويعيد تحميل Unsloth. تُحفظ المحادثات ووصول API والإعدادات المخزّنة في قاعدة البيانات.",
+          "يمسح التفضيلات المحلية فقط ويعيد تحميل Hyposloth. تُحفظ المحادثات ووصول API والإعدادات المخزّنة في قاعدة البيانات.",
         confirmAction: "إعادة التعيين وإعادة التحميل",
       },
     },
     profile: {
       title: "الملف الشخصي",
-      description: "كيفية ظهور ملفك الشخصي في Unsloth.",
+      description: "كيفية ظهور ملفك الشخصي في Hyposloth.",
       changePicture: "تغيير صورة الملف الشخصي",
       displayName: "الاسم المعروض",
-      nickname: "بماذا يجب أن يناديك Unsloth؟",
+      nickname: "بماذا يجب أن يناديك Hyposloth؟",
       nicknamePlaceholder: "اللقب",
       nicknameSaved: "تم حفظ الاسم المفضّل",
       avatarShape: "شكل صورة الملف الشخصي",
@@ -270,7 +270,7 @@ export const ar = {
     },
     appearance: {
       title: "المظهر",
-      description: "كيفية ظهور Unsloth Studio على هذا الجهاز.",
+      description: "كيفية ظهور Hyposloth Studio على هذا الجهاز.",
       theme: {
         title: "السمة",
         label: "نظام الألوان",
@@ -282,7 +282,7 @@ export const ar = {
       language: {
         title: "اللغة",
         label: "لغة العرض",
-        description: "اللغة التي يستخدمها Unsloth.",
+        description: "اللغة التي يستخدمها Hyposloth.",
         autoDetect: "اكتشاف تلقائي",
       },
       layout: {
@@ -294,7 +294,7 @@ export const ar = {
     },
     resources: {
       title: "النظام",
-      description: "مراقبة أجهزة خادم Unsloth هذا وتخزينه.",
+      description: "مراقبة أجهزة خادم Hyposloth هذا وتخزينه.",
       liveUpdates: "التحديثات المباشرة",
       floatingWindow: "نافذة عائمة",
       disableOverlay: "تعطيل التراكب",
@@ -424,7 +424,7 @@ export const ar = {
     },
     apiKeys: {
       title: "API",
-      description: "الوصول إلى Unsloth عبر API المتوافق مع OpenAI.",
+      description: "الوصول إلى Hyposloth عبر API المتوافق مع OpenAI.",
       readDocs: "قراءة وثائق API",
       noAccess: "لا يوجد وصول إلى API بعد.",
       accessTokens: "توكنات الوصول",
@@ -452,7 +452,7 @@ export const ar = {
       osWindows: "Windows",
       secureHttps: "HTTPS آمن",
       secureHttpsHint:
-        "لا يزال منفذ 0.0.0.0 قابلاً للوصول عالميًا. للحصول على أمان كامل، شغّل Unsloth Studio باستخدام --secure لعرض رابط HTTPS هذا فقط.",
+        "لا يزال منفذ 0.0.0.0 قابلاً للوصول عالميًا. للحصول على أمان كامل، شغّل Hyposloth Studio باستخدام --secure لعرض رابط HTTPS هذا فقط.",
       copyTunnelUrl: "نسخ رابط النفق",
       copySnippet: "نسخ المقتطف",
       copy: "نسخ",
@@ -488,7 +488,7 @@ export const ar = {
     about: {
       title: "حول",
       description: "الوثائق وملاحظات الإصدار والملاحظات ومعلومات البناء.",
-      studioVersion: "إصدار Unsloth",
+      studioVersion: "إصدار Hyposloth",
       packageVersion: "إصدار الحزمة",
       llamaCppVersion: "إصدار llama.cpp",
       hardware: "الأجهزة",
@@ -504,27 +504,27 @@ export const ar = {
       reportIssue: "الإبلاغ عن مشكلة",
       license: {
         sectionTitle: "الترخيص",
-        studioLabel: "Unsloth Studio",
+        studioLabel: "Hyposloth Studio",
         studioLicense: "AGPL-3.0",
         studioDescription: "مفتوح المصدر بموجب GNU AGPL v3.0.",
-        libraryLabel: "Unsloth Core",
+        libraryLabel: "Hyposloth Core",
         libraryLicense: "Apache-2.0",
         libraryDescription: "مرخّص بموجب Apache 2.0.",
       },
       dangerZone: "منطقة الخطر",
-      shutDownStudio: "إيقاف تشغيل Unsloth Studio",
+      shutDownStudio: "إيقاف تشغيل Hyposloth Studio",
       shutDownStudioDescription:
-        "يوقف خادم Unsloth وينهي جلستك.",
+        "يوقف خادم Hyposloth وينهي جلستك.",
       shutDown: "إيقاف التشغيل",
       update: {
-        title: "تحديث Unsloth Studio",
+        title: "تحديث Hyposloth Studio",
         commandText: "نص {label}",
         copied: "تم النسخ",
         copyCommand: "نسخ الأمر",
         commandCopied: "تم نسخ {label}",
         copyNamedCommand: "نسخ {label}",
-        checkingInstall: "جارٍ التحقق من طريقة تثبيت Unsloth...",
-        installIntro: "لتثبيت أو تحديث Unsloth:",
+        checkingInstall: "جارٍ التحقق من طريقة تثبيت Hyposloth...",
+        installIntro: "لتثبيت أو تحديث Hyposloth:",
         localUpdateHeading: "تحديث محلي",
         installCommandUnix: "أمر التثبيت لـ macOS/Linux",
         installCommandWindows: "أمر التثبيت لـ Windows",
@@ -538,11 +538,11 @@ export const ar = {
           "تم اكتشاف تثبيت من المصدر أو حزمة VCS. أعد التثبيت من المسار المحلي الأصلي أو رابط Git.",
         repoCheckoutFallback:
           "إذا كانت لا تزال لديك نسخة المستودع، شغّل المثبّت المحلي منها:",
-        restartAfterUpdate: "أعد تشغيل Unsloth بعد التحديث.",
+        restartAfterUpdate: "أعد تشغيل Hyposloth بعد التحديث.",
         desktopManaged:
           "يُبقي تطبيق سطح المكتب خادمه الخلفي المُضمَّن محدّثًا وسيُنبّهك عند توفر إصدار جديد.",
         unknownInstall:
-          "تعذّر اكتشاف طريقة تثبيت Unsloth. لعمليات تثبيت المثبّت أو PyPI، استخدم الأوامر أعلاه.",
+          "تعذّر اكتشاف طريقة تثبيت Hyposloth. لعمليات تثبيت المثبّت أو PyPI، استخدم الأوامر أعلاه.",
         localCheckout:
           "لعمليات تثبيت النسخة المحلية، شغّل المثبّت المحلي من تلك النسخة:",
         docs: "وثائق التثبيت:",

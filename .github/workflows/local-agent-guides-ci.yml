@@ -17,7 +17,7 @@
 #
 # Failure taxonomy (each surfaced with a distinct ::error:: + the agent name
 # + the start.py location, so a red X is immediately triageable):
-#   (a) Unsloth server/API regression -- the dialect HTTP preflight fails
+#   (a) Hyposloth server/API regression -- the dialect HTTP preflight fails
 #       BEFORE the agent runs (or the server never becomes healthy).
 #   (b) Agent package install failed   -- npm/curl install of the CLI failed.
 #   (c) Guide drift                    -- preflight passed + install ok, but
@@ -154,7 +154,7 @@ jobs:
           path: gguf-cache
           key: ${{ runner.os }}-gguf-${{ env.GGUF_REPO }}-${{ env.GGUF_FILE }}-v1
 
-      - name: Install Unsloth (--local, --no-torch)
+      - name: Install Hyposloth (--local, --no-torch)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Gated off PR (see note above); public GGUF still downloads.
@@ -258,7 +258,7 @@ jobs:
             done
           fi
 
-      - name: Stop Unsloth
+      - name: Stop Hyposloth
         if: always()
         run: |
           # Guard the PID: an unset/zero UNSLOTH_SERVER_PID would make
@@ -361,7 +361,7 @@ jobs:
           path: gguf-cache
           key: ${{ runner.os }}-gguf-${{ env.GGUF_REPO }}-${{ env.GGUF_FILE }}-v1
 
-      - name: Install Unsloth (--local, --no-torch)
+      - name: Install Hyposloth (--local, --no-torch)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Gated off PR (see note above); public GGUF still downloads.
@@ -450,7 +450,7 @@ jobs:
             done
           fi
 
-      - name: Stop Unsloth
+      - name: Stop Hyposloth
         if: always()
         run: |
           # Guard the PID: an unset/zero UNSLOTH_SERVER_PID would make
@@ -479,7 +479,7 @@ jobs:
   #   and resume? This drives the REAL launch path (not the --no-launch
   #   recipe the other jobs use). A plain launch relocates the agent home to
   #   a temp dir wiped on exit, so codex/pi cannot resume; --persist routes the
-  #   session to the stable Unsloth agents dir so it persists. opencode/claude
+  #   session to the stable Hyposloth agents dir so it persists. opencode/claude
   #   keep their session data in a fixed user dir, so they persist either way.
   #   Dispatch-only: it is an end-to-end experiment, not a PR gate.
   # ═════════════════════════════════════════════════════════════════════
@@ -545,7 +545,7 @@ jobs:
           path: gguf-cache
           key: ${{ runner.os }}-gguf-${{ env.GGUF_REPO }}-${{ env.GGUF_FILE }}-v1
 
-      - name: Install Unsloth (--local, --no-torch)
+      - name: Install Hyposloth (--local, --no-torch)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -622,7 +622,7 @@ jobs:
             done
           fi
 
-      - name: Stop Unsloth
+      - name: Stop Hyposloth
         if: always()
         run: |
           if [ -n "${UNSLOTH_SERVER_PID:-}" ] && [ "${UNSLOTH_SERVER_PID}" != "0" ]; then
@@ -708,7 +708,7 @@ jobs:
           path: hf-cache
           key: ${{ runner.os }}-hf-${{ env.GGUF_REPO }}-${{ env.GGUF_VARIANT }}-v2
 
-      - name: Install Unsloth (--local, --no-torch)
+      - name: Install Hyposloth (--local, --no-torch)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Gated off PR (see note above); public GGUF still downloads.
@@ -766,7 +766,7 @@ jobs:
             done
           fi
 
-      - name: Stop Unsloth
+      - name: Stop Hyposloth
         if: always()
         run: |
           # Guard the PID: an unset/zero UNSLOTH_SERVER_PID would make

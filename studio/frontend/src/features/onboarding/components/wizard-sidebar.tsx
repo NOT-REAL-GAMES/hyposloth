@@ -21,11 +21,11 @@ export function WizardSidebar({ returnTo }: { returnTo: string }) {
             base + (root scale - 1) * 8px. Exact base sizes at 16px. */}
         <img
           src={`${import.meta.env.BASE_URL}sticker.png`}
-          alt="Unsloth"
+          alt="Hyposloth"
           className="size-[calc(40px+0.5rem*var(--ui-font-scale,1))]"
         />
         <div className="flex flex-col">
-          <span className="font-semibold text-[calc(10px+0.5rem*var(--ui-font-scale,1))] leading-tight">Unsloth</span>
+          <span className="font-semibold text-[calc(10px+0.5rem*var(--ui-font-scale,1))] leading-tight">Hyposloth</span>
           <span className="text-[calc(4px+0.5rem*var(--ui-font-scale,1))] text-muted-foreground">Studio</span>
         </div>
       </div>

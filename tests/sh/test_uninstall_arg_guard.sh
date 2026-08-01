@@ -16,13 +16,13 @@ _TMP_ROOT=$(mktemp -d)
 trap 'rm -rf "$_TMP_ROOT"' EXIT
 
 # Abort the test copy immediately before the first uninstall action.
-_body_entries=$(grep -c '^[[:space:]]*echo "Stopping any running Unsloth Studio servers\.\.\."$' "$SOURCE_UNINSTALL_SH" || true)
+_body_entries=$(grep -c '^[[:space:]]*echo "Stopping any running Hyposloth Studio servers\.\.\."$' "$SOURCE_UNINSTALL_SH" || true)
 [ "$_body_entries" = "1" ] || {
     echo "FATAL: expected one uninstall body entry, found $_body_entries" >&2
     exit 1
 }
 UNINSTALL_SH="$_TMP_ROOT/uninstall.sh"
-sed 's/^[[:space:]]*echo "Stopping any running Unsloth Studio servers\.\.\."$/    echo "__UNSLOTH_TEST_BODY_REACHED__"; return 99/' \
+sed 's/^[[:space:]]*echo "Stopping any running Hyposloth Studio servers\.\.\."$/    echo "__UNSLOTH_TEST_BODY_REACHED__"; return 99/' \
     "$SOURCE_UNINSTALL_SH" > "$UNINSTALL_SH"
 
 # Isolate every environment-controlled removal path.
@@ -119,7 +119,7 @@ for _flag in --help -h; do
     make_home
     run_uninstall "$FIXTURE_HOME" "$_flag"
     check "$_flag exits 0" "0" "$RC"
-    assert_says "$_flag prints usage" "Unsloth Studio uninstaller" "$OUT"
+    assert_says "$_flag prints usage" "Hyposloth Studio uninstaller" "$OUT"
 done
 assert_fixture "help keeps the install" "$FIXTURE_HOME" present
 

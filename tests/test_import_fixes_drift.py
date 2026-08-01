@@ -1,4 +1,4 @@
-# Unsloth - 2x faster, 60% less VRAM LLM training and finetuning
+# Hyposloth - 2x faster, 60% less VRAM LLM training and finetuning
 # Copyright 2023-present Daniel Han-Chen, Michael Han-Chen & the Unsloth team. All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -454,7 +454,7 @@ def test_torch_nn_init_trunc_normal_exists():
 
 def test_xformers_is_post_num_splits_key_fix_or_not_installed():
     """``fix_xformers_performance_issue``: xformers <0.0.29 has the
-    ``num_splits_key=-1`` perf bug Unsloth rewrites at install time."""
+    ``num_splits_key=-1`` perf bug Hyposloth rewrites at install time."""
     if importlib.util.find_spec("xformers") is None:
         pytest.skip("xformers not installed -- nothing to drift-check.")
     x_v = _safe_version(importlib_version("xformers"))
@@ -498,7 +498,7 @@ def _reset_loss_mapping(mapping, saved):
 
 def test_patch_loss_functions_covers_conditional_generation():
     """patch_loss_functions() must repoint every ForCausalLMLoss alias to the
-    Unsloth kernel, not just LOSS_MAPPING['ForCausalLM']."""
+    Hyposloth kernel, not just LOSS_MAPPING['ForCausalLM']."""
     lu = pytest.importorskip("transformers.loss.loss_utils")
     cel = pytest.importorskip("unsloth.kernels.cross_entropy_loss")
 
@@ -508,7 +508,7 @@ def test_patch_loss_functions_covers_conditional_generation():
 
         unsloth_loss = lu.LOSS_MAPPING.get("ForCausalLM")
         assert unsloth_loss is not None
-        assert "Unsloth" in str(
+        assert "Hyposloth" in str(
             unsloth_loss
         ), f"LOSS_MAPPING['ForCausalLM'] was not replaced: {unsloth_loss}"
 
@@ -539,7 +539,7 @@ def test_patch_loss_functions_does_not_touch_other_loss_types():
         for key in non_causal_keys:
             assert lu.LOSS_MAPPING.get(key) is not unsloth_loss, (
                 f"patch_loss_functions() incorrectly overwrote "
-                f"LOSS_MAPPING['{key}'] with the Unsloth ForCausalLM kernel."
+                f"LOSS_MAPPING['{key}'] with the Hyposloth ForCausalLM kernel."
             )
     finally:
         _reset_loss_mapping(lu.LOSS_MAPPING, saved)

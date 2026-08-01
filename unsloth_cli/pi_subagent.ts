@@ -21,7 +21,7 @@ if (configPath) {
 		}
 		config = parsed;
 	} catch (error) {
-		throw new Error(`Could not read Unsloth subagent configuration: ${error}`);
+		throw new Error(`Could not read Hyposloth subagent configuration: ${error}`);
 	}
 }
 const model = typeof config.model === "string" ? config.model : "";
@@ -65,7 +65,7 @@ function agentSlotRelease(): () => void {
 }
 
 function acquireAgentSlot(signal: AbortSignal | undefined): Promise<() => void> {
-	if (signal?.aborted) return Promise.reject(new Error("The local Unsloth agent was cancelled."));
+	if (signal?.aborted) return Promise.reject(new Error("The local Hyposloth agent was cancelled."));
 	if (activeAgents < maxParallelAgents) {
 		activeAgents += 1;
 		return Promise.resolve(agentSlotRelease());
@@ -84,7 +84,7 @@ function acquireAgentSlot(signal: AbortSignal | undefined): Promise<() => void> 
 			waiting = false;
 			const index = waitingAgents.indexOf(grant);
 			if (index >= 0) waitingAgents.splice(index, 1);
-			reject(new Error("The local Unsloth agent was cancelled."));
+			reject(new Error("The local Hyposloth agent was cancelled."));
 		};
 		waitingAgents.push(grant);
 		signal?.addEventListener("abort", cancel, { once: true });
@@ -219,7 +219,7 @@ async function runLocalAgent(
 			if (message?.stopReason === "error" || message?.stopReason === "aborted") {
 				childError =
 					(typeof message.errorMessage === "string" && message.errorMessage) ||
-					`The local Unsloth agent stopped: ${message.stopReason}.`;
+					`The local Hyposloth agent stopped: ${message.stopReason}.`;
 				return;
 			}
 			const response = finalText(message);
@@ -273,9 +273,9 @@ async function runLocalAgent(
 		if (signal?.aborted) cancel();
 	});
 
-	if (aborted) throw new Error("The local Unsloth agent was cancelled.");
+	if (aborted) throw new Error("The local Hyposloth agent was cancelled.");
 	if (exitCode !== 0) {
-		result.error = stderr.trim() || `The local Unsloth agent exited with code ${exitCode}.`;
+		result.error = stderr.trim() || `The local Hyposloth agent exited with code ${exitCode}.`;
 	}
 	if (childError) result.error = boundedResult(childError);
 	if (!result.response && !result.error) result.response = "The local agent returned no text.";
@@ -284,11 +284,11 @@ async function runLocalAgent(
 
 export default function unslothSubagent(pi: ExtensionAPI): void {
 	if (!model || !baseUrl || !apiKey || !configPath) {
-		throw new Error("Unsloth subagent configuration is incomplete.");
+		throw new Error("Hyposloth subagent configuration is incomplete.");
 	}
 
 	pi.registerProvider(provider, {
-		name: "Unsloth Studio",
+		name: "Hyposloth Studio",
 		baseUrl,
 		apiKey,
 		api: "openai-completions",
@@ -296,7 +296,7 @@ export default function unslothSubagent(pi: ExtensionAPI): void {
 		models: [
 			{
 				id: model,
-				name: `${model} via Unsloth`,
+				name: `${model} via Hyposloth`,
 				reasoning: false,
 				input: ["text"],
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -310,15 +310,15 @@ export default function unslothSubagent(pi: ExtensionAPI): void {
 
 	pi.registerTool({
 		name: "unsloth_agent",
-		label: "Unsloth agent",
+		label: "Hyposloth agent",
 		description:
-			"Run local coding agents powered by Unsloth for debugging, implementation, and codebase research. Use task for one agent. To run multiple independent agents, use tasks; up to four run concurrently. The tool returns only after every requested agent finishes.",
+			"Run local coding agents powered by Hyposloth for debugging, implementation, and codebase research. Use task for one agent. To run multiple independent agents, use tasks; up to four run concurrently. The tool returns only after every requested agent finishes.",
 		parameters: Type.Object({
 			task: Type.Optional(
-				Type.String({ description: "The complete task for one local Unsloth agent." }),
+				Type.String({ description: "The complete task for one local Hyposloth agent." }),
 			),
 			tasks: Type.Optional(
-				Type.Array(Type.String({ description: "A complete task for one local Unsloth agent." }), {
+				Type.Array(Type.String({ description: "A complete task for one local Hyposloth agent." }), {
 					description: "Independent tasks to run concurrently, one local agent per task.",
 					minItems: 2,
 					maxItems: maxParallelAgents,
@@ -384,7 +384,7 @@ export default function unslothSubagent(pi: ExtensionAPI): void {
 					}
 				}),
 			);
-			if (signal?.aborted) throw new Error("The local Unsloth agent was cancelled.");
+			if (signal?.aborted) throw new Error("The local Hyposloth agent was cancelled.");
 			const completedResults = results.filter(
 				(result): result is LocalAgentResult => Boolean(result),
 			);

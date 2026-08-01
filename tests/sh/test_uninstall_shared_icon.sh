@@ -3,9 +3,9 @@
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 # Unit tests for _drop_shared_icon_if_unused() from scripts/uninstall.sh.
 #
-# The WSL uninstall shares %LOCALAPPDATA%\Unsloth Studio\unsloth.ico with the native
+# The WSL uninstall shares %LOCALAPPDATA%\Hyposloth Studio\unsloth.ico with the native
 # install and every other WSL distro's shortcut. Removing one side must KEEP the icon
-# while any "Unsloth Studio*.lnk" still references it, and drop it (plus the dir, if
+# while any "Hyposloth Studio*.lnk" still references it, and drop it (plus the dir, if
 # empty) only once the last shortcut is gone. Reciprocal of uninstall.ps1's
 # _RemoveDataDirKeepingWslIcon. Tested hermetically: the function is extracted from
 # uninstall.sh and run against per-test fixture dirs.
@@ -35,39 +35,39 @@ sed -n '/_drop_shared_icon_if_unused() {/,/^[[:space:]]*}$/p' "$UNINSTALL_SH" > 
 . "$FUNC_FILE"
 
 # make_user [shortcut_relpath] : a fresh fake Windows user dir with unsloth.ico,
-# optionally placing an "Unsloth Studio*.lnk" at the given relative path.
+# optionally placing an "Hyposloth Studio*.lnk" at the given relative path.
 make_user() {
     _u=$(mktemp -d "$_TMP_ROOT/user.XXXXXX")
-    mkdir -p "$_u/AppData/Local/Unsloth Studio"
-    : > "$_u/AppData/Local/Unsloth Studio/unsloth.ico"
+    mkdir -p "$_u/AppData/Local/Hyposloth Studio"
+    : > "$_u/AppData/Local/Hyposloth Studio/unsloth.ico"
     if [ -n "${1:-}" ]; then
         mkdir -p "$_u/$(dirname "$1")"
         : > "$_u/$1"
     fi
     echo "$_u"
 }
-ICO='AppData/Local/Unsloth Studio/unsloth.ico'
-DIR='AppData/Local/Unsloth Studio'
+ICO='AppData/Local/Hyposloth Studio/unsloth.ico'
+DIR='AppData/Local/Hyposloth Studio'
 SM='AppData/Roaming/Microsoft/Windows/Start Menu/Programs'
 
 # 1. A surviving NATIVE shortcut (Start Menu) -> icon and dir kept.
-u=$(make_user "$SM/Unsloth Studio.lnk")
+u=$(make_user "$SM/Hyposloth Studio.lnk")
 _drop_shared_icon_if_unused "$u"
 assert_file "native Start Menu shortcut -> icon kept" "$u/$ICO"
 assert_dir  "native Start Menu shortcut -> dir kept"  "$u/$DIR"
 
 # 2. A surviving native shortcut on the Desktop -> icon kept.
-u=$(make_user "Desktop/Unsloth Studio.lnk")
+u=$(make_user "Desktop/Hyposloth Studio.lnk")
 _drop_shared_icon_if_unused "$u"
 assert_file "native Desktop shortcut -> icon kept" "$u/$ICO"
 
 # 3. Another WSL distro's shortcut survives -> icon kept (shared by all distros).
-u=$(make_user "Desktop/Unsloth Studio (WSL - OtherDistro).lnk")
+u=$(make_user "Desktop/Hyposloth Studio (WSL - OtherDistro).lnk")
 _drop_shared_icon_if_unused "$u"
 assert_file "other WSL distro shortcut -> icon kept" "$u/$ICO"
 
 # 4. A shortcut under OneDrive\Desktop is also honored.
-u=$(make_user "OneDrive/Desktop/Unsloth Studio.lnk")
+u=$(make_user "OneDrive/Desktop/Hyposloth Studio.lnk")
 _drop_shared_icon_if_unused "$u"
 assert_file "OneDrive Desktop shortcut -> icon kept" "$u/$ICO"
 
@@ -92,7 +92,7 @@ else
     echo "  FAIL: missing data dir errored"; FAIL=$((FAIL+1))
 fi
 
-# 8. A non-Unsloth .lnk must NOT keep the icon alive.
+# 8. A non-Hyposloth .lnk must NOT keep the icon alive.
 u=$(make_user "Desktop/Some Other App.lnk")
 _drop_shared_icon_if_unused "$u"
 assert_nofile "unrelated shortcut -> icon still removed" "$u/$ICO"

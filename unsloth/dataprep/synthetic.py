@@ -294,7 +294,7 @@ class SyntheticDataKit:
                 print("\n--- stdout tail ---\n", self.stdout_capture.tail(50))
                 print("\n--- stderr tail ---\n", self.stderr_capture.tail(50))
             else:
-                print(f"Unsloth: vllm_process failed to load! (timeout={timeout})")
+                print(f"Hyposloth: vllm_process failed to load! (timeout={timeout})")
                 print("\n--- stdout tail ---\n", self.stdout_capture.tail(50))
                 print("\n--- stderr tail ---\n", self.stderr_capture.tail(50))
             terminate_tree(self.vllm_process)
@@ -305,7 +305,7 @@ class SyntheticDataKit:
         trial = 0
         while not self.check_vllm_status():
             if trial >= 100:
-                print("Unsloth: vllm_process failed to load!")
+                print("Hyposloth: vllm_process failed to load!")
                 print("\n--- stdout tail ---\n", self.stdout_capture.tail(50))
                 print("\n--- stderr tail ---\n", self.stderr_capture.tail(50))
                 terminate_tree(self.vllm_process)

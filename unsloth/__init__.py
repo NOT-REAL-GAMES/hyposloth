@@ -22,7 +22,7 @@ if platform.system() == "Darwin" and platform.machine() == "arm64":
     os.environ.setdefault("AGX_RELAX_CDM_CTXSTORE_TIMEOUT", "1")
 
 # ── Windows console UTF-8 safety ─────────────────────────────────────────────
-# Legacy Windows consoles (cp1252) can't encode Unsloth's emoji/box-drawing
+# Legacy Windows consoles (cp1252) can't encode Hyposloth's emoji/box-drawing
 # glyphs and crash with UnicodeEncodeError. Force stdout/stderr to UTF-8 only on
 # Windows and only when not already UTF-8; no-op elsewhere. errors="replace"
 # guarantees we never crash on an unencodable glyph.
@@ -85,7 +85,7 @@ if _IS_MLX:
         import unsloth_zoo
     except ImportError as _e:
         raise ImportError(
-            "Unsloth: MLX support requires `unsloth-zoo` with MLX modules. "
+            "Hyposloth: MLX support requires `unsloth-zoo` with MLX modules. "
             "Reinstall with `pip install unsloth-zoo` or rerun install.sh."
         ) from _e
     # An older unsloth-zoo satisfies `import unsloth_zoo` but lacks the
@@ -101,7 +101,7 @@ if _IS_MLX:
         from unsloth_zoo.mlx.loader import FastMLXModel
     except ImportError as _e:
         raise ImportError(
-            "Unsloth: MLX support requires an unsloth-zoo build that includes "
+            "Hyposloth: MLX support requires an unsloth-zoo build that includes "
             "`unsloth_zoo.mlx.trainer` and `unsloth_zoo.mlx.loader`. Upgrade with "
             "`pip install -U unsloth-zoo` or rerun install.sh."
         ) from _e
@@ -185,7 +185,7 @@ if _IS_MLX:
     _raw_text_path = _Path(__file__).resolve().parent / "dataprep" / "raw_text.py"
     _raw_text_spec = importlib.util.spec_from_file_location("unsloth._mlx_raw_text", _raw_text_path)
     if _raw_text_spec is None or _raw_text_spec.loader is None:
-        raise ImportError("Unsloth: could not load MLX raw_text dataprep helpers.")
+        raise ImportError("Hyposloth: could not load MLX raw_text dataprep helpers.")
     _raw_text = importlib.util.module_from_spec(_raw_text_spec)
     _raw_text_spec.loader.exec_module(_raw_text)
     RawTextDataLoader = _raw_text.RawTextDataLoader
@@ -222,13 +222,13 @@ if _IS_MLX:
         @staticmethod
         def from_pretrained(*args, **kwargs):
             raise NotImplementedError(
-                "Unsloth: FastSentenceTransformer is not yet supported on MLX."
+                "Hyposloth: FastSentenceTransformer is not yet supported on MLX."
             )
 
         @staticmethod
         def get_peft_model(*args, **kwargs):
             raise NotImplementedError(
-                "Unsloth: FastSentenceTransformer is not yet supported on MLX."
+                "Hyposloth: FastSentenceTransformer is not yet supported on MLX."
             )
 
     def is_bfloat16_supported():
@@ -634,7 +634,7 @@ if _IS_MLX:
         if not names:
             return
         _warnings.warn(
-            "Unsloth MLX: accepting but not applying unsupported "
+            "Hyposloth MLX: accepting but not applying unsupported "
             "TrainingArguments kwargs: "
             f"{', '.join(names)}. These options are not implemented by "
             "MLXTrainer yet.",
@@ -656,7 +656,7 @@ if _IS_MLX:
         if not names:
             return
         raise NotImplementedError(
-            "Unsloth MLX: unsupported SFTTrainer kwargs cannot be ignored safely: "
+            "Hyposloth MLX: unsupported SFTTrainer kwargs cannot be ignored safely: "
             f"{', '.join(names)}. Remove these kwargs or use a supported MLX "
             "trainer configuration."
         )
@@ -666,7 +666,7 @@ if _IS_MLX:
         if not names:
             return
         raise NotImplementedError(
-            "Unsloth MLX: unsupported TrainingArguments/SFTConfig kwargs: "
+            "Hyposloth MLX: unsupported TrainingArguments/SFTConfig kwargs: "
             f"{', '.join(names)}. Remove these kwargs or use fields implemented "
             "by MLXTrainingConfig."
         )
@@ -700,7 +700,7 @@ if _IS_MLX:
         return args
 
     class UnslothTrainingArguments(MLXTrainingConfig):
-        """MLX-compatible public training arguments for Unsloth notebooks."""
+        """MLX-compatible public training arguments for Hyposloth notebooks."""
 
         def __init__(self, *args, **kwargs):
             if len(args) == 1 and isinstance(args[0], dict):
@@ -830,7 +830,7 @@ if _IS_MLX:
             and args_max_seq_length > model_max_seq_length
         ):
             print(
-                "Unsloth: You set `max_seq_length` as "
+                "Hyposloth: You set `max_seq_length` as "
                 f"{args_max_seq_length} but the maximum the model supports is "
                 f"{model_max_seq_length}. We shall reduce it."
             )
@@ -1030,7 +1030,7 @@ if _IS_MLX:
             subject = ", ".join(names)
             verb = "requires" if len(names) == 1 else "require"
             raise NotImplementedError(
-                "Unsloth MLX: "
+                "Hyposloth MLX: "
                 f"{subject} {verb} an unsloth-zoo build with "
                 "matching MLXTrainer support. Upgrade unsloth-zoo together "
                 "with unsloth."
@@ -1128,7 +1128,7 @@ if _IS_MLX:
         )
         if unsupported:
             raise NotImplementedError(
-                "Unsloth MLX: unsupported UnslothVisionDataCollator kwargs "
+                "Hyposloth MLX: unsupported UnslothVisionDataCollator kwargs "
                 f"cannot be ignored safely: {', '.join(unsupported)}."
             )
 
@@ -1209,7 +1209,7 @@ if _IS_MLX:
                     pass  # redundant on MLX; MLXTrainer batches/masks/pads natively
                 else:
                     raise NotImplementedError(
-                        "Unsloth MLX: custom data_collator is not supported by "
+                        "Hyposloth MLX: custom data_collator is not supported by "
                         "MLXTrainer. Pass the dataset directly or use the MLX "
                         "trainer's native batching path."
                     )
@@ -1225,7 +1225,7 @@ if _IS_MLX:
                 trainer_kwargs["args"], "completion_only_loss", None
             ) is True and not _is_vlm_model(trainer_kwargs.get("model")):
                 raise NotImplementedError(
-                    "Unsloth MLX: completion_only_loss=True is only supported "
+                    "Hyposloth MLX: completion_only_loss=True is only supported "
                     "for VLM training. For text SFT, call train_on_responses_only "
                     "after constructing the trainer."
                 )
@@ -1233,7 +1233,7 @@ if _IS_MLX:
                 trainer_kwargs["args"], "train_on_completions", None
             ) is True and not _is_vlm_model(trainer_kwargs.get("model")):
                 raise NotImplementedError(
-                    "Unsloth MLX: train_on_completions=True is only supported "
+                    "Hyposloth MLX: train_on_completions=True is only supported "
                     "for VLM training. For text SFT, call train_on_responses_only "
                     "after constructing the trainer."
                 )
@@ -1288,18 +1288,18 @@ if _IS_MLX:
 
         def __call__(self, features):
             raise NotImplementedError(
-                "Unsloth: UnslothVisionDataCollator is a compatibility placeholder "
+                "Hyposloth: UnslothVisionDataCollator is a compatibility placeholder "
                 "on MLX. Pass the dataset to UnslothTrainer; MLXTrainer performs "
                 "vision batching internally."
             )
 
     def get_chat_template(*args, **kwargs):
-        """Apply an Unsloth chat template through a lazy MLX-safe import."""
+        """Apply a Hyposloth chat template through a lazy MLX-safe import."""
         from .chat_templates import get_chat_template as _get_chat_template
         return _get_chat_template(*args, **kwargs)
 
     def apply_chat_template(*args, **kwargs):
-        """Format a dataset with an Unsloth chat template through a lazy import."""
+        """Format a dataset with a Hyposloth chat template through a lazy import."""
         from .chat_templates import apply_chat_template as _apply_chat_template
         return _apply_chat_template(*args, **kwargs)
 
@@ -1347,7 +1347,7 @@ if _IS_MLX:
     def _make_mlx_unsupported_trl_trainer(name):
         def __init__(self, *args, **kwargs):
             raise NotImplementedError(
-                f"Unsloth: {name} is not yet supported on the MLX (Apple Silicon) "
+                f"Hyposloth: {name} is not yet supported on the MLX (Apple Silicon) "
                 f"backend. Only SFT training runs on MLX today; use a CUDA/ROCm GPU "
                 f"for {name}."
             )

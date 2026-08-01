@@ -60,7 +60,7 @@ def Version(version):
         from inspect import getframeinfo, stack
         caller = getframeinfo(stack()[1][0])
         raise RuntimeError(
-            f"Unsloth: Could not get version for `{version}`\n"
+            f"Hyposloth: Could not get version for `{version}`\n"
             f"File name = [{caller.filename}] Line number = [{caller.lineno}]"
         )
 
@@ -155,7 +155,7 @@ if not UNSLOTH_ENABLE_LOGGING:
     # CUTLASS TMA-related errors when not targeting correct architecture
     sys.stderr.add_filter("Trying to use tma without CUTE_ARCH_TMA")
     # torchao logs a cosmetic "Skipping import of cpp extensions" WARNING on torch < 2.11. The
-    # bnb-4bit / Unsloth paths don't use torchao's cpp kernels, so drop only that record rather
+    # bnb-4bit / Hyposloth paths don't use torchao's cpp kernels, so drop only that record rather
     # than raising the whole torchao logger to ERROR.
     logging.getLogger("torchao").addFilter(
         HideLoggingMessage("Skipping import of cpp extensions due to incompatible torch version")
@@ -163,7 +163,7 @@ if not UNSLOTH_ENABLE_LOGGING:
     # torch >= 2.11 path: torchao dlopens each prebuilt _C*.so and logs "Failed to load
     # .../_C*.so" when one can't (ABI tag mismatch in the wheel, e.g. a cp310 .so under a
     # cp312 runtime on Colab, or an arch-specific kernel the GPU lacks). It falls back to
-    # non-cpp paths and Unsloth doesn't use these kernels, so drop the cosmetic record.
+    # non-cpp paths and Hyposloth doesn't use these kernels, so drop the cosmetic record.
     logging.getLogger("torchao").addFilter(HideLoggingMessage("Failed to load "))
     # SyntaxWarning: invalid escape sequence '\.'
     warnings.filterwarnings("ignore", message = "invalid escape sequence", category = SyntaxWarning)
@@ -300,7 +300,7 @@ def fix_message_factory_issue():
                 return
 
         if not hasattr(google.protobuf.message_factory, "MessageFactory"):
-            logger.info("Unsloth: Patching protobuf.MessageFactory as it doesn't exist")
+            logger.info("Hyposloth: Patching protobuf.MessageFactory as it doesn't exist")
             google.protobuf.message_factory.MessageFactory = MessageFactory
         elif (
             hasattr(google.protobuf.message_factory, "MessageFactory")
@@ -308,7 +308,7 @@ def fix_message_factory_issue():
             and not hasattr(google.protobuf.message_factory, "GetMessageClass")
         ):
             google.protobuf.message_factory.MessageFactory = MessageFactory
-            logger.info("Unsloth: Patching protobuf.MessageFactory as it doesn't exist")
+            logger.info("Hyposloth: Patching protobuf.MessageFactory as it doesn't exist")
         elif (
             hasattr(google.protobuf.message_factory, "MessageFactory")
             and not hasattr(google.protobuf.message_factory.MessageFactory, "GetPrototype")
@@ -320,7 +320,7 @@ def fix_message_factory_issue():
                 return GetMessageClass(descriptor)
 
             google.protobuf.message_factory.MessageFactory.GetPrototype = GetPrototype
-            logger.info("Unsloth: Patching protobuf.MessageFactory.GetPrototype")
+            logger.info("Hyposloth: Patching protobuf.MessageFactory.GetPrototype")
         pass
     except:
         pass
@@ -352,9 +352,9 @@ def fix_xformers_performance_issue():
                         f.seek(0)
                         f.write(text)
                         f.truncate()
-                        logger.info("Unsloth: Patching Xformers to fix some performance issues.")
+                        logger.info("Hyposloth: Patching Xformers to fix some performance issues.")
         except Exception as e:
-            logger.info(f"Unsloth: Failed patching Xformers with error = {str(e)}")
+            logger.info(f"Hyposloth: Failed patching Xformers with error = {str(e)}")
 
 
 def patch_vllm_for_notebooks():
@@ -408,7 +408,7 @@ def patch_vllm_for_notebooks():
         return
 
     logger.info(
-        "Unsloth: Notebook detected - Patching sys.stdout.fileno for newer `vllm>=0.12.0` versions"
+        "Hyposloth: Notebook detected - Patching sys.stdout.fileno for newer `vllm>=0.12.0` versions"
     )
     sys.stdout.fileno = lambda: 1
 
@@ -423,7 +423,7 @@ def fix_vllm_aimv2_issue():
     try:
         vllm_version = importlib_version("vllm")
     except Exception as e:
-        logger.info(f"Unsloth: Skipping vLLM aimv2 fix -- vLLM version unreadable ({e})")
+        logger.info(f"Hyposloth: Skipping vLLM aimv2 fix -- vLLM version unreadable ({e})")
         return
     if Version(vllm_version) < Version("0.10.1"):
         vllm_location = spec.origin
@@ -456,10 +456,10 @@ def fix_vllm_aimv2_issue():
                         f.write(text)
                         f.truncate()
                         logger.info(
-                            "Unsloth: Patching vLLM to fix `'aimv2' is already used by a Transformers config, pick another name.`"
+                            "Hyposloth: Patching vLLM to fix `'aimv2' is already used by a Transformers config, pick another name.`"
                         )
         except Exception as e:
-            logger.info(f"Unsloth: Failed patching vLLM with error = {str(e)}")
+            logger.info(f"Hyposloth: Failed patching vLLM with error = {str(e)}")
 
 
 # vLLM >= 0.22 (PR #35024) deleted `vllm.transformers_utils.tokenizer`, but an
@@ -526,7 +526,7 @@ def fix_vllm_lora_tokenizer_module():
     # Appended, not inserted at 0, so a real module on older vLLM always wins.
     sys.meta_path.append(_VllmLoraTokenizerStubFinder())
     logger.info(
-        "Unsloth: Installed `vllm.transformers_utils.tokenizer` compatibility "
+        "Hyposloth: Installed `vllm.transformers_utils.tokenizer` compatibility "
         "stub for newer vLLM versions"
     )
 
@@ -540,7 +540,7 @@ def fix_vllm_guided_decoding_params():
             except Exception:
                 vllm_version = "unknown"
             raise RuntimeError(
-                "Unsloth: vLLM with version "
+                "Hyposloth: vLLM with version "
                 f"{vllm_version} does not yet support transformers>=5.0.0. "
                 "Please downgrade to transformers==4.57.3 via "
                 'pip install --force-reinstall "transformers==4.57.3". '
@@ -632,8 +632,8 @@ def patch_ipykernel_hf_xet():
         )
     ):
         print(
-            "#### Unsloth: `hf_xet==1.1.10` and `ipykernel==7.0.0` or `ipykernel==7.0.1` breaks progress bars. Using ASCII progress bars.\n"
-            "#### Unsloth: To re-enable progress bars, please upgrade to `ipykernel>=7.1.0` or wait for a fix to\n"
+            "#### Hyposloth: `hf_xet==1.1.10` and `ipykernel==7.0.0` or `ipykernel==7.0.1` breaks progress bars. Using ASCII progress bars.\n"
+            "#### Hyposloth: To re-enable progress bars, please upgrade to `ipykernel>=7.1.0` or wait for a fix to\n"
             "https://github.com/huggingface/xet-core/issues/526"
         )
         from huggingface_hub.utils import disable_progress_bars
@@ -660,7 +660,7 @@ def patch_datasets():
     datasets_version = Version(importlib_version("datasets"))
     if (datasets_version <= Version("4.5.0")) and (datasets_version >= Version("4.4.0")):
         raise NotImplementedError(
-            f"#### Unsloth: Using `datasets = {str(datasets_version)}` will cause recursion errors.\n"
+            f"#### Hyposloth: Using `datasets = {str(datasets_version)}` will cause recursion errors.\n"
             "Please downgrade datasets to `datasets==4.3.0"
         )
 
@@ -677,12 +677,12 @@ def check_fbgemm_gpu_version():
     if Version(fbgemm_gpu_version) < Version("1.4.0"):
         os.environ["UNSLOTH_HAS_FBGEMM"] = "0"
         logger.info(
-            f"Unsloth: fbgemm_gpu_genai=={fbgemm_gpu_version} is old and may cause issues. "
+            f"Hyposloth: fbgemm_gpu_genai=={fbgemm_gpu_version} is old and may cause issues. "
             f"Disabling FBGEMM - using Triton kernels instead."
         )
         return
 
-    logger.info(f"Unsloth: fbgemm_gpu_genai=={fbgemm_gpu_version} detected.")
+    logger.info(f"Hyposloth: fbgemm_gpu_genai=={fbgemm_gpu_version} detected.")
 
 
 def patch_enable_input_require_grads():
@@ -737,7 +737,7 @@ def patch_enable_input_require_grads():
 
     PreTrainedModel.enable_input_require_grads = _patched_enable_input_require_grads
 
-    logger.info("Unsloth: Patched enable_input_require_grads for vision model compatibility")
+    logger.info("Hyposloth: Patched enable_input_require_grads for vision model compatibility")
 
 
 def patch_unsafe_trainer_rng_load():
@@ -773,7 +773,7 @@ def patch_unsafe_trainer_rng_load():
         def check_torch_load_is_safe():
             if TrueVersion(torch.__version__.split("+")[0]) < TrueVersion("2.6"):
                 raise RuntimeError(
-                    "Unsloth: refusing to load checkpoint RNG state on torch < 2.6 "
+                    "Hyposloth: refusing to load checkpoint RNG state on torch < 2.6 "
                     "(CVE-2026-1839 / CVE-2025-32434); upgrade to torch >= 2.6."
                 )
 
@@ -806,7 +806,7 @@ def patch_unsafe_trainer_rng_load():
 
     _unsloth_safe_load_rng_state._unsloth_safe_rng_load = True
     Trainer._load_rng_state = _unsloth_safe_load_rng_state
-    logger.info("Unsloth: Hardened Trainer._load_rng_state rng loading (CVE-2026-1839).")
+    logger.info("Hyposloth: Hardened Trainer._load_rng_state rng loading (CVE-2026-1839).")
 
 
 def _is_custom_torch_build(raw_version_str):
@@ -849,7 +849,7 @@ def torchvision_compatibility_check():
         return
 
     if importlib.util.find_spec("torch") is None:
-        raise ImportError("Unsloth: torch not found. Please install torch first.")
+        raise ImportError("Hyposloth: torch not found. Please install torch first.")
     if importlib.util.find_spec("torchvision") is None:
         return
 
@@ -894,14 +894,14 @@ def torchvision_compatibility_check():
 
     if tv_v >= Version(required_tv_str):
         logger.info(
-            f"Unsloth: torch=={torch_version_raw} and "
+            f"Hyposloth: torch=={torch_version_raw} and "
             f"torchvision=={torchvision_version_raw} are compatible."
         )
         return
 
     # Version mismatch detected
     message = (
-        f"Unsloth: torch=={torch_version_raw} requires "
+        f"Hyposloth: torch=={torch_version_raw} requires "
         f"torchvision>={required_tv_str}, "
         f"but found torchvision=={torchvision_version_raw}. "
         f'Try updating torchvision via `pip install --upgrade "torchvision>={required_tv_str}"`. '
@@ -969,9 +969,9 @@ def fix_openenv_no_vllm():
                 f.seek(0)
                 f.write(text)
                 f.truncate()
-                logger.info("Unsloth: Patching TRL OpenEnv to fix SamplingParams not defined")
+                logger.info("Hyposloth: Patching TRL OpenEnv to fix SamplingParams not defined")
     except Exception as e:
-        logger.info(f"Unsloth: Failed patching TRL OpenEnv with error = {str(e)}")
+        logger.info(f"Hyposloth: Failed patching TRL OpenEnv with error = {str(e)}")
 
 
 # Fix Exeuctorch needing get_mapped_key
@@ -1035,9 +1035,9 @@ def fix_executorch():
                 f.seek(0)
                 f.write(text)
                 f.truncate()
-                logger.info("Unsloth: Patching Executorch to fix get_mapped_key")
+                logger.info("Hyposloth: Patching Executorch to fix get_mapped_key")
     except Exception as e:
-        logger.info(f"Unsloth: Failed Executorch with error = {str(e)}")
+        logger.info(f"Hyposloth: Failed Executorch with error = {str(e)}")
 
 
 def fix_diffusers_warnings():
@@ -1095,7 +1095,7 @@ def fix_triton_compiled_kernel_missing_attrs():
 
     _ck_cls.__init__ = _patched_init
     logger.info(
-        "Unsloth: Patched triton CompiledKernel with num_ctas/cluster_dims "
+        "Hyposloth: Patched triton CompiledKernel with num_ctas/cluster_dims "
         "for torch.compile compatibility."
     )
 
@@ -1224,7 +1224,7 @@ def fix_dynamo_config_thread_visibility():
     # dynamo/inductor config, so the wrapper mirrors every later assignment. Replaying
     # would also bake a still-active config.patch override into the global default.
     logger.info(
-        "Unsloth: Patched torch config modules so dynamo/inductor settings "
+        "Hyposloth: Patched torch config modules so dynamo/inductor settings "
         "(e.g. recompile_limit) apply across threads on torch >= 2.12."
     )
 
@@ -1306,7 +1306,7 @@ def patch_trunc_normal_precision_issue():
     torch.nn.init._unsloth_trunc_normal_original = original_trunc_normal
     torch.nn.init.trunc_normal_ = _patched_trunc_normal_
     torch.nn.init._unsloth_trunc_normal_patched = True
-    logger.info("Unsloth: Patched torch.nn.init.trunc_normal_ for fp16/bf16 stability.")
+    logger.info("Hyposloth: Patched torch.nn.init.trunc_normal_ for fp16/bf16 stability.")
 
 
 def check_vllm_torch_sm100_compatibility():
@@ -1360,7 +1360,7 @@ def check_vllm_torch_sm100_compatibility():
 
     # Incompatible combination: raise a helpful error
     raise RuntimeError(
-        f"Unsloth: Incompatible configuration detected.\n\n"
+        f"Hyposloth: Incompatible configuration detected.\n\n"
         f"  GPU: {sm100_gpu_name} (SM100 / Blackwell architecture)\n"
         f"  torch version: {torch_version}\n"
         f"  vLLM version: {vllm_version}\n\n"
@@ -1428,12 +1428,12 @@ def fix_vllm_pdl_blackwell():
         vllm_version = Version(importlib_version("vllm"))
         if vllm_version >= Version(VLLM_PDL_FIX_VERSION):
             logger.info(
-                f"Unsloth: SM100 ({sm100_gpu_name}) detected but vLLM {vllm_version} "
+                f"Hyposloth: SM100 ({sm100_gpu_name}) detected but vLLM {vllm_version} "
                 f"should include PDL fix - skipping workaround"
             )
             return
     except Exception as e:
-        logger.debug(f"Unsloth: vLLM version check failed ({e}), applying PDL workaround.")
+        logger.debug(f"Hyposloth: vLLM version check failed ({e}), applying PDL workaround.")
 
     # Apply the PDL fix
     os.environ["TRITON_DISABLE_PDL"] = "1"
@@ -1488,11 +1488,11 @@ def fix_vllm_pdl_blackwell():
 
     if patched:
         logger.info(
-            f"Unsloth: Applied PDL fix for SM100 ({sm100_gpu_name}) - patched: {', '.join(patched)}"
+            f"Hyposloth: Applied PDL fix for SM100 ({sm100_gpu_name}) - patched: {', '.join(patched)}"
         )
     else:
         # Just set the env var - vLLM might be an older version without supports_pdl
-        logger.info(f"Unsloth: Set TRITON_DISABLE_PDL=1 for SM100 ({sm100_gpu_name})")
+        logger.info(f"Hyposloth: Set TRITON_DISABLE_PDL=1 for SM100 ({sm100_gpu_name})")
 
 
 def patch_openspiel_env_async():
@@ -1515,10 +1515,10 @@ def patch_openspiel_env_async():
         try:
             import nest_asyncio
             nest_asyncio.apply()
-            logger.info("Unsloth: Applied nest_asyncio for OpenEnv EnvClient async compatibility")
+            logger.info("Hyposloth: Applied nest_asyncio for OpenEnv EnvClient async compatibility")
         except ImportError:
             logger.info(
-                "Unsloth: nest_asyncio not installed, OpenEnv async methods may need manual wrapping"
+                "Hyposloth: nest_asyncio not installed, OpenEnv async methods may need manual wrapping"
             )
     except (ImportError, AttributeError):
         pass  # openenv not installed
@@ -1675,7 +1675,7 @@ def disable_broken_wandb():
     except Exception:
         # wandb is installed but broken - patch all checkers to skip it
         logger.info(
-            "Unsloth: wandb is installed but broken (likely a protobuf version mismatch). "
+            "Hyposloth: wandb is installed but broken (likely a protobuf version mismatch). "
             "Disabling wandb to prevent import errors. To fix, run: pip install --upgrade wandb"
         )
         _wandb_false = lambda: False
@@ -1780,7 +1780,7 @@ def _extract_peft_tensor_parallel_imported_symbols():
 
 def _raise_on_peft_tensor_parallel_symbol_use(symbol_name):
     raise NotImplementedError(
-        f"Unsloth: cannot use unsupported "
+        f"Hyposloth: cannot use unsupported "
         f"`transformers.integrations.tensor_parallel.{symbol_name}` on this "
         f"transformers installation. Please upgrade transformers before "
         f"using PEFT tensor-parallel adapter sharding features."
@@ -2075,7 +2075,7 @@ def fix_peft_transformers_weight_conversion_import():
         return True
 
     logger.info(
-        "Unsloth: stubbed transformers.conversion_mapping / "
+        "Hyposloth: stubbed transformers.conversion_mapping / "
         "transformers.core_model_loading so peft.utils."
         "transformers_weight_conversion imports cleanly on "
         "transformers <5."
@@ -2162,7 +2162,7 @@ def patch_peft_weight_converter_compatibility():
 
 
 def _patch_peft_moe_target_conversion(twc):
-    """Keep PEFT 0.19 MoE conversion from rewriting explicit Unsloth targets."""
+    """Keep PEFT 0.19 MoE conversion from rewriting explicit Hyposloth targets."""
     if getattr(twc, "_unsloth_moe_target_conversion_patch", False):
         return
 
@@ -2242,7 +2242,7 @@ def _is_rocm_torch_build() -> bool:
     try:
         torch_version_raw = str(importlib_version("torch")).lower()
         if "rocm" in torch_version_raw:
-            _log_rocm_detection("Unsloth: ROCm detection matched torch version tag (+rocm).")
+            _log_rocm_detection("Hyposloth: ROCm detection matched torch version tag (+rocm).")
             return True
     except Exception:
         pass
@@ -2251,19 +2251,19 @@ def _is_rocm_torch_build() -> bool:
     for key in _ROCM_ENV_HINT_KEYS:
         value = os.environ.get(key, "")
         if isinstance(value, str) and value.strip():
-            _log_rocm_detection(f"Unsloth: ROCm detection matched environment key `{key}`.")
+            _log_rocm_detection(f"Hyposloth: ROCm detection matched environment key `{key}`.")
             return True
 
     # Filesystem / driver hints for ROCm stacks.
     for path in _ROCM_PATH_HINTS:
         try:
             if path.exists():
-                _log_rocm_detection(f"Unsloth: ROCm detection matched filesystem hint `{path}`.")
+                _log_rocm_detection(f"Hyposloth: ROCm detection matched filesystem hint `{path}`.")
                 return True
         except Exception:
             continue
 
-    _log_rocm_detection("Unsloth: ROCm detection did not match any known hints.")
+    _log_rocm_detection("Hyposloth: ROCm detection did not match any known hints.")
     return False
 
 
@@ -2323,7 +2323,7 @@ def configure_amdgpu_asic_id_table_path():
             if candidate.is_file():
                 os.environ[_AMDGPU_ASIC_ID_TABLE_PATH_ENV] = str(candidate)
                 if UNSLOTH_ENABLE_LOGGING:
-                    logger.info(f"Unsloth: Set {_AMDGPU_ASIC_ID_TABLE_PATH_ENV}={candidate}")
+                    logger.info(f"Hyposloth: Set {_AMDGPU_ASIC_ID_TABLE_PATH_ENV}={candidate}")
                 return str(candidate)
         except Exception:
             continue
@@ -2425,7 +2425,7 @@ def _run_hipinfo(hipinfo_path):
         )
         return result.stdout or ""
     except Exception as e:
-        _log_rocm_detection(f"Unsloth: `{hipinfo_path}` failed: {e}")
+        _log_rocm_detection(f"Hyposloth: `{hipinfo_path}` failed: {e}")
         return ""
 
 
@@ -2452,7 +2452,7 @@ def _unsloth_get_rocm_gpu_arch():
         if match:
             return "gfx" + match.group(1)
     _log_rocm_detection(
-        "Unsloth: Could not detect the ROCm GPU architecture - bitsandbytes will see `unknown`."
+        "Hyposloth: Could not detect the ROCm GPU architecture - bitsandbytes will see `unknown`."
     )
     return "unknown"
 
@@ -2478,7 +2478,7 @@ def _unsloth_get_rocm_warpsize():
         if match and int(match.group(1)) in (32, 64):
             return int(match.group(1))
     _log_rocm_detection(
-        "Unsloth: Could not detect the ROCm warp size - defaulting to 64 "
+        "Hyposloth: Could not detect the ROCm warp size - defaulting to 64 "
         "(bitsandbytes' own default)."
     )
     return 64
@@ -2525,7 +2525,7 @@ def _patch_bnb_cuda_specs_module(module):
         setattr(module, attribute_name, replacement)
         patched = True
         logger.info(
-            f"Unsloth: Patched bitsandbytes.cuda_specs.{attribute_name} - "
+            f"Hyposloth: Patched bitsandbytes.cuda_specs.{attribute_name} - "
             f"avoids PATH-dependent subprocess GPU detection on Windows ROCm."
         )
     return patched
@@ -2551,7 +2551,7 @@ class _BnbCudaSpecsPatchLoader(importlib.abc.Loader):
         try:
             _patch_bnb_cuda_specs_module(module)
         except Exception as e:
-            _log_rocm_detection(f"Unsloth: bitsandbytes ROCm detection patch failed: {e}")
+            _log_rocm_detection(f"Hyposloth: bitsandbytes ROCm detection patch failed: {e}")
 
     def __getattr__(self, name):
         # Delegate get_source / get_filename etc. so introspection works.
@@ -2630,7 +2630,7 @@ def _repair_imported_bitsandbytes_rocm_constants():
                 module.ROCM_WARP_SIZE_64 = warp_size_64
         except Exception:
             continue
-    logger.info("Unsloth: Repaired bitsandbytes ROCm arch / warp-size constants in place.")
+    logger.info("Hyposloth: Repaired bitsandbytes ROCm arch / warp-size constants in place.")
 
 
 def fix_bitsandbytes_rocm_arch_detection():
@@ -2662,7 +2662,7 @@ def fix_bitsandbytes_rocm_arch_detection():
         if getattr(finder, _BNB_ROCM_FIX_FINDER_SENTINEL, False):
             return  # Already installed -- idempotent.
     sys.meta_path.insert(0, _BnbCudaSpecsPatchFinder())
-    _log_rocm_detection("Unsloth: Installed the bitsandbytes ROCm arch detection patch hook.")
+    _log_rocm_detection("Hyposloth: Installed the bitsandbytes ROCm arch detection patch hook.")
 
 
 def _is_causal_conv1d_name(module_name: str) -> bool:
@@ -2772,7 +2772,7 @@ def _get_vllm_cuda_mismatch_message(error):
         pass
 
     return (
-        f"Unsloth: vLLM was built for CUDA {wanted_cuda} but this system has "
+        f"Hyposloth: vLLM was built for CUDA {wanted_cuda} but this system has "
         f"CUDA {system_cuda_display}. Please reinstall vLLM with the correct CUDA version:\n"
         f"\n"
         f"  uv pip install https://github.com/vllm-project/vllm/releases/download/"
@@ -2962,7 +2962,7 @@ def disable_broken_vllm(error = None):
         logger.warning(cuda_msg)
     else:
         logger.warning(
-            "Unsloth: Detected broken vLLM binary extension; "
+            "Hyposloth: Detected broken vLLM binary extension; "
             "disabling vLLM imports and continuing import.\n"
             "Please reinstall via `uv pip install unsloth vllm torchvision torchaudio "
             "--torch-backend=auto`."
@@ -2990,7 +2990,7 @@ def _disable_transformers_causal_conv1d():
 def disable_broken_causal_conv1d():
     """Disable causal_conv1d dynamically when its shared library is ABI-broken.
 
-    This mirrors Unsloth's FlashAttention fallback behavior: if importing causal_conv1d
+    This mirrors Hyposloth's FlashAttention fallback behavior: if importing causal_conv1d
     fails with a known binary symbol error, we disable it at startup so model imports do
     not hard-fail.
     """
@@ -3018,7 +3018,7 @@ def disable_broken_causal_conv1d():
     _install_causal_conv1d_blocker()
     _disable_transformers_causal_conv1d()
     print(
-        "Unsloth: Detected broken causal_conv1d binary; "
+        "Hyposloth: Detected broken causal_conv1d binary; "
         "disabling causal_conv1d fast path and continuing import."
     )
 
@@ -3078,7 +3078,7 @@ def maybe_set_windows_rocm_bnb_version():
 
     No-op unless ALL of: Windows, a real HIP torch build (env hints like
     HIP_PATH do not count), a ROCm DLL installed, and no explicit user value.
-    Linux is untouched. Values seeded by Unsloth's venv sitecustomize.py
+    Linux is untouched. Values seeded by Hyposloth's venv sitecustomize.py
     (marked ``UNSLOTH_BNB_ROCM_VERSION_SOURCE=sitecustomize``) are
     redetectable defaults, not overrides; ``UNSLOTH_SKIP_BNB_ROCM_VERSION=1``
     opts out and drops a seeded default. Returns the value set, else None.
@@ -3105,7 +3105,7 @@ def maybe_set_windows_rocm_bnb_version():
     os.environ["UNSLOTH_BNB_ROCM_VERSION_SOURCE"] = "detected"
     if UNSLOTH_ENABLE_LOGGING:
         logger.info(
-            f"Unsloth: set BNB_ROCM_VERSION={version} "
+            f"Hyposloth: set BNB_ROCM_VERSION={version} "
             "(detected from the installed bitsandbytes ROCm wheel on Windows)."
         )
     return version
@@ -3113,7 +3113,7 @@ def maybe_set_windows_rocm_bnb_version():
 
 def patch_accelerate_recursively_apply():
     """
-    Make Accelerate's recursive utilities tolerate Unsloth's EmptyLogits
+    Make Accelerate's recursive utilities tolerate Hyposloth's EmptyLogits
     sentinel. recursively_apply returns the sentinel unchanged instead of
     raising TypeError, and find_device skips it while still finding real
     tensors, falling back to PartialState().device only for sentinel-only

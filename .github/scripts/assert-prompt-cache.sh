@@ -31,7 +31,7 @@
 #   (llama_cpp.py:337-340). So default: ~/.unsloth/studio/logs/llama-server/.
 #
 #   <P> is the INTERNAL llama-server port (self._find_free_port(),
-#   llama_cpp.py:3489 / :4641) -- a RANDOM port, NOT the Unsloth port. So we must
+#   llama_cpp.py:3489 / :4641) -- a RANDOM port, NOT the Hyposloth port. So we must
 #   NOT filter the log glob by STUDIO_PORT (the brief's `port-<STUDIO_PORT>`
 #   glob would never match). We pick the newest llama-*.log instead.
 #
@@ -118,7 +118,7 @@ case "$MODE" in
     R1="$(curl -fs -X POST "${BASE_URL}/v1/chat/completions" \
           -H "Authorization: Bearer ${API_KEY}" -H 'content-type: application/json' \
           --max-time 240 -d "$(turn1_body)")" || {
-      echo "::error::[cache/api] turn-1 /v1/chat/completions request failed. Unsloth server/API regression."
+      echo "::error::[cache/api] turn-1 /v1/chat/completions request failed. Hyposloth server/API regression."
       exit 1
     }
     A1="$(echo "$R1" | jq -r '.choices[0].message.content // ""')"
@@ -141,7 +141,7 @@ case "$MODE" in
     R2="$(curl -fs -X POST "${BASE_URL}/v1/chat/completions" \
           -H "Authorization: Bearer ${API_KEY}" -H 'content-type: application/json' \
           --max-time 240 -d "$(turn2_body)")" || {
-      echo "::error::[cache/api] turn-2 /v1/chat/completions request failed. Unsloth server/API regression."
+      echo "::error::[cache/api] turn-2 /v1/chat/completions request failed. Hyposloth server/API regression."
       exit 1
     }
 

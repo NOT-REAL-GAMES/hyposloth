@@ -1436,14 +1436,14 @@ for key, values in __INT_TO_FLOAT_MAPPER.items():
     for value in values:
         FLOAT_TO_INT_MAPPER[value] = key
 
-    # Map to Unsloth version for 16bit versions
+    # Map to Hyposloth version for 16bit versions
     if len(values) == 2:
         if values[0].startswith("unsloth"):
             _add_with_lower(MAP_TO_UNSLOTH_16bit, values[1], values[0])
             _add_with_lower(MAP_TO_UNSLOTH_16bit, block, values[0])
             _add_with_lower(MAP_TO_UNSLOTH_16bit, row, values[0])
     elif len(values) == 3:
-        # Dynamic Unsloth quantization
+        # Dynamic Hyposloth quantization
         if values[0].startswith("unsloth"):
             _add_with_lower(MAP_TO_UNSLOTH_16bit, values[1], values[0])
             _add_with_lower(MAP_TO_UNSLOTH_16bit, values[2], values[0])

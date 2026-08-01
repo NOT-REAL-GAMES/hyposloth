@@ -375,7 +375,7 @@ function GpuMemorySettings({
           <InfoHint>
             <div className="flex flex-col gap-1.5">
               <div>
-                <span className="font-medium">Default:</span> Unsloth fits the
+                <span className="font-medium">Default:</span> Hyposloth fits the
                 model and context to your GPUs.
               </div>
               <div>
@@ -459,7 +459,7 @@ function GpuMemorySettings({
           <div className="flex min-w-0 items-center gap-1.5">
             <span className={LABEL_CLASS}>GPUs</span>
             <InfoHint>
-              By default, Unsloth chooses GPUs automatically. Editing this list
+              By default, Hyposloth chooses GPUs automatically. Editing this list
               makes the checked GPUs the explicit candidate pool. At least one
               GPU must stay selected.
             </InfoHint>

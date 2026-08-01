@@ -106,7 +106,7 @@ fn confirm_quit_during_install(app: &tauri::AppHandle) -> bool {
     }
     app.dialog()
         .message(
-            "Unsloth Studio is still installing. Quitting now stops it part-way and \
+            "Hyposloth Studio is still installing. Quitting now stops it part-way and \
              leaves the installation incomplete, so it will need to be repaired before \
              it can start.",
         )
@@ -212,7 +212,7 @@ fn setup_unix_termination_signals(app: &tauri::App) -> Result<(), Box<dyn std::e
 }
 
 fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let open = MenuItemBuilder::with_id("open", "Open Unsloth").build(app)?;
+    let open = MenuItemBuilder::with_id("open", "Open Hyposloth").build(app)?;
     let toggle = MenuItemBuilder::with_id("toggle", "Start/Stop Server").build(app)?;
     let quit = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
     let menu = MenuBuilder::new(app)
@@ -221,7 +221,7 @@ fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     TrayIconBuilder::new()
         .menu(&menu)
-        .tooltip("Unsloth Studio (Desktop)")
+        .tooltip("Hyposloth Studio (Desktop)")
         .icon(app.default_window_icon().unwrap().clone())
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "open" => {
@@ -274,7 +274,7 @@ fn main() {
     let _ = fix_path_env::fix();
 
     setup_logging();
-    info!("Unsloth Studio desktop app starting");
+    info!("Hyposloth Studio desktop app starting");
     windows_job::initialize();
 
     tauri::Builder::default()

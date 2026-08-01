@@ -25,12 +25,12 @@ fn should_emit_repair_failed(msg: &str) -> bool {
 fn external_conflict_message(conflict: &crate::preflight::ExternalBackendConflict) -> String {
     if conflict.reason == "desktop_owned_backend_active" {
         return format!(
-            "A desktop-owned Unsloth server for this install is already running on port {}. Quit the other desktop app instance, then try again.",
+            "A desktop-owned Hyposloth server for this install is already running on port {}. Quit the other desktop app instance, then try again.",
             conflict.port
         );
     }
     format!(
-        "An Unsloth server for this install is already running from a terminal on port {}. Stop that server, or run `unsloth studio update` from that terminal before using desktop repair/update.",
+        "A Hyposloth server for this install is already running from a terminal on port {}. Stop that server, or run `unsloth studio update` from that terminal before using desktop repair/update.",
         conflict.port
     )
 }
@@ -260,8 +260,8 @@ pub async fn stop_server(
     .map_err(|e| format!("stop backend task failed: {e}"))?
 }
 
-/// Check if a healthy Unsloth backend is running on the given port.
-/// Expects JSON response with status=="healthy" AND service=="Unsloth UI Backend".
+/// Check if a healthy Hyposloth backend is running on the given port.
+/// Expects JSON response with status=="healthy" AND service=="Hyposloth UI Backend".
 #[tauri::command]
 pub async fn check_health(port: u16) -> Result<bool, String> {
     match check_health_inner(port).await {
@@ -290,7 +290,7 @@ async fn check_health_inner(port: u16) -> Result<bool, reqwest::Error> {
     let correct_service = json
         .get("service")
         .and_then(|v| v.as_str())
-        .map(|s| s == "Unsloth UI Backend")
+        .map(|s| s == "Hyposloth UI Backend")
         .unwrap_or(false);
 
     Ok(healthy && correct_service)
@@ -356,7 +356,7 @@ fn open_existing_dir(dir: &std::path::Path) -> Result<(), String> {
     open_existing_dir_with(dir, |path| open::that_detached(path))
 }
 
-/// Open the Unsloth Studio directory in the system file manager.
+/// Open the Hyposloth Studio directory in the system file manager.
 #[tauri::command]
 pub fn open_logs_dir(window: tauri::WebviewWindow) -> Result<(), String> {
     crate::native_intents::ensure_main_window(&window)?;
@@ -485,7 +485,7 @@ pub async fn start_backend_update(
         .map_err(|e| format!("Update task panicked: {e}"))?
 }
 
-/// Repair a stale managed Unsloth install.
+/// Repair a stale managed Hyposloth install.
 #[tauri::command]
 pub async fn start_managed_repair(
     app: AppHandle,
@@ -532,7 +532,7 @@ pub async fn start_managed_repair(
     let repair_group_id = install::take_pending_repair_group_for_resume(&install_state)
         .unwrap_or_else(|| diagnostics::begin_repair_group(&diagnostics_state));
 
-    let _ = app.emit("repair-progress", "Updating existing Unsloth install...");
+    let _ = app.emit("repair-progress", "Updating existing Hyposloth install...");
     let update_app = app.clone();
     let update_state = update_state.inner().clone();
     let update_diagnostics = diagnostics_state.clone();
@@ -559,7 +559,7 @@ pub async fn start_managed_repair(
             warn!("Managed repair update finished, but preflight is still not ready; falling back to installer");
             let _ = app.emit(
                 "repair-progress",
-                "Update finished, but Unsloth is still not ready. Running bundled installer...",
+                "Update finished, but Hyposloth is still not ready. Running bundled installer...",
             );
         }
         Err(msg) => {
@@ -637,7 +637,7 @@ pub async fn start_managed_repair(
         return Ok(());
     }
 
-    let msg = "Repair finished, but Unsloth install is still not desktop-ready.".to_string();
+    let msg = "Repair finished, but Hyposloth install is still not desktop-ready.".to_string();
     error!("{}", msg);
     diagnostics::finish_repair_group(
         &diagnostics_state,
@@ -669,7 +669,7 @@ mod tests {
             String::new()
         };
         format!(
-            r#"{{"status":"healthy","service":"Unsloth UI Backend","version":"2026.5.3","desktop_protocol_version":1,"desktop_manageability_version":1,"supports_desktop_auth":true,"supports_desktop_backend_ownership":true,"studio_root_id":"{ROOT_ID}"{owner}}}"#
+            r#"{{"status":"healthy","service":"Hyposloth UI Backend","version":"2026.5.3","desktop_protocol_version":1,"desktop_manageability_version":1,"supports_desktop_auth":true,"supports_desktop_backend_ownership":true,"studio_root_id":"{ROOT_ID}"{owner}}}"#
         )
     }
 

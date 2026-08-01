@@ -24,7 +24,7 @@ export const ru = {
   shell: {
     beta: "BETA",
     brand: "unsloth",
-    product: "Unsloth Studio",
+    product: "Hyposloth Studio",
     accountMenu: "Меню аккаунта {name}",
     updateAvailable: "Доступно обновление",
     resize: {
@@ -33,7 +33,7 @@ export const ru = {
       drag: "Потяните, чтобы изменить размер",
     },
     aria: {
-      home: "Главная Unsloth",
+      home: "Главная Hyposloth",
       closeSidebar: "Закрыть боковую панель",
       openSidebar: "Открыть боковую панель",
       resizeSidebar: "Изменить размер или свернуть боковую панель",
@@ -99,7 +99,7 @@ export const ru = {
     title: "Настройки",
     dialog: {
       title: "Настройки",
-      description: "Управление настройками Unsloth.",
+      description: "Управление настройками Hyposloth.",
       closeAriaLabel: "Закрыть настройки",
     },
     tabs: {
@@ -114,7 +114,7 @@ export const ru = {
     },
     general: {
       title: "Общие",
-      description: "Глобальные настройки Unsloth.",
+      description: "Глобальные настройки Hyposloth.",
       account: "Аккаунт",
       huggingFaceToken: "Токен Hugging Face",
       huggingFaceTokenDescription:
@@ -123,7 +123,7 @@ export const ru = {
       showToken: "Показать токен",
       tokenValidated: "Токен проверен",
       password: "Пароль",
-      passwordDescription: "Изменить пароль для этого аккаунта Unsloth.",
+      passwordDescription: "Изменить пароль для этого аккаунта Hyposloth.",
       passwordDialog: {
         trigger: "Изменить пароль",
         title: "Изменить пароль",
@@ -240,16 +240,16 @@ export const ru = {
         action: "Сбросить настройки",
         confirmTitle: "Сбросить все локальные настройки?",
         confirmDescription:
-          "Очищает только локальные настройки и перезагружает Unsloth. Чаты, доступ по API и настройки в базе данных сохраняются.",
+          "Очищает только локальные настройки и перезагружает Hyposloth. Чаты, доступ по API и настройки в базе данных сохраняются.",
         confirmAction: "Сбросить и перезагрузить",
       },
     },
     profile: {
       title: "Профиль",
-      description: "Как ваш профиль отображается в Unsloth.",
+      description: "Как ваш профиль отображается в Hyposloth.",
       changePicture: "Изменить фото профиля",
       displayName: "Отображаемое имя",
-      nickname: "Как Unsloth к вам обращаться?",
+      nickname: "Как Hyposloth к вам обращаться?",
       nicknamePlaceholder: "Псевдоним",
       nicknameSaved: "Предпочитаемое имя сохранено",
       avatarShape: "Форма фото профиля",
@@ -269,7 +269,7 @@ export const ru = {
     },
     appearance: {
       title: "Оформление",
-      description: "Как Unsloth Studio выглядит на этом устройстве.",
+      description: "Как Hyposloth Studio выглядит на этом устройстве.",
       theme: {
         title: "Тема",
         label: "Цветовая схема",
@@ -281,7 +281,7 @@ export const ru = {
       language: {
         title: "Язык",
         label: "Язык интерфейса",
-        description: "Язык, используемый Unsloth.",
+        description: "Язык, используемый Hyposloth.",
         autoDetect: "Автоопределение",
       },
       layout: {
@@ -293,7 +293,7 @@ export const ru = {
     },
     resources: {
       title: "Система",
-      description: "Мониторинг оборудования и хранилища этого сервера Unsloth.",
+      description: "Мониторинг оборудования и хранилища этого сервера Hyposloth.",
       liveUpdates: "Обновления в реальном времени",
       floatingWindow: "Плавающее окно",
       disableOverlay: "Отключить оверлей",
@@ -422,7 +422,7 @@ export const ru = {
     },
     apiKeys: {
       title: "API",
-      description: "Доступ к Unsloth через OpenAI-совместимый API.",
+      description: "Доступ к Hyposloth через OpenAI-совместимый API.",
       readDocs: "Читать документацию API",
       noAccess: "Доступа к API пока нет.",
       accessTokens: "Токены доступа",
@@ -450,7 +450,7 @@ export const ru = {
       osWindows: "Windows",
       secureHttps: "Защищённый HTTPS",
       secureHttpsHint:
-        "Порт 0.0.0.0 по-прежнему доступен глобально. Для полной безопасности запустите Unsloth Studio с флагом --secure, чтобы открыть только эту HTTPS-ссылку.",
+        "Порт 0.0.0.0 по-прежнему доступен глобально. Для полной безопасности запустите Hyposloth Studio с флагом --secure, чтобы открыть только эту HTTPS-ссылку.",
       copyTunnelUrl: "Копировать URL туннеля",
       copySnippet: "Копировать фрагмент",
       copy: "Копировать",
@@ -486,7 +486,7 @@ export const ru = {
     about: {
       title: "О программе",
       description: "Документация, заметки о выпусках, отзывы и данные сборки.",
-      studioVersion: "Версия Unsloth",
+      studioVersion: "Версия Hyposloth",
       packageVersion: "Версия пакета",
       llamaCppVersion: "Версия llama.cpp",
       hardware: "Оборудование",
@@ -502,27 +502,27 @@ export const ru = {
       reportIssue: "Сообщить о проблеме",
       license: {
         sectionTitle: "Лицензия",
-        studioLabel: "Unsloth Studio",
+        studioLabel: "Hyposloth Studio",
         studioLicense: "AGPL-3.0",
         studioDescription: "Открытый исходный код под GNU AGPL v3.0.",
-        libraryLabel: "Unsloth Core",
+        libraryLabel: "Hyposloth Core",
         libraryLicense: "Apache-2.0",
         libraryDescription: "Лицензировано под Apache 2.0.",
       },
       dangerZone: "Опасная зона",
-      shutDownStudio: "Выключить Unsloth Studio",
+      shutDownStudio: "Выключить Hyposloth Studio",
       shutDownStudioDescription:
-        "Останавливает сервер Unsloth и завершает вашу сессию.",
+        "Останавливает сервер Hyposloth и завершает вашу сессию.",
       shutDown: "Выключить",
       update: {
-        title: "Обновить Unsloth Studio",
+        title: "Обновить Hyposloth Studio",
         commandText: "Текст «{label}»",
         copied: "Скопировано",
         copyCommand: "Копировать команду",
         commandCopied: "«{label}» скопировано",
         copyNamedCommand: "Копировать «{label}»",
-        checkingInstall: "Проверка способа установки Unsloth...",
-        installIntro: "Чтобы установить или обновить Unsloth:",
+        checkingInstall: "Проверка способа установки Hyposloth...",
+        installIntro: "Чтобы установить или обновить Hyposloth:",
         localUpdateHeading: "Локальное обновление",
         installCommandUnix: "Команда установки для macOS/Linux",
         installCommandWindows: "Команда установки для Windows",
@@ -536,11 +536,11 @@ export const ru = {
           "Обнаружена установка из исходников или VCS-пакета. Переустановите из исходного локального пути или Git URL.",
         repoCheckoutFallback:
           "Если у вас всё ещё есть checkout репозитория, запустите локальный установщик из него:",
-        restartAfterUpdate: "После обновления перезапустите Unsloth.",
+        restartAfterUpdate: "После обновления перезапустите Hyposloth.",
         desktopManaged:
           "Настольное приложение поддерживает встроенный бэкенд в актуальном состоянии и уведомит о новой версии.",
         unknownInstall:
-          "Не удалось определить способ установки Unsloth. Для установки через установщик или PyPI используйте команды выше.",
+          "Не удалось определить способ установки Hyposloth. Для установки через установщик или PyPI используйте команды выше.",
         localCheckout:
           "Для установок из локального checkout запустите локальный установщик из него:",
         docs: "Документация по установке:",

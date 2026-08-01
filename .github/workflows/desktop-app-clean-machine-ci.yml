@@ -142,7 +142,7 @@ jobs:
 
       - name: Inspect the bundle (arch, signature, Gatekeeper)
         run: |
-          APP="$(ls -d /Applications/*Unsloth*.app | head -1)"
+          APP="$(ls -d /Applications/*Hyposloth*.app | head -1)"
           BIN="$APP/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Contents/Info.plist")"
           file "$BIN"
           # `lipo -archs` prints and exits 0 for a thin x86_64 binary and `|| true` swallowed
@@ -173,7 +173,7 @@ jobs:
         run: |
           set -a; [ -f ./clean-machine.env ] && . ./clean-machine.env; set +a
           set -o pipefail
-          APP="$(ls -d /Applications/*Unsloth*.app | head -1)"
+          APP="$(ls -d /Applications/*Hyposloth*.app | head -1)"
           # A headless runner never clicks Install: preflight sets `not_installed` and
           # returns (use-tauri-backend.ts:252-254) while startup-screen.tsx:388-389 waits
           # for the button, so launching alone sits for 90s without running the bundled
@@ -212,7 +212,7 @@ jobs:
       - name: Launch and prove it stays up
         run: |
           set -a; [ -f ./clean-machine.env ] && . ./clean-machine.env; set +a
-          APP="$(ls -d /Applications/*Unsloth*.app | head -1)"
+          APP="$(ls -d /Applications/*Hyposloth*.app | head -1)"
           BIN="$APP/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Contents/Info.plist")"
           "$BIN" > logs/app-stdout.log 2>&1 &
           APP_PID=$!
@@ -635,7 +635,7 @@ jobs:
           Write-Host "installer exit: $($p.ExitCode)"
           if ($p.ExitCode -ne 0) { Write-Host "::error::silent install failed"; exit 1 }
           $found = Get-ChildItem -Path "$env:LOCALAPPDATA","$env:ProgramFiles" -Recurse `
-                     -Filter '*Unsloth*.exe' -ErrorAction SilentlyContinue |
+                     -Filter '*Hyposloth*.exe' -ErrorAction SilentlyContinue |
                    Select-Object -First 1
           if (-not $found) { Write-Host '::error::no installed executable found'; exit 1 }
           Write-Host "installed: $($found.FullName)"

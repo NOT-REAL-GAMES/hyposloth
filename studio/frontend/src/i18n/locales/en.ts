@@ -21,7 +21,7 @@ export const en = {
   shell: {
     beta: "BETA",
     brand: "unsloth",
-    product: "Unsloth Studio",
+    product: "Hyposloth Studio",
     accountMenu: "{name} account menu",
     updateAvailable: "Update available",
     resize: {
@@ -30,7 +30,7 @@ export const en = {
       drag: "Drag to resize",
     },
     aria: {
-      home: "Unsloth home",
+      home: "Hyposloth home",
       closeSidebar: "Close sidebar",
       openSidebar: "Open sidebar",
       resizeSidebar: "Resize or collapse sidebar",
@@ -96,7 +96,7 @@ export const en = {
     title: "Settings",
     dialog: {
       title: "Settings",
-      description: "Manage your Unsloth preferences.",
+      description: "Manage your Hyposloth preferences.",
       closeAriaLabel: "Close settings",
       searchPlaceholder: "Search settings…",
       searchNoResults: "No settings found.",
@@ -162,7 +162,7 @@ export const en = {
         microphoneGrantDescription: "Allow mic access to show device names",
         allowMicrophone: "Allow microphone",
         micAccessBlocked:
-          "Microphone access was blocked. Allow microphone access for this Unsloth page, then try again.",
+          "Microphone access was blocked. Allow microphone access for this Hyposloth page, then try again.",
         micAccessUnsupported:
           "Microphone access is not supported in this browser or context.",
         systemDefault: "System default",
@@ -246,7 +246,7 @@ export const en = {
     },
     general: {
       title: "General",
-      description: "Global preferences for Unsloth.",
+      description: "Global preferences for Hyposloth.",
       account: "Account",
       huggingFaceToken: "Hugging Face token",
       huggingFaceTokenDescription:
@@ -255,7 +255,7 @@ export const en = {
       showToken: "Show token",
       tokenValidated: "Token validated",
       password: "Password",
-      passwordDescription: "Change the password for this Unsloth account.",
+      passwordDescription: "Change the password for this Hyposloth account.",
       passwordDialog: {
         trigger: "Change password",
         title: "Change password",
@@ -333,7 +333,7 @@ export const en = {
         sectionTitle: "Permissions",
         bypassLabel: "Tool permissions",
         bypassDescription:
-          "How Unsloth approves chat tool calls (terminal, python, web, MCP) before they run. Full access disables approvals and the code sandbox.",
+          "How Hyposloth approves chat tool calls (terminal, python, web, MCP) before they run. Full access disables approvals and the code sandbox.",
       },
       notifications: {
         sectionTitle: "Notifications",
@@ -383,19 +383,19 @@ export const en = {
         action: "Reset preferences",
         confirmTitle: "Reset all local preferences?",
         confirmDescription:
-          "Clears local-only preferences and reloads Unsloth. Chats, API access, and DB-backed settings are kept.",
+          "Clears local-only preferences and reloads Hyposloth. Chats, API access, and DB-backed settings are kept.",
         confirmAction: "Reset and reload",
       },
     },
     profile: {
       title: "Profile",
-      description: "How your profile appears in Unsloth.",
+      description: "How your profile appears in Hyposloth.",
       changePicture: "Change profile picture",
       uploadPhoto: "Upload photo",
       removePhoto: "Remove",
       pictureOptions: "Profile picture options",
       displayName: "Display name",
-      nickname: "What should Unsloth call you?",
+      nickname: "What should Hyposloth call you?",
       nicknamePlaceholder: "Nickname",
       nicknameSaved: "Preferred name saved",
       avatarShape: "Avatar shape",
@@ -419,10 +419,10 @@ export const en = {
       stats: {
         title: "Your stats",
         subtitle:
-          "Everything below is counted from your own history. Nothing is collected or sent to Unsloth.",
+          "Everything below is counted from your own history. Nothing is collected or sent to Hyposloth.",
         retry: "Try again",
         privacyNote:
-          "Stats are computed from the chat and training history held by your Unsloth install. Nothing is collected, and nothing is sent to Unsloth or any third party.",
+          "Stats are computed from the chat and training history held by your Hyposloth install. Nothing is collected, and nothing is sent to Hyposloth or any third party.",
         emptyChats:
           "No chats yet. Start a conversation and your stats will fill in here.",
         lifetimeTokens: "Lifetime tokens",
@@ -477,7 +477,7 @@ export const en = {
     },
     appearance: {
       title: "Appearance",
-      description: "How Unsloth Studio looks on this device.",
+      description: "How Hyposloth Studio looks on this device.",
       theme: {
         title: "Theme",
         label: "Color scheme",
@@ -488,7 +488,7 @@ export const en = {
       },
       palette: {
         label: "Color palette",
-        description: "Colors used across Unsloth, in light and dark mode.",
+        description: "Colors used across Hyposloth, in light and dark mode.",
         standard: "Standard",
         classic: "Classic",
         minimal: "Minimal",
@@ -546,7 +546,7 @@ export const en = {
         },
         uiFontSize: {
           label: "UI font size",
-          description: "Adjust the base size used for the Unsloth UI.",
+          description: "Adjust the base size used for the Hyposloth UI.",
         },
         codeFontSize: {
           label: "Code font size",
@@ -576,7 +576,7 @@ export const en = {
       language: {
         title: "Language",
         label: "Display language",
-        description: "The language used by Unsloth.",
+        description: "The language used by Hyposloth.",
         autoDetect: "Auto detect",
       },
       layout: {
@@ -595,7 +595,7 @@ export const en = {
     },
     resources: {
       title: "System",
-      description: "Monitor this Unsloth server's hardware and storage.",
+      description: "Monitor this Hyposloth server's hardware and storage.",
       liveUpdates: "Live updates",
       floatingWindow: "Floating window",
       disableOverlay: "Disable overlay",
@@ -664,7 +664,7 @@ export const en = {
       description:
         "Connect coding agents like Claude Code and Codex to a local model with unsloth start.",
       intro:
-        "connects Claude Code, Codex, Hermes, OpenClaw, OpenCode and other agents to a model served locally by Unsloth, fully offline. It runs an OpenAI-compatible server and never touches your agent's config files.",
+        "connects Claude Code, Codex, Hermes, OpenClaw, OpenCode and other agents to a model served locally by Hyposloth, fully offline. It runs an OpenAI-compatible server and never touches your agent's config files.",
       readDocs: "Read the docs",
       copy: "Copy",
       copied: "Copied",
@@ -687,11 +687,11 @@ export const en = {
       agentDocs: "Open {agent} setup docs",
       copyGeneratedCommand: "Copy generated command",
       modelNote:
-        "Codex requires a GGUF model served by llama-server. Other agents can also use transformer-backed models; remove --model to use the model already loaded in Unsloth Studio.",
+        "Codex requires a GGUF model served by llama-server. Other agents can also use transformer-backed models; remove --model to use the model already loaded in Hyposloth Studio.",
       subagent: {
         title: "Use a local model as a subagent",
         description:
-          "Keep {agent} on its current model and delegate selected tasks to this local Unsloth model.",
+          "Keep {agent} on its current model and delegate selected tasks to this local Hyposloth model.",
         setupCommand: "Setup command",
         copySetupCommand: "Copy subagent setup command",
         usagePrompt: "Then in {agent}, type:",
@@ -721,7 +721,7 @@ export const en = {
       options: {
         title: "Common options",
         description:
-          "Unsloth flags are parsed first; anything it doesn't recognize is passed straight through to the agent.",
+          "Hyposloth flags are parsed first; anything it doesn't recognize is passed straight through to the agent.",
         model:
           "Select a model. Without --model, unsloth start uses the model currently loaded in Studio and errors if none is loaded.",
         contextLength:
@@ -731,10 +731,10 @@ export const en = {
         tensorParallel: "Toggle tensor-parallel across multiple GPUs.",
         serve: "Enable or disable the automatic local server.",
         launch: "Launch the agent, or just print the command and environment.",
-        persist: "Keep Unsloth-managed agent storage between runs.",
+        persist: "Keep Hyposloth-managed agent storage between runs.",
         asSubagent:
-          "Keep the parent on its current model and register Unsloth as a local subagent (Claude Code, Codex, and OpenCode).",
-        apiKey: "Provide your Unsloth API key (or set UNSLOTH_API_KEY).",
+          "Keep the parent on its current model and register Hyposloth as a local subagent (Claude Code, Codex, and OpenCode).",
+        apiKey: "Provide your Hyposloth API key (or set UNSLOTH_API_KEY).",
         yolo: "Skip approval prompts. Use only in trusted environments.",
       },
       remote: {
@@ -745,7 +745,7 @@ export const en = {
       passthrough: {
         title: "Passing agent arguments",
         description:
-          "Arguments after the Unsloth flags are forwarded to the agent itself, so native commands like resume still work:",
+          "Arguments after the Hyposloth flags are forwarded to the agent itself, so native commands like resume still work:",
       },
       dryRun: {
         title: "Preview without launching",
@@ -877,7 +877,7 @@ export const en = {
     },
     apiKeys: {
       title: "API",
-      description: "Access Unsloth via the OpenAI-compatible API.",
+      description: "Access Hyposloth via the OpenAI-compatible API.",
       readDocs: "Read the API docs",
       noAccess: "No API access yet.",
       accessTokens: "Access tokens",
@@ -907,7 +907,7 @@ export const en = {
       osWindows: "Windows",
       secureHttps: "Secure HTTPS",
       secureHttpsHint:
-        "The 0.0.0.0 port is still reachable globally. For full security, launch Unsloth Studio with --secure to expose only this HTTPS link.",
+        "The 0.0.0.0 port is still reachable globally. For full security, launch Hyposloth Studio with --secure to expose only this HTTPS link.",
       copyTunnelUrl: "Copy tunnel URL",
       copySnippet: "Copy snippet",
       copy: "Copy",
@@ -943,7 +943,7 @@ export const en = {
     about: {
       title: "About",
       description: "Docs, release notes, feedback, and build info.",
-      studioVersion: "Unsloth Version",
+      studioVersion: "Hyposloth Version",
       packageVersion: "Package Version",
       desktopAppVersion: "Desktop App Version",
       desktopAppVersionUnavailable: "Unavailable",
@@ -961,27 +961,27 @@ export const en = {
       reportIssue: "Report an issue",
       license: {
         sectionTitle: "License",
-        studioLabel: "Unsloth Studio",
+        studioLabel: "Hyposloth Studio",
         studioLicense: "AGPL-3.0",
         studioDescription: "Open source under the GNU AGPL v3.0.",
-        libraryLabel: "Unsloth Core",
+        libraryLabel: "Hyposloth Core",
         libraryLicense: "Apache-2.0",
         libraryDescription: "Licensed under Apache 2.0.",
       },
       dangerZone: "Danger zone",
-      shutDownStudio: "Shut down Unsloth Studio",
+      shutDownStudio: "Shut down Hyposloth Studio",
       shutDownStudioDescription:
-        "Stops the Unsloth server and ends your session.",
+        "Stops the Hyposloth server and ends your session.",
       shutDown: "Shut down",
       update: {
-        title: "Update Unsloth Studio",
+        title: "Update Hyposloth Studio",
         commandText: "{label} text",
         copied: "Copied",
         copyCommand: "Copy command",
         commandCopied: "{label} copied",
         copyNamedCommand: "Copy {label}",
-        checkingInstall: "Checking how Unsloth was installed...",
-        installIntro: "To install or update Unsloth:",
+        checkingInstall: "Checking how Hyposloth was installed...",
+        installIntro: "To install or update Hyposloth:",
         localUpdateHeading: "Local update",
         installCommandUnix: "macOS/Linux install command",
         installCommandWindows: "Windows install command",
@@ -995,11 +995,11 @@ export const en = {
           "Source or VCS package install detected. Reinstall from the original local path or Git URL.",
         repoCheckoutFallback:
           "If you still have the repo checkout, run the local installer from it:",
-        restartAfterUpdate: "Restart Unsloth after updating.",
+        restartAfterUpdate: "Restart Hyposloth after updating.",
         desktopManaged:
           "The desktop app keeps its bundled backend updated and will prompt when a new version is available.",
         unknownInstall:
-          "Could not detect how Unsloth was installed. For installer or PyPI installs, use the commands above.",
+          "Could not detect how Hyposloth was installed. For installer or PyPI installs, use the commands above.",
         localCheckout:
           "For local checkout installs, run the local installer from that checkout:",
         docs: "Install docs:",

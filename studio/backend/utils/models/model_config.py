@@ -1802,7 +1802,7 @@ def detect_gguf_model(path: str, model_root: Optional[str] = None) -> Optional[s
     return None
 
 
-# Preferred GGUF quant levels, descending priority. UD (Unsloth Dynamic)
+# Preferred GGUF quant levels, descending priority. UD (Hyposloth Dynamic)
 # variants beat standard quants on quality per bit; repos without UD fall back
 # to standard quants. Ordered by size/quality tradeoff, not raw quality.
 _GGUF_QUANT_PREFERENCE = [
@@ -1823,7 +1823,7 @@ _GGUF_QUANT_PREFERENCE = [
     "UD-IQ2_XXS",
     "UD-IQ1_M",
     "UD-IQ1_S",
-    # Standard quants (fallback for non-Unsloth repos)
+    # Standard quants (fallback for non-Hyposloth repos)
     "Q4_K_M",
     "Q4_K_S",
     "Q5_K_M",
@@ -2464,7 +2464,7 @@ def _has_model_weight_files(model_dir: Path) -> bool:
 
 
 def _detect_training_output_type(model_dir: Path) -> Optional[str]:
-    """Classify an Unsloth training output as LoRA or full finetune."""
+    """Classify a Hyposloth training output as LoRA or full finetune."""
     adapter_config = model_dir / "adapter_config.json"
     adapter_model = model_dir / "adapter_model.safetensors"
     if adapter_config.exists() or adapter_model.exists():
@@ -2486,7 +2486,7 @@ def _looks_like_lora_adapter(model_dir: Path) -> bool:
 
 
 def scan_trained_models(outputs_dir: str = str(outputs_root())) -> List[Tuple[str, str, str]]:
-    """Scan outputs folder for trained Unsloth models.
+    """Scan outputs folder for trained Hyposloth models.
 
     Returns:
         List of (display_name, model_path, model_type), where model_type is

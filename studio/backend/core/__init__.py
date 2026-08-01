@@ -2,7 +2,7 @@
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
 """
-Unified core module for Unsloth backend
+Unified core module for Hyposloth backend
 
 Imports are LAZY (via __getattr__) so training subprocesses can import
 core.training.worker without pulling in heavy ML deps (unsloth, transformers,

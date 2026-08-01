@@ -54,7 +54,7 @@ logger = get_logger(__name__)
 
 
 def _export_runtime_available() -> bool:
-    """True if export can run: MLX active, or Unsloth imported (only succeeds on a GPU host)."""
+    """True if export can run: MLX active, or Hyposloth imported (only succeeds on a GPU host)."""
     return bool(_IS_MLX) or (FastLanguageModel is not None)
 
 
@@ -67,7 +67,7 @@ def _export_runtime_message() -> str:
         )
     return (
         "Export requires an NVIDIA, AMD, or Intel GPU, or Apple Silicon (MLX). No supported "
-        "accelerator was found on this host. (PyTorch is installed, but Unsloth cannot export on "
+        "accelerator was found on this host. (PyTorch is installed, but Hyposloth cannot export on "
         "CPU only.)"
     )
 
@@ -222,7 +222,7 @@ def _hf_offline(timeout = 3):
     return False
 
 
-# Reuse Unsloth's lock-guarded forced-offline context; no-op fallback if it moves.
+# Reuse Hyposloth's lock-guarded forced-offline context; no-op fallback if it moves.
 try:
     from unsloth.models.loader_utils import _force_hf_offline
 except Exception:
@@ -660,7 +660,7 @@ class ExportBackend:
                 if not _compressed_export_supported():
                     return (
                         False,
-                        "Compressed-tensors (FP8/FP4) export requires an Unsloth build with "
+                        "Compressed-tensors (FP8/FP4) export requires a Hyposloth build with "
                         "compressed-tensors support. Upgrade unsloth, or choose 16-bit.",
                         None,
                     )
@@ -793,7 +793,7 @@ class ExportBackend:
                         extra = "unsloth",
                     )
                     ModelCard(content).push_to_hub(
-                        repo_id, token = hf_token, commit_message = "Unsloth Model Card"
+                        repo_id, token = hf_token, commit_message = "Hyposloth Model Card"
                     )
                     hf_api.upload_folder(
                         folder_path = output_path,
@@ -927,7 +927,7 @@ class ExportBackend:
                         extra = "unsloth",
                     )
                     card = ModelCard(content)
-                    card.push_to_hub(repo_id, token = hf_token, commit_message = "Unsloth Model Card")
+                    card.push_to_hub(repo_id, token = hf_token, commit_message = "Hyposloth Model Card")
 
                     if save_directory:
                         hf_api.upload_folder(
@@ -988,7 +988,7 @@ class ExportBackend:
         ):
             return (
                 False,
-                "This Unsloth build does not support GGUF imatrix export. "
+                "This Hyposloth build does not support GGUF imatrix export. "
                 "Upgrade unsloth and unsloth_zoo, or disable the imatrix option.",
                 None,
             )
@@ -1018,7 +1018,7 @@ class ExportBackend:
             except ImportError:
                 if not _LLAMA_CPP_SCRIPTS_WARNING_EMITTED:
                     logger.warning(
-                        "Unsloth: installed unsloth_zoo does not honor "
+                        "Hyposloth: installed unsloth_zoo does not honor "
                         "UNSLOTH_LLAMA_CPP_SCRIPTS_DIR; convert_hf_to_gguf.py will "
                         "still be downloaded from llama.cpp master and may drift "
                         "past the pinned llama-quantize binary. Upgrade unsloth_zoo "
@@ -1206,7 +1206,7 @@ class ExportBackend:
             if _save_gguf_fn is None or not _supports_kwarg(_save_gguf_fn, "save_method"):
                 return (
                     False,
-                    "This Unsloth build does not support GGUF LoRA adapter export. "
+                    "This Hyposloth build does not support GGUF LoRA adapter export. "
                     "Upgrade unsloth and unsloth_zoo, or export the safetensors adapter.",
                     None,
                 )

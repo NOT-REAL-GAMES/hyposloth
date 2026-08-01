@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Cross platform llama.cpp prebuilt installer for Unsloth Studio"""
+"""Cross platform llama.cpp prebuilt installer for Hyposloth Studio"""
 
 from __future__ import annotations
 
@@ -213,7 +213,7 @@ def env_int(
 # support for a new model architecture.
 DEFAULT_LLAMA_TAG = os.environ.get("UNSLOTH_LLAMA_TAG", "latest")
 # Default published repo for prebuilt release resolution. Every host plans
-# its prebuilt against the Unsloth fork; setup.sh/setup.ps1 pass it via
+# its prebuilt against the Hyposloth fork; setup.sh/setup.ps1 pass it via
 # --published-repo. ggml-org is reachable only via an explicit override.
 DEFAULT_PUBLISHED_REPO = "unslothai/llama.cpp"
 DEFAULT_PUBLISHED_TAG = os.environ.get("UNSLOTH_LLAMA_RELEASE_TAG")
@@ -2024,20 +2024,20 @@ def resolve_requested_llama_tag(
 
     Resolution order:
       1. Concrete tag (e.g. "b8508") -- returned as-is.
-      2. "latest" with published_repo -- resolve the latest usable Unsloth
+      2. "latest" with published_repo -- resolve the latest usable Hyposloth
          published release bundle and return its upstream_tag. This is the
          preferred version that matches the published prebuilt metadata.
       3. "latest" without published_repo or if (2) fails -- query the upstream
          ggml-org/llama.cpp repo. This may return a newer, untested tag.
 
-    The Unsloth repo is preferred because its releases are pinned to specific
-    upstream tags that have been validated with Unsloth Studio. Using the
+    The Hyposloth repo is preferred because its releases are pinned to specific
+    upstream tags that have been validated with Hyposloth Studio. Using the
     upstream bleeding-edge tag risks API/ABI incompatibilities.
     """
     normalized_requested = normalized_requested_llama_tag(requested_tag)
     if normalized_requested != "latest":
         return normalized_requested
-    # Prefer the Unsloth release repo tag (tested/approved) over bleeding-edge
+    # Prefer the Hyposloth release repo tag (tested/approved) over bleeding-edge
     # upstream. For example, unslothai/llama.cpp may publish b8508 while
     # ggml-org/llama.cpp latest is b8514. The source-build fallback should
     # compile the same version the prebuilt path would have installed.
@@ -2251,7 +2251,7 @@ def _pick_rocm_gfx_target(out: str) -> str | None:
             break
     if _vis_raw is not None:
         _vis = _vis_raw.strip()
-        # Empty or "-1" means "no AMD GPU visible" (matches the rest of Unsloth).
+        # Empty or "-1" means "no AMD GPU visible" (matches the rest of Hyposloth).
         if _vis == "" or _vis == "-1":
             return None
         _first = _vis.split(",")[0].strip()
@@ -3596,8 +3596,8 @@ def ensure_diffusion_visual_server(
     approved_checksums: ApprovedReleaseChecksums,
 ) -> None:
     """Best-effort placement of the DiffusionGemma visual-server binary next to
-    llama-server in the install tree, so Unsloth can serve DiffusionGemma GGUFs
-    without any DG_* env. This is an Unsloth artifact (not a ggml-org one), so it
+    llama-server in the install tree, so Hyposloth can serve DiffusionGemma GGUFs
+    without any DG_* env. This is a Hyposloth artifact (not a ggml-org one), so it
     is optional: if it is already present we just make it executable, otherwise we
     try the published release and quietly skip on absence. A source build
     (setup.sh / setup.ps1) copies it from build/bin directly. Users can always
@@ -3879,7 +3879,7 @@ def runtime_patterns_for_choice(choice: AssetChoice) -> list[str]:
     # repackage the SO/DLL set (e.g. ggml-org/llama.cpp#23462 split the
     # per-binary entry code into paired ``lib<binary>-impl.so`` shared
     # libraries between b9279 and b9283) without us re-enumerating
-    # every new file. Unsloth invokes llama-server, llama-quantize, and the
+    # every new file. Hyposloth invokes llama-server, llama-quantize, and the
     # DiffusionGemma visual-server (when the bundle ships it, for native
     # DiffusionGemma serving); other CLIs upstream ships (llama-cli,
     # llama-bench, ...) are skipped.
@@ -5452,7 +5452,7 @@ def _linux_published_attempts(host: HostInfo, bundle: PublishedReleaseBundle) ->
     names."""
     attempts: list[AssetChoice] = []
     if host.has_usable_nvidia:
-        # Prefer the cudart major Unsloth loads at runtime (torch's bundled
+        # Prefer the cudart major Hyposloth loads at runtime (torch's bundled
         # libcudart), not the newest detected on disk. Without this a stray
         # cuda13 runtime outranks the torch cuda12 the binary links against.
         torch_preference = detect_torch_cuda_runtime_preference(host)
@@ -6422,7 +6422,7 @@ def _route_to_vulkan_prebuilt(
 ) -> tuple[HostInfo, str, str, str | None]:
     """Point a Vulkan-capable host at the selected repository's Vulkan prebuilt.
 
-    The default Unsloth release manifest includes Vulkan app bundles, including the
+    The default Hyposloth release manifest includes Vulkan app bundles, including the
     DiffusionGemma visual server. Three triggers route here, all suppressed when a CPU
     flag (--cpu-fallback or --force-cpu, folded into force_cpu) wins:
       * ``UNSLOTH_LLAMA_CPP_BACKEND=vulkan`` / ``UNSLOTH_FORCE_VULKAN`` /
@@ -6838,14 +6838,14 @@ def install_prebuilt(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description = "Install and validate a prebuilt llama.cpp bundle for Unsloth Studio."
+        description = "Install and validate a prebuilt llama.cpp bundle for Hyposloth Studio."
     )
     parser.add_argument("--install-dir", help = "Target ~/.unsloth/llama.cpp directory")
     parser.add_argument(
         "--llama-tag",
         default = DEFAULT_LLAMA_TAG,
         help = (
-            "llama.cpp release tag. Defaults to the latest usable published Unsloth "
+            "llama.cpp release tag. Defaults to the latest usable published Hyposloth "
             "release unless UNSLOTH_LLAMA_TAG overrides it."
         ),
     )

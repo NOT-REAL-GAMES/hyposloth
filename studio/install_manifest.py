@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-"""Install-completeness manifest for Unsloth Studio.
+"""Install-completeness manifest for Hyposloth Studio.
 
 install_python_stack.py drops the manifest before the dependency pass and writes
 it back only after the last step, so its presence means "the install finished".

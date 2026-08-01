@@ -13,7 +13,7 @@ _DATA_DESIGNER_FOOTER = (
     '<a href="https://github.com/NVIDIA-NeMo/DataDesigner">NeMo Data Designer</a></sub>'
 )
 _UNSLOTH_STUDIO_FOOTER = (
-    '<sub style="white-space: nowrap;">Made with ❤️ using 🦥 ' "Unsloth Studio</sub>"
+    '<sub style="white-space: nowrap;">Made with ❤️ using 🦥 ' "Hyposloth Studio</sub>"
 )
 
 

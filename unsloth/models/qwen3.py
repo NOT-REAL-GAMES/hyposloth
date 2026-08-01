@@ -42,7 +42,7 @@ except:
     transformers_version = Version(transformers_version)
     if not transformers_version >= Version("4.50.3"):  # TODO: Update when transformers is updated
         raise ImportError(
-            f"Unsloth: Your transformers version of {transformers_version} does not support Qwen3 and Qwen3Moe.\n"
+            f"Hyposloth: Your transformers version of {transformers_version} does not support Qwen3 and Qwen3Moe.\n"
             f"The minimum required version is 4.50.3.\n"
             f'Try `pip install --upgrade "transformers>=4.50.3"`\n'
             f"to obtain the latest transformers build, then restart this session."

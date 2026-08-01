@@ -179,7 +179,7 @@ export async function authFetch(
           "You appear to be offline. Check your network connection and try again.",
         );
       }
-      throw new Error("Unsloth isn't running -- please relaunch it.");
+      throw new Error("Hyposloth isn't running -- please relaunch it.");
     }
     throw err;
   }

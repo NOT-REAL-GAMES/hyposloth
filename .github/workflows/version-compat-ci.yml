@@ -291,7 +291,7 @@ jobs:
   # runner under the tests/conftest.py spoof harness -- no GPU, no training.
   # Catches structural TRL drift the greps miss (e.g. TRL 1.7.0's 2->3-tuple
   # per-token-logps return, restructured PEFT ref-adapter block) by asserting
-  # the generated Unsloth trainer still satisfies the transform contracts.
+  # the generated Hyposloth trainer still satisfies the transform contracts.
   grpo-fake-run:
     name: GRPO fake-run (latest + main TRL, CPU spoof)
     runs-on: ubuntu-latest
