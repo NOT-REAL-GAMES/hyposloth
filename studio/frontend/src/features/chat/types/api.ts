@@ -224,6 +224,20 @@ export interface UnloadModelRequest {
   force_cancel_active?: boolean;
 }
 
+/**
+ * NVMe streaming plan reported by the backend for streaming (NVMe-resident)
+ * loads. Absent/null for normal loads. Only `streaming` is guaranteed; the
+ * rest are advisory and may be added or dropped by the backend.
+ */
+export interface StreamingPlanInfo {
+  streaming: boolean;
+  resident_ram_gb?: number | null;
+  resident_vram_gb?: number | null;
+  est_tokens_per_sec?: number | null;
+  n_cpu_moe?: number | null;
+  notes?: string[];
+}
+
 export interface InferenceStatusResponse {
   active_model: string | null;
   model_identifier?: string | null;
@@ -295,6 +309,8 @@ export interface InferenceStatusResponse {
    * (updating won't help; choose MTP in Settings to force it). Null otherwise.
    */
   spec_fallback_reason?: string | null;
+  /** NVMe streaming plan for the active load; null/absent for normal loads. */
+  streaming_plan?: StreamingPlanInfo | null;
 }
 
 export interface ApiMonitorEntry {

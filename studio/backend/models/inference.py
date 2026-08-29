@@ -747,6 +747,15 @@ class InferenceStatusResponse(BaseModel):
         0,
         description = "Model's MoE expert-layer count (the n_cpu_moe ceiling); 0 if not an MoE model.",
     )
+    streaming_plan: Optional[Dict[str, Any]] = Field(
+        None,
+        description = (
+            "MoE expert-streaming plan for the active GGUF load (model larger than "
+            "RAM + VRAM, experts served from NVMe), or None for normal resident "
+            "loads. Keys: streaming, resident_ram_gb, resident_vram_gb, "
+            "est_tokens_per_sec, n_cpu_moe, notes."
+        ),
+    )
     gpu_ids: Optional[List[int]] = Field(
         None,
         description = "Effective GPU indices the model is using after fit-time narrowing, or None for automatic selection.",

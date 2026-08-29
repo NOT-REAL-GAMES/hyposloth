@@ -332,6 +332,9 @@ export function applyActiveModelStatusToStore(
     loadedIsDiffusion: status.is_diffusion ?? false,
     activeModelIsLocal: status.is_local_model ?? false,
     specFallbackReason: status.spec_fallback_reason ?? null,
+    // Unconditional echo like the fallback reason: a normal load reports no
+    // plan, so the previous model's streaming badge must not survive.
+    streamingPlan: status.streaming_plan ?? null,
     // The spec / KV seeds share the GPU-fields reseed mechanism below: a
     // non-GGUF status leaves their loaded baselines null, so the "unseeded"
     // guard re-fires every refresh -- hold them too while a staged pick's

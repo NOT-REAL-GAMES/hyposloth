@@ -18,6 +18,7 @@ import {
 } from "../presets/preset-policy";
 import { normalizePresetLoadConfig } from "../presets/preset-load-config";
 import { getExternalMaxOutputTokens } from "../provider-capabilities";
+import type { StreamingPlanInfo } from "../types/api";
 import {
   type ChatLoraSummary,
   type ChatModelSummary,
@@ -1049,6 +1050,9 @@ type ChatRuntimeStore = {
   ggufLayerCount: number | null;
   /** MoE expert-layer count: the nCpuMoe slider max; 0/null hides the slider. */
   moeLayerCount: number | null;
+  /** NVMe streaming plan reported for the active load; null when the loaded
+   *  model is not streaming (or nothing is loaded). Read-only status echo. */
+  streamingPlan: StreamingPlanInfo | null;
   /** Picked IDs in the backend-declared GPU namespace (null = automatic). */
   selectedGpuIds: number[] | null;
   /** Namespace used by selectedGpuIds; kept with deferred persisted picks. */
@@ -1234,6 +1238,7 @@ type ChatRuntimeStore = {
   setGpuMemoryMode: (mode: "auto" | "manual") => void;
   setGpuLayers: (value: number) => void;
   setNCpuMoe: (value: number) => void;
+  setStreamingPlan: (plan: StreamingPlanInfo | null) => void;
   setSplitRatio: (value: number[] | null) => void;
   setSelectedGpuIds: (
     ids: number[] | null,
@@ -1567,6 +1572,7 @@ export const useChatRuntimeStore = create<ChatRuntimeStore>((set, get) => ({
   loadedSplitRatio: null,
   ggufLayerCount: null,
   moeLayerCount: null,
+  streamingPlan: null,
   selectedGpuIds: null,
   selectedGpuIndexKind: null,
   loadedGpuIds: null,
@@ -1869,6 +1875,7 @@ export const useChatRuntimeStore = create<ChatRuntimeStore>((set, get) => ({
               contextUsageByThreadId: {},
               activeModelIsLocal: false,
               specFallbackReason: null,
+              streamingPlan: null,
             }
           : {}),
         // Switching to an external provider disables Deep Research, which only
@@ -1965,6 +1972,7 @@ export const useChatRuntimeStore = create<ChatRuntimeStore>((set, get) => ({
       loadedSplitRatio: null,
       ggufLayerCount: null,
       moeLayerCount: null,
+      streamingPlan: null,
       selectedGpuIds: null,
       selectedGpuIndexKind: null,
       loadedGpuIds: null,
@@ -2361,6 +2369,7 @@ export const useChatRuntimeStore = create<ChatRuntimeStore>((set, get) => ({
   setGpuMemoryMode: (gpuMemoryMode) => set({ gpuMemoryMode }),
   setGpuLayers: (gpuLayers) => set({ gpuLayers }),
   setNCpuMoe: (nCpuMoe) => set({ nCpuMoe }),
+  setStreamingPlan: (streamingPlan) => set({ streamingPlan }),
   setSplitRatio: (splitRatio) => set({ splitRatio }),
   setSelectedGpuIds: (selectedGpuIds, selectedGpuIndexKind = null) =>
     set({

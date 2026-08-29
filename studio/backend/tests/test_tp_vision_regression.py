@@ -143,6 +143,12 @@ _ALLOWED_TP_DROP_GUARDS = {
     # launch under the CPU-only GPU mask (no visible devices) aborts the server
     # instead of the intended CPU-only load (#6414).
     "gpu_memory_mode == 'manual' and gpu_layers == 0",
+    # MoE streaming: a feasible streaming plan owns the whole placement -- its
+    # -ot rules pin hot expert layers to one device and its VRAM math pools a
+    # single GPU, so a tensor split would contradict the plan. Dropping TP is
+    # surfaced via logger.info when TP was requested; TP + streaming is future
+    # work (multi-device tier sizing in moe_streaming_planner).
+    "_moe_stream_plan is not None",
 }
 
 

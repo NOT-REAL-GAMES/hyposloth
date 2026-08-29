@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InfoHint } from "@/components/ui/info-hint";
@@ -353,6 +354,8 @@ function GpuMemorySettings({
   const singleGpuInUse = (selectedGpuIds ?? gpuContext.ids ?? []).length <= 1;
   // Multi-GPU only, with one backend-declared index namespace. null = automatic.
   const showGpuPicker = (gpuContext.ids?.length ?? 0) > 1;
+  // NVMe streaming plan of the currently loaded model (null when not streaming).
+  const streamingPlan = useChatRuntimeStore((s) => s.streamingPlan);
   const isGpuChecked = (index: number) =>
     selectedGpuIds === null || selectedGpuIds.includes(index);
   const toggleGpu = (index: number) => {
@@ -417,6 +420,23 @@ function GpuMemorySettings({
           </SelectContent>
         </Select>
       </div>
+      {streamingPlan?.streaming && (
+        <div className={ROW_CLASS}>
+          <Badge variant="secondary">NVMe streaming</Badge>
+          <span className="min-w-0 truncate text-right text-ui-11p5 text-muted-foreground">
+            {[
+              streamingPlan.est_tokens_per_sec != null
+                ? `~${streamingPlan.est_tokens_per_sec} tok/s`
+                : null,
+              streamingPlan.resident_ram_gb != null
+                ? `${streamingPlan.resident_ram_gb} GB RAM resident`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </div>
+      )}
       {!isDiffusion && isManual && (
         <>
           <AdvancedGpuSlider

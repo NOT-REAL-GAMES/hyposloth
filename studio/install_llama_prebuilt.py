@@ -223,6 +223,12 @@ DEFAULT_PUBLISHED_MANIFEST_ASSET = os.environ.get(
 DEFAULT_PUBLISHED_SHA256_ASSET = os.environ.get(
     "UNSLOTH_LLAMA_RELEASE_SHA256_ASSET", "llama-prebuilt-sha256.json"
 )
+# Published repo for the opt-in ik_llama.cpp flavor (Method 9 of
+# studio/backend/core/inference/MOE_STREAMING.md): a llama.cpp fork with a
+# runtime LRU expert cache for MoE streaming. ik_llama.cpp upstream ships no
+# prebuilts; this repo hosts Hyposloth's future fork builds, so a missing
+# release or asset is always a clean skip, never an install failure.
+IK_PUBLISHED_REPO = os.environ.get("UNSLOTH_STUDIO_IK_LLAMA_REPO", "unslothai/ik_llama.cpp")
 UPSTREAM_REPO = "ggml-org/llama.cpp"
 UPSTREAM_RELEASES_API = f"https://api.github.com/repos/{UPSTREAM_REPO}/releases/latest"
 
@@ -6836,6 +6842,64 @@ def install_prebuilt(
         raise SystemExit(EXIT_FALLBACK) from exc
 
 
+def ik_server_binary_name() -> str:
+    """Sibling binary name the Studio backend looks for next to llama-server."""
+    return "llama-server-ik.exe" if platform.system() == "Windows" else "llama-server-ik"
+
+
+def ik_llama_requested(cli_flag: bool = False) -> bool:
+    """True when the opt-in ik_llama.cpp flavor was requested (--ik or env)."""
+    if cli_flag:
+        return True
+    raw = os.environ.get("UNSLOTH_STUDIO_IK_LLAMA", "").strip().lower()
+    return raw in ("1", "true", "yes", "on")
+
+
+def install_ik_llama_flavor(install_dir: Path, repo: str | None = None) -> bool:
+    """Best-effort install of the ik_llama.cpp server binary; True on success.
+
+    Opt-in companion to the mainline prebuilt install: downloads the newest
+    release asset named like the ik server binary from the ik published repo
+    and drops it next to llama-server, where the backend's flavor resolution
+    (UNSLOTH_STUDIO_LLAMA_FLAVOR=ik) looks for it. ik_llama.cpp upstream
+    publishes no prebuilts, so ANY miss -- no release, no matching asset, a
+    network or write failure -- logs a skip and returns False. The mainline
+    install is never disturbed.
+    """
+    repo = repo or IK_PUBLISHED_REPO
+    name = ik_server_binary_name()
+    try:
+        payload = fetch_json(f"https://api.github.com/repos/{repo}/releases/latest")
+    except Exception as exc:
+        log(f"ik_llama.cpp flavor: no published release at {repo} ({exc}); skipping")
+        return False
+    tag = payload.get("tag_name") if isinstance(payload, dict) else None
+    assets = payload.get("assets") if isinstance(payload, dict) else None
+    names = {
+        asset.get("name")
+        for asset in (assets or [])
+        if isinstance(asset, dict) and isinstance(asset.get("name"), str)
+    }
+    if not tag or name not in names:
+        log(f"ik_llama.cpp flavor: latest release at {repo} has no {name} asset; skipping")
+        return False
+    url = release_asset_download_url(repo, tag, name)
+    destination = install_dir / name
+    try:
+        download_file(url, destination)
+        if platform.system() != "Windows":
+            os.chmod(destination, 0o755)
+    except Exception as exc:
+        log(f"ik_llama.cpp flavor: download of {name} failed ({exc}); skipping")
+        try:
+            destination.unlink(missing_ok = True)
+        except OSError:
+            pass
+        return False
+    log(f"ik_llama.cpp flavor: installed {name} from {repo}@{tag}")
+    return True
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description = "Install and validate a prebuilt llama.cpp bundle for Hyposloth Studio."
@@ -6916,6 +6980,18 @@ def parse_args() -> argparse.Namespace:
             "compatible Vulkan bundle is published. "
             "Same effect as UNSLOTH_LLAMA_CPP_BACKEND=vulkan / "
             "UNSLOTH_FORCE_VULKAN=1."
+        ),
+    )
+    parser.add_argument(
+        "--ik",
+        action = "store_true",
+        default = False,
+        help = (
+            "Also install the opt-in ik_llama.cpp flavor: download the "
+            "llama-server-ik binary from the ik published repo next to the "
+            "main llama-server (MoE expert streaming with a runtime expert "
+            "cache). A missing release or asset is skipped with a message, "
+            "never an error. Same effect as UNSLOTH_STUDIO_IK_LLAMA=1."
         ),
     )
     resolve_group = parser.add_mutually_exclusive_group()
@@ -7139,6 +7215,10 @@ def main() -> int:
         llama_backend = args.llama_backend,
         instruction_cleanup_root = install_arg.absolute(),
     )
+    # Opt-in ik_llama.cpp flavor: best-effort sibling binary next to the
+    # mainline one; any miss is a logged skip, never an install failure.
+    if ik_llama_requested(args.ik):
+        install_ik_llama_flavor(install_arg.resolve())
     return EXIT_SUCCESS
 
 

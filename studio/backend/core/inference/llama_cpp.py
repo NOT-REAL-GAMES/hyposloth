@@ -55,6 +55,13 @@ from core.inference.llama_server_args import (
     strip_shadowing_flags,
     strip_split_mode_only,
 )
+from core.inference.moe_streaming_planner import (
+    GgufMoeMeta,
+    HardwareProfile,
+    StreamingPlan,
+    StreamingTargets,
+    plan_moe_streaming,
+)
 
 # Share strip / signal constants with the multi-format parser so BUFFERING also
 # catches Llama-3 / Mistral / Gemma 4 (legacy helper only knew <tool_call> / <function=).
@@ -2453,6 +2460,15 @@ class LlamaCppBackend:
         # from layer 0). See the n_moe_layers property.
         self._n_experts: Optional[int] = None
         self._leading_dense_block_count: Optional[int] = None
+        # MoE streaming planner inputs (populated by _read_gguf_metadata):
+        # active-expert count ({arch}.expert_used_count) and per-expert FFN
+        # width ({arch}.expert_feed_forward_length). 0 = unknown; the planner
+        # falls back to documented heuristics then.
+        self._n_experts_active: int = 0
+        self._expert_ffn_length: int = 0
+        # Active MoE-streaming plan summary reported via /status (frontend
+        # contract shape); None for normal resident loads.
+        self._streaming_plan: Optional[dict] = None
         self._n_kv_heads: Optional[int] = None
         self._n_kv_heads_by_layer: Optional[list[int]] = None
         self._n_heads: Optional[int] = None
@@ -2926,6 +2942,43 @@ class LlamaCppBackend:
         return self._n_cpu_moe
 
     @property
+    def streaming_plan(self) -> Optional[dict]:
+        """Active MoE-streaming plan summary for /status, or None.
+
+        Frontend contract shape: {"streaming", "resident_ram_gb",
+        "resident_vram_gb", "est_tokens_per_sec", "n_cpu_moe", "notes"}.
+        None for normal resident loads (the model fit RAM + VRAM).
+        """
+        return self._streaming_plan
+
+    @staticmethod
+    def _resolve_llama_flavor(binary: Optional[str]) -> "tuple[Optional[str], bool]":
+        """Resolve the llama-server binary flavor: mainline vs ik_llama.cpp.
+
+        Returns ``(binary_to_use, ik_active)``. The ik flavor is opt-in: it
+        engages only when ``UNSLOTH_STUDIO_LLAMA_FLAVOR=ik`` AND a
+        ``llama-server-ik`` sibling sits next to the resolved mainline binary
+        (installed by ``install_llama_prebuilt.py --ik``). Any miss falls back
+        to the mainline binary, so every ik behavior stays inert without the
+        env var and the binary.
+        """
+        if not binary:
+            return binary, False
+        flavor = os.environ.get("UNSLOTH_STUDIO_LLAMA_FLAVOR", "").strip().lower()
+        if flavor != "ik":
+            return binary, False
+        sibling_name = "llama-server-ik.exe" if sys.platform == "win32" else "llama-server-ik"
+        sibling = Path(binary).parent / sibling_name
+        if sibling.is_file():
+            logger.info(f"llama flavor 'ik' requested; launching {sibling}")
+            return str(sibling), True
+        logger.warning(
+            f"UNSLOTH_STUDIO_LLAMA_FLAVOR=ik but {sibling} is missing "
+            "(install_llama_prebuilt.py --ik); using the mainline llama-server"
+        )
+        return binary, False
+
+    @property
     def tensor_split(self) -> Optional[List[float]]:
         """Manual-mode relative model share per GPU (--tensor-split); None =
         default (split by free VRAM)."""
@@ -3005,6 +3058,78 @@ class LlamaCppBackend:
         if n_cpu_moe <= 0 or n_moe_layers <= 0:
             return None
         return leading_dense + min(n_cpu_moe, n_moe_layers)
+
+    @staticmethod
+    def _apply_streaming_plan(
+        cmd: List[str],
+        plan: StreamingPlan,
+        *,
+        n_moe_layers: int,
+        leading_dense: int,
+        ik_rtr: bool = False,
+    ) -> None:
+        """Append a feasible MoE-streaming plan's placement flags to the argv.
+
+        The plan pins placement explicitly (``--fit off``): llama.cpp's --fit
+        cannot reason about NVMe-cold experts, --n-cpu-moe or -ot pinning. The
+        --n-cpu-moe value goes through the same leading-dense offset as manual
+        mode. ``ik_rtr`` (ik_llama.cpp flavor with a probed runtime expert
+        cache) replaces the static -ot pinning rules with the runtime-LRU
+        flag, which adapts per session without a calibration profile. The
+        plan's KV cache types are always emitted; a user --cache-type-k/-v in
+        extra_args still wins (appended later, last-wins).
+        """
+        cmd.extend(["--gpu-layers", str(plan.gpu_layers), "--fit", "off"])
+        moe_flag = LlamaCppBackend._resolve_cpu_moe_flag(
+            plan.n_cpu_moe, n_moe_layers, leading_dense
+        )
+        if moe_flag is not None:
+            cmd.extend(["--n-cpu-moe", str(moe_flag)])
+        if ik_rtr:
+            # ik's runtime tensor cache (LRU over experts) supersedes static
+            # -ot pinning: the warm tier is handed to the runtime instead.
+            cmd.append("-rtr")
+        else:
+            for rule in plan.override_tensor_rules:
+                cmd.extend(["-ot", rule])
+        cmd.extend(
+            [
+                "--cache-type-k",
+                plan.kv_cache_type_k,
+                "--cache-type-v",
+                plan.kv_cache_type_v,
+            ]
+        )
+
+    @staticmethod
+    def _streaming_refusal_message(plan: StreamingPlan) -> str:
+        """User-facing refusal for an infeasible MoE-streaming plan.
+
+        Same style as _apu_ram_shortfall_message: plain-language cause plus a
+        way forward. plan.refusal_reason carries the planner's arithmetic.
+        """
+        return (
+            "This MoE model is too large to hold in memory, and streaming its "
+            f"experts from disk is not viable on this machine: {plan.refusal_reason}. "
+            "Use a smaller or more quantized GGUF, free system memory, or add "
+            "GPU VRAM."
+        )
+
+    @staticmethod
+    def _streaming_plan_status_dict(plan: StreamingPlan) -> dict:
+        """The /status streaming_plan payload (frontend contract shape).
+
+        GB values are bytes/GiB rounded to 1 decimal for the badge.
+        """
+        gib = 1024 ** 3
+        return {
+            "streaming": True,
+            "resident_ram_gb": round(plan.resident_ram_bytes / gib, 1),
+            "resident_vram_gb": round(plan.resident_vram_bytes / gib, 1),
+            "est_tokens_per_sec": round(plan.est_tokens_per_sec, 2),
+            "n_cpu_moe": plan.n_cpu_moe,
+            "notes": list(plan.notes),
+        }
 
     @staticmethod
     def _sanitize_tensor_split(tensor_split: Optional[List[float]]) -> List[float]:
@@ -3231,6 +3356,7 @@ class LlamaCppBackend:
                 "supports_no_cache_prompt": False,
                 "supports_metrics": False,
                 "supports_slot_save": False,
+                "supports_rtr": False,
             }
         try:
             mtime = int(Path(bin_path).stat().st_mtime)
@@ -3252,6 +3378,7 @@ class LlamaCppBackend:
         supports_no_cache_prompt = False
         supports_metrics = False
         supports_slot_save = False
+        supports_rtr = False
         saw_spec_type = False
         probe_ok = False
         help_text = ""
@@ -3358,6 +3485,12 @@ class LlamaCppBackend:
             supports_no_cache_prompt = _is_real("--no-cache-prompt")
             supports_metrics = _is_real("--metrics")
             supports_slot_save = _is_real("--slot-save-path")
+            # ik_llama.cpp's runtime expert cache (LRU over experts). The block
+            # parser only indexes long flags, so also scan the raw help for the
+            # short -rtr token as a whole word.
+            supports_rtr = _is_real("--repurpose-tensor-cache") or bool(
+                re.search(r"(?<![A-Za-z0-9_-])-rtr(?![A-Za-z0-9_-])", help_text)
+            )
         except (OSError, subprocess.SubprocessError) as exc:
             logger.debug(f"llama-server --help probe failed: {exc}")
             saw_spec_type = False
@@ -3394,6 +3527,7 @@ class LlamaCppBackend:
             "supports_no_cache_prompt": supports_no_cache_prompt,
             "supports_metrics": supports_metrics,
             "supports_slot_save": supports_slot_save,
+            "supports_rtr": supports_rtr,
         }
         cls._capability_cache[cache_key] = info
         return info
@@ -4101,6 +4235,86 @@ class LlamaCppBackend:
             "the OS mid-load. Use a smaller or more quantized GGUF, or free memory "
             "(on WSL, raise the memory limit in .wslconfig)."
         )
+
+    def _plan_moe_streaming_for_load(
+        self,
+        *,
+        model_path: str,
+        gguf_size: int,
+        gpus: list,
+        total_by_idx: dict,
+        effective_ctx: int,
+        n_parallel: int,
+        mtp_draft_path: Optional[str],
+    ) -> Optional[StreamingPlan]:
+        """Run the MoE streaming planner for an auto-mode load, or None.
+
+        None means "no streaming decision" -- the caller proceeds exactly as
+        before. Cheap gates run first so normal loads never pay for planning:
+        non-MoE models (dense over-capacity loads keep today's --fit behavior,
+        the planner's dense refusal is not enforced here), unknown available
+        RAM, and models that already fit the RAM + VRAM budget (which also
+        skips the ~256 MiB disk probe). Any probe/planner failure degrades to
+        None -- planning must never break an otherwise-working load.
+        """
+        try:
+            if not self._n_experts or not self.n_moe_layers:
+                return None
+            ram_avail_mib = self._available_system_memory_mib()
+            if ram_avail_mib is None:
+                return None
+            mib = 1024 * 1024
+            ram_avail = ram_avail_mib * mib
+            vram_avail = sum(max(0, free) * mib for _idx, free in gpus)
+            # The planner's non-streaming gate: file fits 75% of available RAM
+            # plus free VRAM. Below it there is nothing to stream.
+            if gguf_size <= int(0.75 * ram_avail) + vram_avail:
+                return None
+            try:
+                # Lazy: utils/hardware/__init__ pulls the torch hardware chain,
+                # which must stay out of this module's import time.
+                from utils.hardware.disk_speed import probe_sequential_read_mbps
+
+                nvme_mbps = probe_sequential_read_mbps(model_path)
+            except Exception:
+                nvme_mbps = 0.0
+            try:
+                import psutil
+
+                ram_total = int(psutil.virtual_memory().total)
+            except Exception:
+                ram_total = 0
+            vram_total = sum(max(0, total_by_idx.get(idx, 0)) * mib for idx, _f in gpus)
+            meta = GgufMoeMeta(
+                arch = self._architecture or "",
+                file_size_bytes = gguf_size,
+                n_layers = self._n_layers or 0,
+                n_moe_layers = self.n_moe_layers,
+                n_experts = self._n_experts or 0,
+                n_experts_active = self._n_experts_active or 0,
+                expert_ffn_length = self._expert_ffn_length or 0,
+                embedding_length = self._embedding_length or 0,
+                leading_dense_layers = self._leading_dense_block_count or 0,
+                has_mtp_drafter = bool(self._nextn_predict_layers or mtp_draft_path),
+            )
+            hw = HardwareProfile(
+                ram_total_bytes = ram_total,
+                ram_available_bytes = ram_avail,
+                vram_total_bytes = vram_total,
+                vram_available_bytes = vram_avail,
+                nvme_read_mbps = nvme_mbps,
+                gpu_count = len(gpus),
+            )
+            ctx = effective_ctx if effective_ctx > 0 else (self._context_length or 8192)
+            targets = StreamingTargets(
+                context_tokens = ctx,
+                parallel_slots = max(1, n_parallel),
+            )
+            return plan_moe_streaming(meta, hw, targets)
+        except Exception as exc:
+            logger.debug(f"MoE streaming planning skipped: {exc}")
+            return None
+
 
     # Skip the wait when the last kill is older than this; the driver has
     # already reclaimed the prior process's allocations.
@@ -5496,6 +5710,8 @@ class LlamaCppBackend:
         self._n_layers = None
         self._n_experts = None
         self._leading_dense_block_count = None
+        self._n_experts_active = 0
+        self._expert_ffn_length = 0
         self._n_kv_heads = None
         self._n_kv_heads_by_layer = None
         self._n_heads = None
@@ -5589,6 +5805,8 @@ class LlamaCppBackend:
                                         f"{arch}.block_count": "n_layers",
                                         f"{arch}.expert_count": "n_experts",
                                         f"{arch}.leading_dense_block_count": "leading_dense_block_count",
+                                        f"{arch}.expert_used_count": "n_experts_active",
+                                        f"{arch}.expert_feed_forward_length": "expert_ffn_length",
                                         f"{arch}.attention.head_count_kv": "n_kv_heads",
                                         f"{arch}.attention.head_count": "n_heads",
                                         f"{arch}.embedding_length": "embedding_length",
@@ -7262,10 +7480,14 @@ class LlamaCppBackend:
                 return True
 
             self._cancel_event.clear()
+            # A new load decides streaming afresh; the active plan survives on
+            # the duplicate-load fast path above (the model stays loaded).
+            self._streaming_plan = None
 
             # Resolve llama-server now but defer a not-found error: a block-diffusion
             # GGUF uses the diffusion runner, and its arch is only known after the header.
             binary = self._find_llama_server_binary()
+            binary, _ik_flavor_active = self._resolve_llama_flavor(binary)
             is_vulkan_backend = self._is_vulkan_backend(binary)
             _vulkan_ordinal_pin = (
                 is_vulkan_backend and bool(gpu_ids) and gpu_ids_are_vulkan_ordinals is not False
@@ -7671,6 +7893,10 @@ class LlamaCppBackend:
                 _detected_gpus: list[tuple[int, int]] = []
                 total_by_idx: dict[int, int] = {}
                 model_size = None  # set in the fit try; used by the APU RAM guard
+                # MoE streaming plan (auto mode only): set in the fit try when the
+                # model can only be served by streaming experts from NVMe; applied
+                # after the try. None keeps every existing load path unchanged.
+                _moe_stream_plan: Optional[StreamingPlan] = None
                 # Layer-fallback min GPUs; raised below on a tensor downgrade. Bound
                 # before the try so the --fit-on except path still has it (no UnboundLocal).
                 _layer_min_gpus = 1
@@ -7759,6 +7985,25 @@ class LlamaCppBackend:
                     # Default UI ceiling to the native context length;
                     # GPU/VRAM-fit logic below may shrink it on limited HW.
                     max_available_ctx = self._context_length or effective_ctx
+
+                    # MoE streaming planner (auto mode only): when the file can
+                    # never fit RAM + VRAM, plan the NVMe expert-streaming
+                    # placement BEFORE the fit below runs; the plan then
+                    # overrides the fit outcome after the try (it pins placement
+                    # --fit cannot reason about). Only streaming-regime plans are
+                    # kept, so normal models proceed exactly as before.
+                    if gpu_memory_mode == "auto":
+                        _plan = self._plan_moe_streaming_for_load(
+                            model_path = model_path,
+                            gguf_size = gguf_size,
+                            gpus = gpus,
+                            total_by_idx = total_by_idx,
+                            effective_ctx = effective_ctx,
+                            n_parallel = n_parallel,
+                            mtp_draft_path = mtp_draft_path,
+                        )
+                        if _plan is not None and _plan.streaming:
+                            _moe_stream_plan = _plan
 
                     # Manual + Auto layers (the Manual default): hand memory
                     # management to llama.cpp's --fit. Emptying the probed GPU set
@@ -8671,6 +8916,52 @@ class LlamaCppBackend:
                     if _ram_msg:
                         raise RuntimeError(_ram_msg)
 
+                # MoE streaming plan (auto mode): an infeasible plan refuses the
+                # load with the same user-facing style as the APU shortfall above
+                # (raised here, not in the fit try, whose except would downgrade
+                # it to a silent --fit on). A feasible plan overrides the fit
+                # outcome: --fit cannot reason about NVMe-cold experts, so the
+                # plan pins layers, MoE offload, KV types, ctx and slots itself.
+                if _moe_stream_plan is not None and not _moe_stream_plan.feasible:
+                    raise RuntimeError(self._streaming_refusal_message(_moe_stream_plan))
+                if _moe_stream_plan is not None:
+                    _plan = _moe_stream_plan
+                    for _note in _plan.notes:
+                        logger.info(f"MoE streaming: {_note}")
+                    use_fit = False
+                    if tensor_parallel:
+                        # Surfaced like every other TP drop (the TP-drop
+                        # allowlist test requires it): the plan's -ot rules pin
+                        # experts to a single device and its VRAM math pools one
+                        # GPU, so a tensor split would contradict the placement.
+                        # TP + streaming is future work.
+                        logger.info(
+                            "MoE streaming: tensor parallelism disabled "
+                            "(expert placement is single-device; use one GPU)"
+                        )
+                    tensor_parallel = False
+                    tp_tensor_split = None
+                    # Pin every selected GPU the plan priced VRAM from; a
+                    # CPU-only plan (gpu_layers == 0) pins nothing.
+                    gpu_indices = (
+                        sorted(idx for idx, _free in gpus)
+                        if _plan.gpu_layers > 0 and gpus
+                        else None
+                    )
+                    if effective_ctx > 0:
+                        effective_ctx = min(effective_ctx, _plan.ctx_cap)
+                    else:
+                        effective_ctx = _plan.ctx_cap
+                    if max_available_ctx > 0:
+                        max_available_ctx = min(max_available_ctx, _plan.ctx_cap)
+                    else:
+                        max_available_ctx = _plan.ctx_cap
+                    n_parallel = max(1, _plan.parallel_slots)
+                    # Report the pinned placement, not the auto defaults.
+                    self._gpu_layers = _plan.gpu_layers
+                    self._n_cpu_moe = _plan.n_cpu_moe
+                    self._streaming_plan = self._streaming_plan_status_dict(_plan)
+
                 # Audio input straight from the mmproj (clip.has_audio_encoder),
                 # independent of token names.
                 self._mmproj_has_audio = False
@@ -8725,7 +9016,19 @@ class LlamaCppBackend:
                 # Set when a positional --tensor-split is emitted, so the env block
                 # can pin CUDA to PCI order even without a GPU subset (see below).
                 manual_tensor_split_emitted = False
-                if gpu_memory_mode == "manual" and gpu_layers >= 0:
+                if _moe_stream_plan is not None:
+                    # Feasible MoE-streaming plan: emit its explicit placement
+                    # (--gpu-layers/--fit off/--n-cpu-moe, -ot pinning or the ik
+                    # runtime cache, -ctk/-ctv) instead of any fit branch.
+                    _ik_rtr = _ik_flavor_active and bool(server_caps.get("supports_rtr"))
+                    self._apply_streaming_plan(
+                        cmd,
+                        _moe_stream_plan,
+                        n_moe_layers = self.n_moe_layers,
+                        leading_dense = self._leading_dense_block_count or 0,
+                        ik_rtr = _ik_rtr,
+                    )
+                elif gpu_memory_mode == "manual" and gpu_layers >= 0:
                     # Pin the user's layer count and disable auto-fit. --fit off
                     # also means _ctx_integrity_flags must not add --fit-ctx.
                     use_fit = False
@@ -8882,6 +9185,16 @@ class LlamaCppBackend:
                     # An env-only type is left inherited (untouched) so an
                     # asymmetric K/V env reaches the child as set.
                     self._cache_type_kv = None
+
+                if (
+                    _moe_stream_plan is not None
+                    and self._cache_type_kv is None
+                    and not _cache_type_from_env
+                ):
+                    # _apply_streaming_plan already emitted the plan's -ctk/-ctv
+                    # (a user/extras cache type above last-wins over it); report
+                    # the plan's type when nothing explicit overrode it.
+                    self._cache_type_kv = _moe_stream_plan.kv_cache_type_k
 
                 # Tensor parallelism: split the model across GPUs by tensor
                 # rather than by layer. The UI only offers it on multi-GPU; a
@@ -10378,6 +10691,9 @@ class LlamaCppBackend:
             self._n_layers = None
             self._n_experts = None
             self._leading_dense_block_count = None
+            self._n_experts_active = 0
+            self._expert_ffn_length = 0
+            self._streaming_plan = None
             self._n_kv_heads = None
             self._n_kv_heads_by_layer = None
             self._n_heads = None

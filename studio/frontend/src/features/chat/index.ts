@@ -34,6 +34,7 @@ export type {
   BackendModelDetails,
   GgufVariantDetail,
   InferenceStatusResponse,
+  StreamingPlanInfo,
 } from "./types/api";
 export {
   applyActiveModelStatusToStore,

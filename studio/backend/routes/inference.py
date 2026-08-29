@@ -7699,6 +7699,7 @@ async def get_status(current_subject: str = Depends(get_current_subject)):
                 requested_context_length = llama_backend.requested_n_ctx,
                 n_layers = llama_backend.n_layers,
                 n_moe_layers = llama_backend.n_moe_layers,
+                streaming_plan = llama_backend.streaming_plan,
                 gpu_ids = llama_backend.gpu_ids,
                 requested_gpu_ids = llama_backend.requested_gpu_ids,
                 **_parallel_slot_echo(llama_backend),
