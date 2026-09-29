@@ -50,6 +50,10 @@ export function applyPerModelConfigToRuntime(
   useChatRuntimeStore.setState({
     customContextLength: config.customContextLength ?? null,
     kvCacheDtype: config.kvCacheDtype ?? null,
+    virtualKv: config.virtualKv ?? false,
+    virtualKvRecentTokens: config.virtualKvRecentTokens ?? 8192,
+    virtualKvSelectedTokens: config.virtualKvSelectedTokens ?? 8192,
+    virtualKvExperimental: config.virtualKvExperimental ?? false,
     speculativeType:
       normalizeSpeculativeType(config.speculativeType) ??
       readPersistedSpeculativeType(),
@@ -100,6 +104,10 @@ export function currentRuntimePerModelConfig(
       ? normalizeMaxSeqLength(s.params.maxSeqLength)
       : null,
     kvCacheDtype: s.kvCacheDtype ?? null,
+    virtualKv: s.virtualKv,
+    virtualKvRecentTokens: s.virtualKvRecentTokens,
+    virtualKvSelectedTokens: s.virtualKvSelectedTokens,
+    virtualKvExperimental: s.virtualKvExperimental,
     speculativeType: normalizeSpeculativeType(s.speculativeType),
     specDraftNMax: s.specDraftNMax ?? null,
     nParallel: s.nParallel ?? null,
@@ -125,6 +133,10 @@ export function perModelConfigsEqual(
     normalizeMaxSeqLength(a.maxSeqLength) ===
       normalizeMaxSeqLength(b.maxSeqLength) &&
     (a.kvCacheDtype ?? null) === (b.kvCacheDtype ?? null) &&
+    Boolean(a.virtualKv) === Boolean(b.virtualKv) &&
+    (a.virtualKvRecentTokens ?? 8192) === (b.virtualKvRecentTokens ?? 8192) &&
+    (a.virtualKvSelectedTokens ?? 8192) === (b.virtualKvSelectedTokens ?? 8192) &&
+    Boolean(a.virtualKvExperimental) === Boolean(b.virtualKvExperimental) &&
     normalizeSpeculativeType(a.speculativeType) ===
       normalizeSpeculativeType(b.speculativeType) &&
     (a.specDraftNMax ?? null) === (b.specDraftNMax ?? null) &&

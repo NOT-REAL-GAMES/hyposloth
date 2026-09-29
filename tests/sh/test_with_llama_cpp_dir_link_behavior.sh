@@ -78,6 +78,7 @@ rm -rf "$T/.symprobe"
 # executable), without needing a real platform binary.
 mk_exe()    { printf '#!/bin/sh\necho fake\n' > "$1"; chmod +x "$1"; }
 mk_built()  { mkdir -p "$1/build/bin"; mk_exe "$1/build/bin/llama-server"; }
+mk_named()  { mkdir -p "$1/build-vkv-cuda/bin"; mk_exe "$1/build-vkv-cuda/bin/llama-server"; }
 mk_flat()   { mkdir -p "$1"; mk_exe "$1/llama-server"; }
 
 # 1. External CMake build -> linked, and BOTH install paths disarmed.
@@ -100,6 +101,12 @@ EXT2="$T/ext_flat"; mk_flat "$EXT2"
 CANON2="$T/home2/llama.cpp"; mkdir -p "$(dirname "$CANON2")"
 run_link "$EXT2" "$CANON2"
 check "flat build: linked (root-level llama-server accepted)" "true" "$(val LINKED)"
+
+# 2b. A named CMake build directory is accepted too.
+EXT2B="$T/ext_named"; mk_named "$EXT2B"
+CANON2B="$T/home2b/llama.cpp"; mkdir -p "$(dirname "$CANON2B")"
+run_link "$EXT2B" "$CANON2B"
+check "named CMake build: linked" "true" "$(val LINKED)"
 
 # 3. Unbuilt tree -> rejected (non-zero exit, no link created).
 EXT3="$T/ext_empty"; mkdir -p "$EXT3"

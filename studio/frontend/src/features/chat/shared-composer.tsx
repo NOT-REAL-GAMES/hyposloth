@@ -1092,14 +1092,19 @@ export function SharedComposer({
         const effectiveChatTemplateOverride = cleanCompareChatTemplate(
           ownConfig.chatTemplateOverride,
         );
-        const effectiveSpeculativeType =
-          ownConfig.speculativeType ?? specSettings.speculativeType;
-        const effectiveSpecDraftNMax = ownRemembered
-          ? resolveCompareSpecDraftNMax(
-              effectiveSpeculativeType,
-              ownConfig.specDraftNMax,
-            )
-          : specSettings.specDraftNMax;
+        const effectiveVirtualKv = targetIsGguf && (ownConfig.virtualKv ?? false);
+        const effectiveSpeculativeType = effectiveVirtualKv
+          ? "off"
+          : (ownConfig.speculativeType ?? specSettings.speculativeType);
+        const effectiveSpecDraftNMax = effectiveVirtualKv
+          ? null
+          : ownRemembered
+            ? resolveCompareSpecDraftNMax(
+                effectiveSpeculativeType,
+                ownConfig.specDraftNMax,
+              )
+            : specSettings.specDraftNMax;
+        const effectiveNParallel = effectiveVirtualKv ? 1 : (ownConfig.nParallel ?? null);
         const effectiveTensorParallel = resolvedIsDiffusion
           ? false
           : ownRemembered
@@ -1162,6 +1167,10 @@ export function SharedComposer({
           trust_remote_code: loadTrustRemoteCode,
           chat_template_override: effectiveChatTemplateOverride,
           cache_type_kv: ownConfig.kvCacheDtype ?? null,
+          virtual_kv: effectiveVirtualKv,
+          virtual_kv_recent_tokens: ownConfig.virtualKvRecentTokens,
+          virtual_kv_selected_tokens: ownConfig.virtualKvSelectedTokens,
+          virtual_kv_experimental: ownConfig.virtualKvExperimental,
           tensor_parallel: effectiveTensorParallel,
           // Scope the validate to the picked GPUs. GGUF-only, like the load
           // below: a non-GGUF target must not inherit a hidden GGUF GPU pick.
@@ -1170,7 +1179,7 @@ export function SharedComposer({
                 gpu_ids: effectiveSelectedGpuIds ?? undefined,
                 gpu_memory_mode: effectiveGpuMemoryMode,
                 // Slots scale the KV estimate; keep validate sized like the load.
-                n_parallel: ownConfig.nParallel ?? null,
+                n_parallel: effectiveNParallel,
               }
             : {}),
         });
@@ -1229,6 +1238,10 @@ export function SharedComposer({
           approved_remote_code_fingerprint: approvedRemoteCodeFingerprint,
           chat_template_override: effectiveChatTemplateOverride,
           cache_type_kv: ownConfig.kvCacheDtype ?? null,
+          virtual_kv: effectiveVirtualKv,
+          virtual_kv_recent_tokens: ownConfig.virtualKvRecentTokens,
+          virtual_kv_selected_tokens: ownConfig.virtualKvSelectedTokens,
+          virtual_kv_experimental: ownConfig.virtualKvExperimental,
           speculative_type: effectiveSpeculativeType,
           spec_draft_n_max: effectiveSpecDraftNMax,
           tensor_parallel: effectiveTensorParallel,
@@ -1239,7 +1252,7 @@ export function SharedComposer({
                 n_cpu_moe: effectiveNCpuMoe,
                 tensor_split: compareLoadKnobs.splitRatio ?? undefined,
                 gpu_ids: effectiveSelectedGpuIds ?? undefined,
-                n_parallel: ownConfig.nParallel ?? null,
+                n_parallel: effectiveNParallel,
               }
             : {}),
         });
@@ -1275,7 +1288,7 @@ export function SharedComposer({
         // count there would mint a phantom override a preset carries onto a GGUF.
         const committedSlots =
           targetIsGguf && !(resp.is_diffusion ?? false)
-            ? (ownConfig.nParallel ?? null)
+            ? effectiveNParallel
             : null;
         useChatRuntimeStore.setState({
           supportsReasoning: resp.supports_reasoning ?? false,
@@ -1285,6 +1298,14 @@ export function SharedComposer({
           supportsTools: resp.supports_tools ?? false,
           kvCacheDtype: resp.cache_type_kv ?? null,
           loadedKvCacheDtype: resp.cache_type_kv ?? null,
+          virtualKv: resp.virtual_kv ?? false,
+          loadedVirtualKv: resp.virtual_kv ?? false,
+          virtualKvRecentTokens: resp.virtual_kv_recent_tokens ?? 8192,
+          loadedVirtualKvRecentTokens: resp.virtual_kv_recent_tokens ?? 8192,
+          virtualKvSelectedTokens: resp.virtual_kv_selected_tokens ?? 8192,
+          loadedVirtualKvSelectedTokens: resp.virtual_kv_selected_tokens ?? 8192,
+          virtualKvExperimental: resp.virtual_kv_experimental ?? false,
+          loadedVirtualKvExperimental: resp.virtual_kv_experimental ?? false,
           // Click-time value, not the resolved echo (see the single-model load).
           nParallel: committedSlots,
           loadedNParallel: committedSlots,

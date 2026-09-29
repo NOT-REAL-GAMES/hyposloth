@@ -15,6 +15,10 @@ export interface PerModelConfig {
   customContextLength: number | null;
   maxSeqLength: number | null;
   kvCacheDtype: string | null;
+  virtualKv?: boolean;
+  virtualKvRecentTokens?: number;
+  virtualKvSelectedTokens?: number;
+  virtualKvExperimental?: boolean;
   speculativeType: string | null;
   specDraftNMax: number | null;
   nParallel: number | null;
@@ -35,6 +39,10 @@ export const DEFAULT_PER_MODEL_CONFIG: PerModelConfig = {
   customContextLength: null,
   maxSeqLength: null,
   kvCacheDtype: null,
+  virtualKv: false,
+  virtualKvRecentTokens: 8192,
+  virtualKvSelectedTokens: 8192,
+  virtualKvExperimental: false,
   speculativeType: null,
   specDraftNMax: null,
   nParallel: null,
@@ -100,6 +108,10 @@ const STORED_CONFIG_FIELDS = new Set([
   "customContextLength",
   "maxSeqLength",
   "kvCacheDtype",
+  "virtualKv",
+  "virtualKvRecentTokens",
+  "virtualKvSelectedTokens",
+  "virtualKvExperimental",
   "speculativeType",
   "specDraftNMax",
   "nParallel",
@@ -487,6 +499,18 @@ function normalizeV1(partial: RawConfig): PerModelConfig {
       VALID_KV_CACHE_DTYPES.has(partial.kvCacheDtype)
         ? partial.kvCacheDtype
         : null,
+    virtualKv: partial.virtualKv === true,
+    virtualKvRecentTokens:
+      typeof partial.virtualKvRecentTokens === "number" &&
+      Number.isFinite(partial.virtualKvRecentTokens)
+        ? Math.max(1, Math.min(MAX_SEQ_LENGTH_MAX, Math.round(partial.virtualKvRecentTokens)))
+        : 8192,
+    virtualKvSelectedTokens:
+      typeof partial.virtualKvSelectedTokens === "number" &&
+      Number.isFinite(partial.virtualKvSelectedTokens)
+        ? Math.max(1, Math.min(MAX_SEQ_LENGTH_MAX, Math.round(partial.virtualKvSelectedTokens)))
+        : 8192,
+    virtualKvExperimental: partial.virtualKvExperimental === true,
     speculativeType,
     specDraftNMax,
     nParallel:
@@ -637,6 +661,10 @@ export function isDefaultConfig(config: PerModelConfig): boolean {
     config.customContextLength == null &&
     config.maxSeqLength == null &&
     (config.kvCacheDtype ?? null) === DEFAULT_PER_MODEL_CONFIG.kvCacheDtype &&
+    Boolean(config.virtualKv) === false &&
+    (config.virtualKvRecentTokens ?? 8192) === 8192 &&
+    (config.virtualKvSelectedTokens ?? 8192) === 8192 &&
+    Boolean(config.virtualKvExperimental) === false &&
     config.speculativeType === DEFAULT_PER_MODEL_CONFIG.speculativeType &&
     config.specDraftNMax == null &&
     config.nParallel == null &&

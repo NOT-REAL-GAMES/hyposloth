@@ -22,6 +22,33 @@ from core.inference.llama_server_args import PARALLEL_MAX, PARALLEL_MIN
 from picker.schemas import MAX_CHAT_TEMPLATE_BYTES
 
 
+class VirtualKVDevicePlan(BaseModel):
+    device_index: int
+    attention_layers: int
+    recurrent_layers: int
+    weight_bytes: int
+    safety_compute_bytes: int
+    recurrent_bytes: int
+    recent_bytes: int
+    descriptor_bytes: int
+    staging_bytes: int
+    host_bounce_bytes: int
+
+
+class VirtualKVPlan(BaseModel):
+    selector_type: Literal["none", "quest", "glm53"]
+    certification_state: Literal["unsupported", "experimental", "certified"]
+    page_size: int
+    requested_recent_tokens: int
+    effective_recent_tokens: int
+    requested_selected_tokens: int
+    effective_selected_tokens: int
+    context_capacity_tokens: int
+    cpu_cold_cache_bytes: int
+    cpu_metadata_bytes: int
+    devices: List[VirtualKVDevicePlan] = Field(default_factory = list)
+
+
 class LoadRequest(BaseModel):
     """Request to load a model for inference"""
 
@@ -75,6 +102,16 @@ class LoadRequest(BaseModel):
             "KV cache data type for both K and V "
             "(e.g. 'f16', 'bf16', 'q8_0', 'q4_0', 'q4_1', 'q5_0', 'q5_1', 'iq4_nl', 'f32')"
         ),
+    )
+    virtual_kv: bool = Field(False, description = "Enable the bounded virtual KV cache")
+    virtual_kv_recent_tokens: int = Field(
+        8192, ge = 1, le = 1048576, description = "GPU recent-token budget"
+    )
+    virtual_kv_selected_tokens: int = Field(
+        8192, ge = 1, le = 1048576, description = "Selected historical-token budget"
+    )
+    virtual_kv_experimental: bool = Field(
+        False, description = "Allow a compatible but uncertified virtual-KV adapter"
     )
     gpu_ids: Optional[List[int]] = Field(
         None,
@@ -269,6 +306,10 @@ class ValidateModelRequest(BaseModel):
     max_seq_length: int = Field(0, ge = 0, le = 1048576)
     load_in_4bit: bool = Field(True)
     cache_type_kv: Optional[str] = Field(None)
+    virtual_kv: bool = False
+    virtual_kv_recent_tokens: int = Field(8192, ge = 1, le = 1048576)
+    virtual_kv_selected_tokens: int = Field(8192, ge = 1, le = 1048576)
+    virtual_kv_experimental: bool = False
     tensor_parallel: bool = Field(False)
     gpu_ids: Optional[List[int]] = Field(None)
     gpu_memory_mode: Literal["auto", "manual"] = Field(
@@ -504,6 +545,13 @@ class LoadResponse(BaseModel):
             "(e.g. 'f16', 'bf16', 'q8_0', 'q4_0', 'q4_1', 'q5_0', 'q5_1', 'iq4_nl', 'f32')"
         ),
     )
+    virtual_kv_plan: Optional[VirtualKVPlan] = Field(
+        None, description = "Static virtual-KV residency plan reported by llama-server"
+    )
+    virtual_kv: bool = False
+    virtual_kv_recent_tokens: int = 8192
+    virtual_kv_selected_tokens: int = 8192
+    virtual_kv_experimental: bool = False
     chat_template: Optional[str] = Field(
         None,
         description = "Jinja2 chat template string (from GGUF metadata or tokenizer)",
@@ -688,6 +736,13 @@ class InferenceStatusResponse(BaseModel):
             "or None for default"
         ),
     )
+    virtual_kv_plan: Optional[VirtualKVPlan] = Field(
+        None, description = "Active static virtual-KV residency plan"
+    )
+    virtual_kv: bool = False
+    virtual_kv_recent_tokens: int = 8192
+    virtual_kv_selected_tokens: int = 8192
+    virtual_kv_experimental: bool = False
     chat_template: Optional[str] = Field(
         None, description = "Model's default chat template (Jinja2 source), if any"
     )
@@ -790,6 +845,10 @@ class InferenceStatusResponse(BaseModel):
             "Whether llama.cpp supports MTP (--spec-type mtp/draft-mtp). "
             "False -> recommend `unsloth studio update`."
         ),
+    )
+    llama_cpp_supports_virtual_kv: bool = Field(
+        False,
+        description = "Whether the selected llama-server binary advertises --virtual-kv",
     )
     spec_fallback_reason: Optional[str] = Field(
         None,

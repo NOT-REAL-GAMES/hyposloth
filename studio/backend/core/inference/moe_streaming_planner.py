@@ -125,6 +125,13 @@ class StreamingTargets:
     # e.g. measured from a calibration run. Drives which expert layers get
     # pinned / kept warm. None => uniform popularity assumed.
     expert_profile: Optional[Mapping[str, float]] = None
+    # Optional architecture-aware CPU KV reservation supplied by the runtime
+    # that parsed the GGUF.  Zero keeps the conservative legacy estimate.
+    # Virtual KV uses this to reserve its full cold cache before assigning the
+    # remaining RAM to warm expert pages.
+    kv_bytes_per_token: int = 0
+    kv_fixed_bytes: int = 0
+    kv_cache_type: Optional[str] = None
 
 
 @dataclass(frozen = True)
@@ -259,7 +266,14 @@ def plan_moe_streaming(
     notes: List[str] = []
     ram_budget = targets.max_ram_bytes or int(0.75 * hw.ram_available_bytes)
     vram_budget = max(0, hw.vram_available_bytes)
-    capacity = ram_budget + vram_budget
+    exact_kv_at_target = 0
+    if targets.kv_bytes_per_token > 0:
+        exact_kv_at_target = max(0, targets.kv_fixed_bytes) + max(
+            0, targets.kv_bytes_per_token
+        ) * max(1, targets.context_tokens) * max(1, targets.parallel_slots)
+    # A virtual cache owns its cold CPU reservation before the planner assigns
+    # the remaining resident capacity to weights and experts.
+    capacity = max(0, ram_budget - exact_kv_at_target) + vram_budget
     is_moe = meta.n_experts > 0 and meta.n_moe_layers > 0
 
     # -- 1. Dense refusal -------------------------------------------------
@@ -285,7 +299,7 @@ def plan_moe_streaming(
     # residency split for display purposes only.
     if meta.file_size_bytes <= capacity:
         resident_vram = min(meta.file_size_bytes, vram_budget)
-        resident_ram = meta.file_size_bytes - resident_vram
+        resident_ram = meta.file_size_bytes - resident_vram + exact_kv_at_target
         notes.append(
             f"model ({meta.file_size_bytes / GIB:.1f} GiB) fits resident capacity "
             f"({capacity / GIB:.1f} GiB): normal fit path, no streaming knobs"
@@ -302,8 +316,8 @@ def plan_moe_streaming(
             n_cpu_moe = 0,
             override_tensor_rules = (),
             fit = True,
-            kv_cache_type_k = "q8_0",
-            kv_cache_type_v = "q8_0",
+            kv_cache_type_k = targets.kv_cache_type or "q8_0",
+            kv_cache_type_v = targets.kv_cache_type or "q8_0",
             ctx_cap = targets.context_tokens,
             parallel_slots = max(1, targets.parallel_slots),
             resident_ram_bytes = resident_ram,
@@ -386,7 +400,15 @@ def plan_moe_streaming(
     ctx = max(1, targets.context_tokens)
     slots = max(1, targets.parallel_slots)
 
+    exact_kv = targets.kv_bytes_per_token > 0
+
     def _kv_at(c: int, s: int) -> Tuple[int, bool]:
+        if exact_kv:
+            return (
+                max(0, targets.kv_fixed_bytes)
+                + max(0, targets.kv_bytes_per_token) * int(c) * int(s),
+                False,
+            )
         raw = _kv_reserve_bytes(meta, c, s)
         q4 = raw > int(_KV_Q4_TRIGGER_FRACTION * ram_budget)
         return (int(raw * _KV_Q4_SCALE) if q4 else raw), q4
@@ -402,11 +424,16 @@ def plan_moe_streaming(
         ctx = max(_MIN_CTX_TOKENS, int(ctx * (kv_cap / max(kv_reserve, 1))))
         kv_reserve, use_q4 = _kv_at(ctx, slots)
         notes.append(f"KV over half the RAM budget: capped context at {ctx} tokens")
-    kv_type = "q4_0" if use_q4 else "q8_0"
+    kv_type = targets.kv_cache_type or ("q4_0" if use_q4 else "q8_0")
     if use_q4:
         notes.append(
             f"KV cache downgraded to q4_0: q8_0 reservation would exceed "
             f"{_KV_Q4_TRIGGER_FRACTION:.0%} of the RAM budget"
+        )
+    if exact_kv:
+        notes.append(
+            "KV reservation uses architecture-aware runtime geometry; "
+            "cold KV is charged before warm expert residency"
         )
     notes.append(
         "expert-weight quant (~2-bit) vs shared-tensor quant (Q4+) is a "

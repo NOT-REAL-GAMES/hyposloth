@@ -39,7 +39,7 @@ GIB = 1024 ** 3
 
 
 def _gguf_blob(kvs) -> bytes:
-    """Minimal GGUF header: magic, version, 0 tensors, then uint32/string KVs."""
+    """Minimal GGUF header with the scalar and bool-array KVs used below."""
     out = [struct.pack("<II", 0x46554747, 3), struct.pack("<QQ", 0, len(kvs))]
     for key, value in kvs:
         encoded = key.encode("utf-8")
@@ -50,6 +50,9 @@ def _gguf_blob(kvs) -> bytes:
             out.append(struct.pack("<I", 8))  # STRING
             out.append(struct.pack("<Q", len(text)))
             out.append(text)
+        elif isinstance(value, list):
+            out.append(struct.pack("<IIQ", 9, 7, len(value)))  # ARRAY of BOOL
+            out.append(bytes(bool(item) for item in value))
         else:
             out.append(struct.pack("<I", 4))  # UINT32
             out.append(struct.pack("<I", int(value)))
@@ -149,6 +152,114 @@ def test_gguf_metadata_missing_moe_keys_default_zero(tmp_path):
     assert b._n_experts_active == 0
     assert b._expert_ffn_length == 0
     assert b.n_moe_layers == 0
+
+
+def test_k3_virtual_kv_cpu_reservation_uses_only_mla_layers():
+    b = _backend(
+        _architecture = "kimi-k3",
+        _n_layers = 93,
+        _n_kv_heads = 1,
+        _n_kv_heads_by_layer = [0] * 69 + [1] * 24,
+        _kv_lora_rank = 512,
+        _key_length_mla = 64,
+        _kv_key_length = 576,
+        _indexer_kpool = None,
+    )
+    per_token, fixed, cache_type = b._virtual_kv_cpu_reservation(1024 * 1024, "q8_0")
+    # q8_0 stores 32 values in 34 bytes: 576 values = 612 bytes/layer.
+    assert per_token == 24 * 612 + 16
+    assert fixed == 4096 * 16 + 256 * 612
+    assert cache_type == "q8_0"
+
+
+def test_generic_virtual_kv_cpu_reservation_uses_actual_gqa_kv_rows():
+    b = _backend(
+        _architecture = "llama",
+        _n_layers = 32,
+        _n_kv_heads = 8,
+        _n_kv_heads_by_layer = None,
+        _n_heads = 32,
+        _embedding_length = 4096,
+        _kv_lora_rank = None,
+        _kv_key_length = 128,
+        _kv_value_length = 128,
+        _shared_kv_layers = None,
+    )
+    per_token, fixed, cache_type = b._virtual_kv_cpu_reservation(1024 * 1024, "q4_0")
+    # q4_0 row(8 * 128) = 576 bytes; ordinary attention stores K and V.
+    assert per_token == 32 * (576 + 576) + 16
+    assert fixed == 4096 * 16 + 256 * (576 + 576)
+    assert cache_type == "q4_0"
+
+
+def test_gguf_metadata_reads_glm_virtual_kv_indexer_geometry(tmp_path):
+    path = tmp_path / "glm.gguf"
+    path.write_bytes(
+        _gguf_blob(
+            [
+                ("general.architecture", "glm5next"),
+                ("glm5next.block_count", 78),
+                ("glm5next.attention.indexer.key_length", 128),
+                ("glm5next.attention.indexer.kpool", 4),
+                ("glm5next.attention.indexer.types", [True, False, True]),
+            ]
+        )
+    )
+    b = _backend()
+    b._read_gguf_metadata(str(path))
+    assert b._indexer_key_length == 128
+    assert b._indexer_kpool == 4
+    assert b._indexer_types == [True, False, True]
+
+
+def test_glm_virtual_kv_descriptor_context_caps_match_cuda_planner():
+    glm53 = _backend(
+        _architecture = "glm-dsa",
+        _n_layers = 78,
+        _context_length = 1024 * 1024,
+        _indexer_key_length = 128,
+        _indexer_kpool = None,
+        _indexer_types = None,
+    )
+    # 21 native full indexers, Q8_0 row(128) = 136 bytes, 512 MiB cap.
+    assert glm53._virtual_kv_descriptor_context_cap() == 187904
+
+    glm_next = _backend(
+        _architecture = "glm5next",
+        _n_layers = 78,
+        _context_length = 1024 * 1024,
+        _indexer_key_length = 128,
+        _indexer_kpool = 4,
+        _indexer_types = [True] * 78,
+    )
+    assert glm_next._virtual_kv_descriptor_context_cap() == 202240
+
+
+def test_glm_dsa_virtual_kv_reservation_uses_native_token_indexer():
+    b = _backend(
+        _architecture = "glm-dsa",
+        _n_layers = 78,
+        _n_kv_heads = 1,
+        _n_kv_heads_by_layer = None,
+        _kv_lora_rank = 512,
+        _key_length_mla = 64,
+        _kv_key_length = 576,
+        _indexer_kpool = None,
+    )
+    per_token, fixed, cache_type = b._virtual_kv_cpu_reservation(32768, "q4_0")
+    # q4_0 stores 32 values in 18 bytes: 576 values = 324 bytes/layer.
+    assert per_token == 78 * 324 + 16
+    assert fixed == 32768 * 16 + 324
+    assert cache_type == "q4_0"
+
+
+def test_virtual_kv_preflight_requires_experimental_and_accepts_compatible_architectures():
+    with pytest.raises(ValueError, match = "Experimental"):
+        LlamaCppBackend._validate_virtual_kv_request("glm-dsa", False)
+    for architecture in ("glm-dsa", "glm5next", "kimi-k3", "llama", "qwen2", "qwen3"):
+        LlamaCppBackend._validate_virtual_kv_request(architecture, True)
+    with pytest.raises(ValueError, match = "not structurally validated"):
+        LlamaCppBackend._validate_virtual_kv_request("gpt2", True)
 
 
 # ── _apply_streaming_plan argv ─────────────────────────────────────────

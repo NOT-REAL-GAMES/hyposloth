@@ -4240,6 +4240,24 @@ def test_spec_draft_n_max_only_stored_for_mtp_modes():
     assert "spec_draft_n_max" not in ngram
 
 
+def test_virtual_kv_override_round_trips_to_gguf_load_kwargs():
+    override = settings.normalize_model_override(
+        {
+            "virtual_kv": True,
+            "virtual_kv_recent_tokens": 16384,
+            "virtual_kv_selected_tokens": 32768,
+            "virtual_kv_experimental": True,
+        }
+    )
+    assert settings.model_override_load_kwargs(override, is_gguf = True) == {
+        "virtual_kv": True,
+        "virtual_kv_recent_tokens": 16384,
+        "virtual_kv_selected_tokens": 32768,
+        "virtual_kv_experimental": True,
+    }
+    assert settings.model_override_load_kwargs(override, is_gguf = False) == {}
+
+
 def test_resolve_fit_max_seq_length_hands_sizing_to_fit_under_manual_auto_layers():
     # Manual GPU memory with Auto layers hands the context to llama.cpp --fit, so
     # the load sends the context pin (or 0), not the stored max seq length.

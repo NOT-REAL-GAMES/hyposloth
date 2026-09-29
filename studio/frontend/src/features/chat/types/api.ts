@@ -52,6 +52,10 @@ export interface LoadModelRequest {
   approved_remote_code_fingerprint?: string | null;
   chat_template_override?: string | null;
   cache_type_kv?: string | null;
+  virtual_kv?: boolean;
+  virtual_kv_recent_tokens?: number;
+  virtual_kv_selected_tokens?: number;
+  virtual_kv_experimental?: boolean;
   /**
    * Speculative decoding mode for GGUF models. Canonical values: "auto"
    * (platform-aware: MTP on MTP GGUFs, ngram-mod fallback for sub-3B), "mtp"
@@ -87,6 +91,33 @@ export interface LoadModelRequest {
   tensor_split?: number[] | null;
   /** Picked CUDA/ROCm physical IDs or Vulkan ordinals (omit/empty = automatic). */
   gpu_ids?: number[];
+}
+
+export interface VirtualKvDevicePlan {
+  device_index: number;
+  attention_layers: number;
+  recurrent_layers: number;
+  weight_bytes: number;
+  safety_compute_bytes: number;
+  recurrent_bytes: number;
+  recent_bytes: number;
+  descriptor_bytes: number;
+  staging_bytes: number;
+  host_bounce_bytes: number;
+}
+
+export interface VirtualKvPlan {
+  selector_type: "none" | "quest" | "glm53";
+  certification_state: "unsupported" | "experimental" | "certified";
+  page_size: number;
+  requested_recent_tokens: number;
+  effective_recent_tokens: number;
+  requested_selected_tokens: number;
+  effective_selected_tokens: number;
+  context_capacity_tokens: number;
+  cpu_cold_cache_bytes: number;
+  cpu_metadata_bytes: number;
+  devices: VirtualKvDevicePlan[];
 }
 
 export interface ValidateModelResponse {
@@ -192,6 +223,11 @@ export interface LoadModelResponse {
   supports_preserve_thinking?: boolean;
   supports_tools?: boolean;
   cache_type_kv?: string | null;
+  virtual_kv_plan?: VirtualKvPlan | null;
+  virtual_kv?: boolean;
+  virtual_kv_recent_tokens?: number;
+  virtual_kv_selected_tokens?: number;
+  virtual_kv_experimental?: boolean;
   chat_template?: string | null;
   /** Canonical UI-facing mode the load request resolved to. See LoadModelRequest. */
   speculative_type?: string | null;
@@ -274,6 +310,12 @@ export interface InferenceStatusResponse {
   max_context_length?: number | null;
   native_context_length?: number | null;
   cache_type_kv?: string | null;
+  virtual_kv_plan?: VirtualKvPlan | null;
+  llama_cpp_supports_virtual_kv?: boolean;
+  virtual_kv?: boolean;
+  virtual_kv_recent_tokens?: number;
+  virtual_kv_selected_tokens?: number;
+  virtual_kv_experimental?: boolean;
   chat_template_override?: string | null;
   /** Canonical UI-facing mode currently active. See LoadModelRequest. */
   speculative_type?: string | null;

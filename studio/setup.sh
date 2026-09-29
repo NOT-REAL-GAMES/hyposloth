@@ -1387,9 +1387,15 @@ _link_local_llama_quantize_shim() {
 
 # Accept any layout LlamaCppBackend._layout_candidates() resolves so the flag
 # never rejects a tree Hyposloth could actually run: a root-level llama-server (a
-# `make` build or a flat-extracted release) or the CMake build/bin/llama-server.
+# `make` build or a flat-extracted release), the standard CMake build, or a named
+# CMake directory such as build-vkv-cuda.
 _has_local_llama_server() {
-    [ -x "$1/llama-server" ] || [ -x "$1/build/bin/llama-server" ]
+    [ -x "$1/llama-server" ] && return 0
+    [ -x "$1/build/bin/llama-server" ] && return 0
+    for _local_server in "$1"/build-*/bin/llama-server; do
+        [ -x "$_local_server" ] && return 0
+    done
+    return 1
 }
 
 _LOCAL_LLAMA_CPP_LINKED=false
@@ -1433,7 +1439,7 @@ if [ -n "${UNSLOTH_LOCAL_LLAMA_CPP_DIR:-}" ]; then
         # rather than link an unbuilt or wrong-platform checkout and leave Hyposloth
         # with no usable binary.
         if ! _has_local_llama_server "$_RESOLVED_LOCAL"; then
-            step "llama.cpp" "no llama-server under $_RESOLVED_LOCAL (looked for ./llama-server and ./build/bin/llama-server) -- build llama.cpp there first, or drop --with-llama-cpp-dir" "$C_ERR"
+            step "llama.cpp" "no llama-server under $_RESOLVED_LOCAL (looked in the root and build*/bin layouts) -- build llama.cpp there first, or drop --with-llama-cpp-dir" "$C_ERR"
             setup_fail 1 "No llama-server was found under $_RESOLVED_LOCAL"
         fi
         # A stale link from a previous --with-llama-cpp-dir run isn't Hyposloth-owned

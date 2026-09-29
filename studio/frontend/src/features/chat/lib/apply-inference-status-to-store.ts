@@ -362,6 +362,18 @@ export function applyActiveModelStatusToStore(
         loadedKvCacheDtype: status.cache_type_kv,
       }),
     ...(seedLoadParams &&
+      status.virtual_kv !== undefined &&
+      (prevState.loadedVirtualKv === null || hydratingExistingModel) && {
+        virtualKv: status.virtual_kv,
+        loadedVirtualKv: status.virtual_kv,
+        virtualKvRecentTokens: status.virtual_kv_recent_tokens ?? 8192,
+        loadedVirtualKvRecentTokens: status.virtual_kv_recent_tokens ?? 8192,
+        virtualKvSelectedTokens: status.virtual_kv_selected_tokens ?? 8192,
+        loadedVirtualKvSelectedTokens: status.virtual_kv_selected_tokens ?? 8192,
+        virtualKvExperimental: status.virtual_kv_experimental ?? false,
+        loadedVirtualKvExperimental: status.virtual_kv_experimental ?? false,
+      }),
+    ...(seedLoadParams &&
       status.tensor_parallel !== undefined &&
       (prevState.loadedTensorParallel === null || hydratingExistingModel) && {
         tensorParallel: status.tensor_parallel,

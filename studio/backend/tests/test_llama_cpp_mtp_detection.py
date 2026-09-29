@@ -69,6 +69,23 @@ from core.inference.llama_cpp import (
 )
 
 
+def test_binary_discovery_finds_named_cuda_build(monkeypatch, tmp_path):
+    binary_name = "llama-server.exe" if sys.platform == "win32" else "llama-server"
+    release_dir = Path("bin/Release") if sys.platform == "win32" else Path("bin")
+
+    cpu_binary = tmp_path / "build-vkv" / release_dir / binary_name
+    cuda_binary = tmp_path / "build-vkv-cuda" / release_dir / binary_name
+    cpu_binary.parent.mkdir(parents = True)
+    cuda_binary.parent.mkdir(parents = True)
+    cpu_binary.write_bytes(b"")
+    cuda_binary.write_bytes(b"")
+
+    monkeypatch.delenv("LLAMA_SERVER_PATH", raising = False)
+    monkeypatch.setenv("UNSLOTH_LLAMA_CPP_PATH", str(tmp_path))
+
+    assert LlamaCppBackend._find_llama_server_binary() == str(cuda_binary)
+
+
 # Synthetic GGUF helper (mirrors test_gguf_metadata.py).
 
 _GGUF_MAGIC = 0x46554747
@@ -690,6 +707,21 @@ def test_probe_server_capabilities_uses_binary_library_env(tmp_path, monkeypatch
     ld_dirs = captured["env"]["LD_LIBRARY_PATH"].split(os.pathsep)
     assert str(fake.parent) in ld_dirs
     assert "/already-there" in ld_dirs
+
+
+def test_probe_server_capabilities_detects_virtual_kv(tmp_path, monkeypatch):
+    fake = tmp_path / "llama-server"
+    fake.write_text("")
+
+    monkeypatch.setattr(
+        "core.inference.llama_cpp.subprocess.run",
+        lambda *args, **kwargs: _types.SimpleNamespace(
+            stdout = "--virtual-kv  bounded virtual cache\n", stderr = "", returncode = 0
+        ),
+    )
+    _clear_caps_cache()
+    caps = LlamaCppBackend.probe_server_capabilities(str(fake))
+    assert caps["supports_virtual_kv"] is True
 
 
 @_NEEDS_BASH

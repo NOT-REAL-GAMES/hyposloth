@@ -773,6 +773,16 @@ export function useChatModelRuntime() {
               : stateBeforeUnload.chatTemplateOverride;
           const loadKvCacheDtype =
             pendingLoadConfig?.kvCacheDtype ?? stateBeforeUnload.kvCacheDtype;
+          const loadVirtualKv = pendingLoadConfig?.virtualKv ?? stateBeforeUnload.virtualKv;
+          const loadVirtualKvRecentTokens =
+            pendingLoadConfig?.virtualKvRecentTokens ??
+            stateBeforeUnload.virtualKvRecentTokens;
+          const loadVirtualKvSelectedTokens =
+            pendingLoadConfig?.virtualKvSelectedTokens ??
+            stateBeforeUnload.virtualKvSelectedTokens;
+          const loadVirtualKvExperimental =
+            pendingLoadConfig?.virtualKvExperimental ??
+            stateBeforeUnload.virtualKvExperimental;
           // gpuMemoryMode is a standing preference (kept across a model switch);
           // the rest are per-model knobs the reset below clears, so they are
           // re-baselined there in lock-step with the store.
@@ -824,6 +834,11 @@ export function useChatModelRuntime() {
             pendingLoadConfig?.specDraftNMax ?? stateBeforeUnload.specDraftNMax;
           let loadNParallel =
             pendingLoadConfig?.nParallel ?? stateBeforeUnload.nParallel;
+          if (loadVirtualKv) {
+            loadSpeculativeType = "off";
+            loadSpecDraftNMax = null;
+            loadNParallel = 1;
+          }
           try {
             // Lightweight pre-flight validation: avoid unloading a working model
             // if the new identifier is clearly invalid (e.g. bad HF id / path).
@@ -885,6 +900,10 @@ export function useChatModelRuntime() {
               is_lora: isLora,
               gguf_variant: ggufVariant ?? null,
               cache_type_kv: loadKvCacheDtype,
+              virtual_kv: loadVirtualKv,
+              virtual_kv_recent_tokens: loadVirtualKvRecentTokens,
+              virtual_kv_selected_tokens: loadVirtualKvSelectedTokens,
+              virtual_kv_experimental: loadVirtualKvExperimental,
               tensor_parallel: loadTensorParallel,
               gpu_ids: validateGpuIds ?? undefined,
               ...(isGguf
@@ -1064,6 +1083,10 @@ export function useChatModelRuntime() {
               approved_remote_code_fingerprint: approvedRemoteCodeFingerprint,
               chat_template_override: effectiveChatTemplateOverride,
               cache_type_kv: loadKvCacheDtype,
+              virtual_kv: loadVirtualKv,
+              virtual_kv_recent_tokens: loadVirtualKvRecentTokens,
+              virtual_kv_selected_tokens: loadVirtualKvSelectedTokens,
+              virtual_kv_experimental: loadVirtualKvExperimental,
               speculative_type: loadSpeculativeType,
               spec_draft_n_max: loadSpecDraftNMax,
               // GGUF-only: slots mean nothing for a transformers load.
@@ -1209,6 +1232,17 @@ export function useChatModelRuntime() {
                 : resolveToolsEnabledOnLoad(supportsTools)),
               kvCacheDtype: loadedKv,
               loadedKvCacheDtype: loadedKv,
+              virtualKv: loadResponse.virtual_kv ?? false,
+              loadedVirtualKv: loadResponse.virtual_kv ?? false,
+              virtualKvRecentTokens: loadResponse.virtual_kv_recent_tokens ?? 8192,
+              loadedVirtualKvRecentTokens:
+                loadResponse.virtual_kv_recent_tokens ?? 8192,
+              virtualKvSelectedTokens: loadResponse.virtual_kv_selected_tokens ?? 8192,
+              loadedVirtualKvSelectedTokens:
+                loadResponse.virtual_kv_selected_tokens ?? 8192,
+              virtualKvExperimental: loadResponse.virtual_kv_experimental ?? false,
+              loadedVirtualKvExperimental:
+                loadResponse.virtual_kv_experimental ?? false,
               tensorParallel: loadedTp,
               loadedTensorParallel: loadedTp,
               ...loadedGpuMemoryFields(loadResponse),
@@ -1319,6 +1353,13 @@ export function useChatModelRuntime() {
                   chat_template_override:
                     stateBeforeUnload.loadedChatTemplateOverride,
                   cache_type_kv: stateBeforeUnload.loadedKvCacheDtype,
+                  virtual_kv: stateBeforeUnload.loadedVirtualKv ?? false,
+                  virtual_kv_recent_tokens:
+                    stateBeforeUnload.loadedVirtualKvRecentTokens ?? 8192,
+                  virtual_kv_selected_tokens:
+                    stateBeforeUnload.loadedVirtualKvSelectedTokens ?? 8192,
+                  virtual_kv_experimental:
+                    stateBeforeUnload.loadedVirtualKvExperimental ?? false,
                   speculative_type:
                     stateBeforeUnload.loadedSpeculativeType,
                   spec_draft_n_max:
@@ -1358,6 +1399,20 @@ export function useChatModelRuntime() {
                   loadedSpecDraftNMax:
                     rollbackResponse.spec_draft_n_max ?? null,
                   loadedKvCacheDtype: rollbackResponse.cache_type_kv ?? null,
+                  virtualKv: rollbackResponse.virtual_kv ?? false,
+                  loadedVirtualKv: rollbackResponse.virtual_kv ?? false,
+                  virtualKvRecentTokens:
+                    rollbackResponse.virtual_kv_recent_tokens ?? 8192,
+                  loadedVirtualKvRecentTokens:
+                    rollbackResponse.virtual_kv_recent_tokens ?? 8192,
+                  virtualKvSelectedTokens:
+                    rollbackResponse.virtual_kv_selected_tokens ?? 8192,
+                  loadedVirtualKvSelectedTokens:
+                    rollbackResponse.virtual_kv_selected_tokens ?? 8192,
+                  virtualKvExperimental:
+                    rollbackResponse.virtual_kv_experimental ?? false,
+                  loadedVirtualKvExperimental:
+                    rollbackResponse.virtual_kv_experimental ?? false,
                   loadedChatTemplateOverride:
                     stateBeforeUnload.loadedChatTemplateOverride,
                   ...loadedGpuMemoryFields(rollbackResponse),

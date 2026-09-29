@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   GPU_LAYERS_AUTO,
   fetchGgufStagedMetadata,
+  getInferenceStatus,
   readPersistedSpeculativeType,
   useChatRuntimeStore,
 } from "@/features/chat";
@@ -100,6 +101,10 @@ const SPECULATIVE_TYPE_LABELS: Record<
 function hasNonDefaultAdvanced(config: PerModelConfig): boolean {
   return (
     config.kvCacheDtype != null ||
+    Boolean(config.virtualKv) ||
+    (config.virtualKvRecentTokens ?? 8192) !== 8192 ||
+    (config.virtualKvSelectedTokens ?? 8192) !== 8192 ||
+    Boolean(config.virtualKvExperimental) ||
     (config.speculativeType ?? "auto") !== "auto" ||
     config.specDraftNMax != null ||
     config.nParallel != null ||
@@ -125,6 +130,10 @@ function withoutUnsupportedDiffusionSettings(
     config.gpuLayers == null &&
     config.nCpuMoe == null &&
     !config.tensorParallel &&
+    !config.virtualKv &&
+    (config.virtualKvRecentTokens ?? 8192) === 8192 &&
+    (config.virtualKvSelectedTokens ?? 8192) === 8192 &&
+    !config.virtualKvExperimental &&
     !hasUnsupportedGpuPick
   ) {
     return config;
@@ -135,6 +144,10 @@ function withoutUnsupportedDiffusionSettings(
     gpuLayers: undefined,
     nCpuMoe: undefined,
     tensorParallel: false,
+    virtualKv: false,
+    virtualKvRecentTokens: 8192,
+    virtualKvSelectedTokens: 8192,
+    virtualKvExperimental: false,
     ...(hasUnsupportedGpuPick
       ? {
           selectedGpuIds: undefined,
@@ -520,6 +533,7 @@ function GgufAdvancedSettings({
   layerCount,
   moeLayerCount,
   isDiffusion,
+  virtualKvSupported,
   gpuDevices,
   gpuLayersInputRef,
   moeLayersInputRef,
@@ -532,6 +546,7 @@ function GgufAdvancedSettings({
   layerCount: number | null;
   moeLayerCount: number | null;
   isDiffusion: boolean;
+  virtualKvSupported: boolean;
   gpuDevices: SystemGpuDevice[];
   gpuLayersInputRef?: Ref<NumericValueInputHandle>;
   moeLayersInputRef?: Ref<NumericValueInputHandle>;
@@ -574,6 +589,99 @@ function GgufAdvancedSettings({
         </Select>
       </div>
 
+      {virtualKvSupported && !isDiffusion && (
+        <>
+          <div className={ROW_CLASS}>
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span className={LABEL_CLASS}>Virtual KV</span>
+              <InfoHint>
+                Preallocate bounded recent and selected KV working sets backed by
+                system RAM. This does not extend the model&apos;s context limit.
+              </InfoHint>
+            </div>
+            <Switch
+              className="panel-switch shrink-0"
+              checked={config.virtualKv ?? false}
+              onCheckedChange={(checked) =>
+                update({
+                  virtualKv: checked,
+                  ...(checked
+                    ? { speculativeType: "off", specDraftNMax: null, nParallel: 1 }
+                    : {}),
+                })
+              }
+            />
+          </div>
+
+          {config.virtualKv && (
+            <>
+              <div className={ROW_CLASS}>
+                <span className={LABEL_CLASS}>Recent KV Tokens</span>
+                <input
+                  type="number"
+                  min={256}
+                  max={MAX_SEQ_LENGTH_MAX}
+                  step={256}
+                  value={config.virtualKvRecentTokens ?? 8192}
+                  onChange={(event) => {
+                    const parsed = Number.parseInt(event.target.value, 10);
+                    if (Number.isFinite(parsed)) {
+                      update({
+                        virtualKvRecentTokens: Math.max(
+                          256,
+                          Math.min(MAX_SEQ_LENGTH_MAX, parsed),
+                        ),
+                      });
+                    }
+                  }}
+                  aria-label="Virtual KV recent tokens"
+                  className={NUMBER_INPUT_CLASS}
+                />
+              </div>
+              <div className={ROW_CLASS}>
+                <span className={LABEL_CLASS}>Selected KV Tokens</span>
+                <input
+                  type="number"
+                  min={256}
+                  max={MAX_SEQ_LENGTH_MAX}
+                  step={256}
+                  value={config.virtualKvSelectedTokens ?? 8192}
+                  onChange={(event) => {
+                    const parsed = Number.parseInt(event.target.value, 10);
+                    if (Number.isFinite(parsed)) {
+                      update({
+                        virtualKvSelectedTokens: Math.max(
+                          256,
+                          Math.min(MAX_SEQ_LENGTH_MAX, parsed),
+                        ),
+                      });
+                    }
+                  }}
+                  aria-label="Virtual KV selected tokens"
+                  className={NUMBER_INPUT_CLASS}
+                />
+              </div>
+              <div className={ROW_CLASS}>
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span className={LABEL_CLASS}>Experimental Adapters</span>
+                  <InfoHint>
+                    Allow compatible architectures that have not passed the
+                    virtual-KV certification gates.
+                  </InfoHint>
+                </div>
+                <Switch
+                  className="panel-switch shrink-0"
+                  checked={config.virtualKvExperimental ?? false}
+                  onCheckedChange={(checked) =>
+                    update({ virtualKvExperimental: checked })
+                  }
+                />
+              </div>
+            </>
+          )}
+        </>
+      )}
+
       <div className={ROW_CLASS}>
         <div className="flex min-w-0 items-center gap-1.5">
           <span className={LABEL_CLASS_WRAP}>Speculative Decoding</span>
@@ -583,6 +691,7 @@ function GgufAdvancedSettings({
           </InfoHint>
         </div>
         <Select
+          disabled={config.virtualKv}
           value={config.speculativeType ?? speculativeFallback}
           onValueChange={(v) =>
             update({
@@ -610,7 +719,7 @@ function GgufAdvancedSettings({
         </Select>
       </div>
 
-      {isMtp && (
+      {isMtp && !config.virtualKv && (
         <div className={ROW_CLASS}>
           <div className="flex min-w-0 items-center gap-1.5">
             <span className={LABEL_CLASS}>Draft Tokens</span>
@@ -677,6 +786,7 @@ function GgufAdvancedSettings({
             }
           }}
           aria-label="Parallel decode slots"
+          disabled={config.virtualKv}
           className={NUMBER_INPUT_CLASS}
         />
       </div>
@@ -777,6 +887,7 @@ export function ModelConfigPage({
   const [remember, setRemember] = useState(() => initial.remembered);
   const [savedRemember, setSavedRemember] = useState(() => initial.remembered);
   const [speculativeFallback] = useState(readPersistedSpeculativeType);
+  const [virtualKvSupported, setVirtualKvSupported] = useState(false);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(() =>
     hasNonDefaultAdvanced(config),
@@ -809,6 +920,26 @@ export function ModelConfigPage({
 
   const update = (patch: Partial<PerModelConfig>) =>
     setConfig((current) => ({ ...current, ...patch }));
+
+  useEffect(() => {
+    if (!target.isGguf) {
+      setVirtualKvSupported(false);
+      return;
+    }
+    let cancelled = false;
+    getInferenceStatus()
+      .then((status) => {
+        if (!cancelled) {
+          setVirtualKvSupported(status.llama_cpp_supports_virtual_kv === true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setVirtualKvSupported(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [target.isGguf]);
 
   // Fetch GGUF header dims (context + layer/MoE counts) to size the GPU Memory
   // sliders; the context also fills in below when target.meta lacks it.
@@ -1210,6 +1341,7 @@ export function ModelConfigPage({
                 layerCount={stagedDims?.layerCount ?? null}
                 moeLayerCount={stagedDims?.moeLayerCount ?? null}
                 isDiffusion={resolvedIsDiffusion}
+                virtualKvSupported={virtualKvSupported}
                 gpuDevices={gpuDevices}
                 gpuLayersInputRef={gpuLayersInputRef}
                 moeLayersInputRef={moeLayersInputRef}

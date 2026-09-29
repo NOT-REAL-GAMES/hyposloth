@@ -232,6 +232,22 @@ def test_small_context_keeps_q8_kv():
     assert plan.ctx_cap == 2048
 
 
+def test_architecture_kv_reserve_precedes_warm_experts():
+    targets = StreamingTargets(
+        context_tokens = 8192,
+        kv_bytes_per_token = 64 * 1024,
+        kv_fixed_bytes = 32 * 1024**2,
+        kv_cache_type = "f16",
+    )
+    plan = plan_moe_streaming(_deepseek_meta(), _hw(), targets)
+    assert plan.feasible is True
+    assert plan.streaming is True
+    assert plan.kv_cache_type_k == "f16"
+    assert plan.kv_cache_type_v == "f16"
+    assert any("architecture-aware runtime geometry" in note for note in plan.notes)
+    assert plan.resident_ram_bytes <= int(0.75 * 110 * GIB)
+
+
 def test_unprobed_nvme_uses_default_and_reports_it():
     plan = plan_moe_streaming(_deepseek_meta(), _hw(nvme_read_mbps = 0.0), StreamingTargets())
     assert plan.feasible is True

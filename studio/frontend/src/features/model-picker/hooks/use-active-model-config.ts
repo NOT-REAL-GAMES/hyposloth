@@ -18,6 +18,10 @@ export function useActiveModelConfig(): ActiveModelConfigState {
   const ggufContextLength = useChatRuntimeStore((s) => s.ggufContextLength);
   const customContextLength = useChatRuntimeStore((s) => s.customContextLength);
   const kvCacheDtype = useChatRuntimeStore((s) => s.kvCacheDtype);
+  const virtualKv = useChatRuntimeStore((s) => s.virtualKv);
+  const virtualKvRecentTokens = useChatRuntimeStore((s) => s.virtualKvRecentTokens);
+  const virtualKvSelectedTokens = useChatRuntimeStore((s) => s.virtualKvSelectedTokens);
+  const virtualKvExperimental = useChatRuntimeStore((s) => s.virtualKvExperimental);
   const speculativeType = useChatRuntimeStore((s) => s.speculativeType);
   const specDraftNMax = useChatRuntimeStore((s) => s.specDraftNMax);
   const nParallel = useChatRuntimeStore((s) => s.nParallel);
@@ -46,6 +50,10 @@ export function useActiveModelConfig(): ActiveModelConfigState {
       customContextLength: customContextLength ?? null,
       maxSeqLength: isGguf ? null : maxSeqLength,
       kvCacheDtype: kvCacheDtype ?? null,
+      virtualKv,
+      virtualKvRecentTokens,
+      virtualKvSelectedTokens,
+      virtualKvExperimental,
       speculativeType: speculativeType ?? "auto",
       specDraftNMax: specDraftNMax ?? null,
       nParallel: nParallel ?? null,
@@ -69,6 +77,10 @@ export function useActiveModelConfig(): ActiveModelConfigState {
     maxSeqLength,
     customContextLength,
     kvCacheDtype,
+    virtualKv,
+    virtualKvRecentTokens,
+    virtualKvSelectedTokens,
+    virtualKvExperimental,
     speculativeType,
     specDraftNMax,
     nParallel,

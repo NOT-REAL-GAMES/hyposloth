@@ -338,6 +338,15 @@ def normalize_model_override(payload: dict[str, Any]) -> dict[str, Any]:
     if kv_cache_dtype:
         entry["kv_cache_dtype"] = kv_cache_dtype
 
+    if _coerce_bool(payload.get("virtual_kv")):
+        entry["virtual_kv"] = True
+    for key in ("virtual_kv_recent_tokens", "virtual_kv_selected_tokens"):
+        parsed = _bounded_int(payload.get(key), minimum = 1, maximum = MAX_SEQ_LENGTH_CEILING)
+        if parsed and parsed != 8192:
+            entry[key] = parsed
+    if _coerce_bool(payload.get("virtual_kv_experimental")):
+        entry["virtual_kv_experimental"] = True
+
     speculative_type = _clean_str(payload.get("speculative_type"), VALID_SPECULATIVE_TYPES)
     if speculative_type:
         entry["speculative_type"] = speculative_type
@@ -445,6 +454,14 @@ def model_override_load_kwargs(override: dict[str, Any], *, is_gguf: bool) -> di
             kwargs[target] = override[source]
 
     if is_gguf:
+        for key in (
+            "virtual_kv",
+            "virtual_kv_recent_tokens",
+            "virtual_kv_selected_tokens",
+            "virtual_kv_experimental",
+        ):
+            if override.get(key) is not None:
+                kwargs[key] = override[key]
         # Slots are a llama-server flag, and the picker sends them for GGUF only.
         if override.get("n_parallel") is not None:
             kwargs["n_parallel"] = override["n_parallel"]

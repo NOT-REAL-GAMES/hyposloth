@@ -26,6 +26,14 @@ export interface ApiModelOverride {
   // biome-ignore lint/style/useNamingConvention: API schema
   kv_cache_dtype?: string;
   // biome-ignore lint/style/useNamingConvention: API schema
+  virtual_kv?: boolean;
+  // biome-ignore lint/style/useNamingConvention: API schema
+  virtual_kv_recent_tokens?: number;
+  // biome-ignore lint/style/useNamingConvention: API schema
+  virtual_kv_selected_tokens?: number;
+  // biome-ignore lint/style/useNamingConvention: API schema
+  virtual_kv_experimental?: boolean;
+  // biome-ignore lint/style/useNamingConvention: API schema
   speculative_type?: string;
   // biome-ignore lint/style/useNamingConvention: API schema
   spec_draft_n_max?: number;
@@ -89,6 +97,18 @@ export function toApiOverride(config: PerModelConfig | null): ApiModelOverride {
   }
   if (config.kvCacheDtype) {
     payload.kv_cache_dtype = config.kvCacheDtype;
+  }
+  if (config.virtualKv) {
+    payload.virtual_kv = true;
+  }
+  if ((config.virtualKvRecentTokens ?? 8192) !== 8192) {
+    payload.virtual_kv_recent_tokens = config.virtualKvRecentTokens;
+  }
+  if ((config.virtualKvSelectedTokens ?? 8192) !== 8192) {
+    payload.virtual_kv_selected_tokens = config.virtualKvSelectedTokens;
+  }
+  if (config.virtualKvExperimental) {
+    payload.virtual_kv_experimental = true;
   }
   if (config.speculativeType) {
     payload.speculative_type = config.speculativeType;

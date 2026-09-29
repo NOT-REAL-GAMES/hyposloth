@@ -1612,6 +1612,25 @@ def _kv_bytes_per_elem(cache_type: Optional[str]) -> float:
     }.get((cache_type or "f16").strip().lower(), 2.0)
 
 
+def _kv_row_size_bytes(cache_type: Optional[str], width: int) -> int:
+    """llama.cpp row bytes for one quantized KV vector."""
+    kind = (cache_type or "f16").strip().lower()
+    scalar = {"f32": 4, "f16": 2, "bf16": 2}.get(kind)
+    if scalar is not None:
+        return max(0, width) * scalar
+    block_bytes = {
+        "q8_0": 34,
+        "q5_1": 24,
+        "q5_0": 22,
+        "q4_1": 20,
+        "q4_0": 18,
+        "iq4_nl": 18,
+    }.get(kind)
+    if block_bytes is None:
+        return max(0, width) * 2
+    return ((max(0, width) + 31) // 32) * block_bytes
+
+
 def _pad_kv_cells(cells: int) -> int:
     return ((cells + 255) // 256) * 256
 
@@ -2424,6 +2443,11 @@ class LlamaCppBackend:
         self._supports_preserve_thinking: bool = False
         self._supports_tools: bool = False
         self._cache_type_kv: Optional[str] = None
+        self._virtual_kv: bool = False
+        self._virtual_kv_recent_tokens: int = 8192
+        self._virtual_kv_selected_tokens: int = 8192
+        self._virtual_kv_experimental: bool = False
+        self._virtual_kv_plan: Optional[dict] = None
         # Whether --split-mode tensor was applied on the active load.
         self._tensor_parallel: bool = False
         # GPU memory strategy applied on the active load ("auto"/"manual").
@@ -2490,6 +2514,9 @@ class LlamaCppBackend:
         self._ssm_state_size: Optional[int] = None
         self._ssm_conv_kernel: Optional[int] = None
         self._kda_head_dim: Optional[int] = None
+        self._indexer_key_length: Optional[int] = None
+        self._indexer_kpool: Optional[int] = None
+        self._indexer_types: Optional[list[bool]] = None
         # Last N layers reuse earlier layers' KV and don't allocate their own
         # cache (Gemma 3n / Gemma 4: <arch>.attention.shared_kv_layers).
         self._shared_kv_layers: Optional[int] = None
@@ -2922,6 +2949,26 @@ class LlamaCppBackend:
         return self._cache_type_kv
 
     @property
+    def virtual_kv_plan(self) -> Optional[dict]:
+        return self._virtual_kv_plan
+
+    @property
+    def virtual_kv(self) -> bool:
+        return self._virtual_kv
+
+    @property
+    def virtual_kv_recent_tokens(self) -> int:
+        return self._virtual_kv_recent_tokens
+
+    @property
+    def virtual_kv_selected_tokens(self) -> int:
+        return self._virtual_kv_selected_tokens
+
+    @property
+    def virtual_kv_experimental(self) -> bool:
+        return self._virtual_kv_experimental
+
+    @property
     def tensor_parallel(self) -> bool:
         """Whether --split-mode tensor is active on the loaded server."""
         return self._tensor_parallel
@@ -3205,8 +3252,8 @@ class LlamaCppBackend:
         2.  ~/.unsloth/llama.cpp/llama-server        (make build, root dir)
         3.  ~/.unsloth/llama.cpp/build/bin/llama-server  (cmake build, Linux)
         4.  ~/.unsloth/llama.cpp/build/bin/Release/llama-server.exe  (cmake build, Windows)
-        5.  ./llama.cpp/llama-server                 (legacy: make build, root dir)
-        6.  ./llama.cpp/build/bin/llama-server        (legacy: cmake in-tree build)
+        5.  Any build-*/bin layout under those llama.cpp directories
+        6.  ./llama.cpp legacy root/in-tree layouts
         7.  llama-server on PATH                     (system install)
         8.  ./bin/llama-server                       (legacy: extracted binary)
         """
@@ -3234,6 +3281,18 @@ class LlamaCppBackend:
             cands = [d / binary_name, d / "build" / "bin" / binary_name]
             if sys.platform == "win32":
                 cands.append(d / "build" / "bin" / "Release" / binary_name)
+
+            try:
+                build_dirs = sorted(
+                    (p for p in d.glob("build-*") if p.is_dir()),
+                    key = lambda p: ("cuda" not in p.name.lower(), p.name.lower()),
+                )
+            except OSError:
+                build_dirs = []
+            for build_dir in build_dirs:
+                cands.append(build_dir / "bin" / binary_name)
+                if sys.platform == "win32":
+                    cands.append(build_dir / "bin" / "Release" / binary_name)
             return cands
 
         def _unavailable(p: object) -> None:
@@ -3357,6 +3416,7 @@ class LlamaCppBackend:
                 "supports_metrics": False,
                 "supports_slot_save": False,
                 "supports_rtr": False,
+                "supports_virtual_kv": False,
             }
         try:
             mtime = int(Path(bin_path).stat().st_mtime)
@@ -3379,6 +3439,7 @@ class LlamaCppBackend:
         supports_metrics = False
         supports_slot_save = False
         supports_rtr = False
+        supports_virtual_kv = False
         saw_spec_type = False
         probe_ok = False
         help_text = ""
@@ -3491,6 +3552,7 @@ class LlamaCppBackend:
             supports_rtr = _is_real("--repurpose-tensor-cache") or bool(
                 re.search(r"(?<![A-Za-z0-9_-])-rtr(?![A-Za-z0-9_-])", help_text)
             )
+            supports_virtual_kv = _is_real("--virtual-kv")
         except (OSError, subprocess.SubprocessError) as exc:
             logger.debug(f"llama-server --help probe failed: {exc}")
             saw_spec_type = False
@@ -3528,6 +3590,7 @@ class LlamaCppBackend:
             "supports_metrics": supports_metrics,
             "supports_slot_save": supports_slot_save,
             "supports_rtr": supports_rtr,
+            "supports_virtual_kv": supports_virtual_kv,
         }
         cls._capability_cache[cache_key] = info
         return info
@@ -4246,6 +4309,8 @@ class LlamaCppBackend:
         effective_ctx: int,
         n_parallel: int,
         mtp_draft_path: Optional[str],
+        virtual_kv: bool = False,
+        cache_type_kv: Optional[str] = None,
     ) -> Optional[StreamingPlan]:
         """Run the MoE streaming planner for an auto-mode load, or None.
 
@@ -4266,21 +4331,30 @@ class LlamaCppBackend:
             mib = 1024 * 1024
             ram_avail = ram_avail_mib * mib
             vram_avail = sum(max(0, free) * mib for _idx, free in gpus)
+            ctx = effective_ctx if effective_ctx > 0 else (self._context_length or 8192)
+            virtual_reserve = (
+                self._virtual_kv_cpu_reservation(ctx, cache_type_kv) if virtual_kv else None
+            )
+            cold_kv_bytes = (
+                virtual_reserve[0] * ctx * max(1, n_parallel) + virtual_reserve[1]
+                if virtual_reserve
+                else 0
+            )
             # The planner's non-streaming gate: file fits 75% of available RAM
-            # plus free VRAM. Below it there is nothing to stream.
-            if gguf_size <= int(0.75 * ram_avail) + vram_avail:
+            # plus free VRAM. Virtual KV owns its CPU reservation first, so
+            # weights and experts may use only what remains.
+            resident_capacity = max(0, int(0.75 * ram_avail) - cold_kv_bytes) + vram_avail
+            if gguf_size <= resident_capacity:
                 return None
             try:
                 # Lazy: utils/hardware/__init__ pulls the torch hardware chain,
                 # which must stay out of this module's import time.
                 from utils.hardware.disk_speed import probe_sequential_read_mbps
-
                 nvme_mbps = probe_sequential_read_mbps(model_path)
             except Exception:
                 nvme_mbps = 0.0
             try:
                 import psutil
-
                 ram_total = int(psutil.virtual_memory().total)
             except Exception:
                 ram_total = 0
@@ -4305,10 +4379,12 @@ class LlamaCppBackend:
                 nvme_read_mbps = nvme_mbps,
                 gpu_count = len(gpus),
             )
-            ctx = effective_ctx if effective_ctx > 0 else (self._context_length or 8192)
             targets = StreamingTargets(
                 context_tokens = ctx,
                 parallel_slots = max(1, n_parallel),
+                kv_bytes_per_token = virtual_reserve[0] if virtual_reserve else 0,
+                kv_fixed_bytes = virtual_reserve[1] if virtual_reserve else 0,
+                kv_cache_type = virtual_reserve[2] if virtual_reserve else None,
             )
             return plan_moe_streaming(meta, hw, targets)
         except Exception as exc:
@@ -4822,6 +4898,142 @@ class LlamaCppBackend:
         n_embd_r = 3 * max(0, d_conv - 1) * n_head * head_dim
         n_embd_s = head_dim * head_dim * n_head
         return int(n_recurrent * (n_embd_r + n_embd_s) * 4 * max(1, n_parallel))
+
+    def _virtual_kv_cpu_reservation(
+        self,
+        n_ctx: int,
+        cache_type_kv: Optional[str],
+    ) -> Optional[tuple[int, int, str]]:
+        """Return ``(bytes/token, fixed bytes, cache type)`` for cold virtual KV.
+
+        MLA adapters store one latent key row per full-attention layer. Generic
+        MHA/GQA/MQA adapters store their actual K and V rows. ``fixed`` covers
+        the page table and one reusable pinned bounce page; token metadata is
+        folded into the per-token value.
+        """
+        architecture = getattr(self, "_architecture", None)
+        if n_ctx <= 0 or architecture not in (
+            "kimi-k3",
+            "glm-dsa",
+            "glm5next",
+            "llama",
+            "qwen2",
+            "qwen3",
+        ) or not getattr(self, "_n_layers", None):
+            return None
+
+        n_layers = int(self._n_layers)
+        cache_type = (cache_type_kv or "f16").strip().lower()
+        descriptor_width = 0
+        layer_row = 0
+
+        if getattr(self, "_kv_lora_rank", None) is not None:
+            n_kv = self._n_kv_heads or 1
+            rope_dim = self._key_length_mla or 64
+            key_len = self._kv_key_length or (self._kv_lora_rank + rope_dim)
+            attention_layers = n_layers
+            if self._n_kv_heads_by_layer:
+                attention_layers = sum(
+                    1 for il in range(n_layers) if self._kv_heads_for_layer(il, n_kv) > 0
+                )
+            attention_layers = max(1, attention_layers)
+            descriptor_width = attention_layers * n_kv * key_len
+            layer_row = _kv_row_size_bytes(cache_type, n_kv * key_len)
+            cold_bytes_per_token = attention_layers * layer_row
+        else:
+            n_kv = self._n_kv_heads or self._n_heads or 1
+            key_len = self._kv_key_length or self._legacy_head_dim()
+            value_len = self._kv_value_length or self._legacy_head_dim()
+            shared_layers = getattr(self, "_shared_kv_layers", None) or 0
+            cold_bytes_per_token = 0
+            for il in range(max(1, n_layers - shared_layers)):
+                layer_heads = self._kv_heads_for_layer(il, n_kv)
+                if layer_heads <= 0:
+                    continue
+                key_width = layer_heads * key_len
+                value_width = layer_heads * value_len
+                row = _kv_row_size_bytes(cache_type, key_width) + _kv_row_size_bytes(
+                    cache_type, value_width
+                )
+                cold_bytes_per_token += row
+                descriptor_width += key_width
+                layer_row = max(layer_row, row)
+            if cold_bytes_per_token <= 0:
+                return None
+
+        if architecture in ("glm-dsa", "glm5next"):
+            # GLM-DSA scores individual cached indexer keys. GLM5Next alone
+            # has the trained four-token pooling operator.
+            page_size = 1 if architecture == "glm-dsa" else (self._indexer_kpool or 4)
+        else:
+            # Match the CUDA planner's smallest descriptor page under 512 MiB.
+            page_size = 0
+            for candidate in (256, 512, 1024, 2048):
+                pages = (n_ctx + candidate - 1) // candidate
+                if pages * descriptor_width * 4 <= 512 * 1024**2:
+                    page_size = candidate
+                    break
+            if page_size == 0:
+                return None
+
+        page_count = (n_ctx + page_size - 1) // page_size
+        # 16 bytes/token is the immutable-token/physical-slot metadata used by
+        # the C++ plan.  The page table is 16 bytes/page; the bounce buffer is
+        # one layer row per token in a page and is reused across layers.
+        bytes_per_token = cold_bytes_per_token + 16
+        fixed_bytes = page_count * 16 + page_size * layer_row
+        return bytes_per_token, fixed_bytes, cache_type
+
+    def _virtual_kv_descriptor_context_cap(self) -> Optional[int]:
+        """Largest GLM context whose native Q8 index descriptors fit one GPU.
+
+        The CUDA planner enforces the same 512 MiB ceiling.  Studio uses this
+        conservative single-device value only for an automatic context; an
+        explicit context is left for llama.cpp's placement-aware preflight,
+        which can account for layer ownership across multiple GPUs.
+        """
+        if self._architecture not in ("glm-dsa", "glm5next") or not self._n_layers:
+            return None
+
+        n_layers = int(self._n_layers)
+        if self._architecture == "glm5next":
+            full_indexer_layers = n_layers
+            pool_size = self._indexer_kpool or 4
+        else:
+            pool_size = 1
+            if self._indexer_types:
+                full_indexer_layers = sum(bool(x) for x in self._indexer_types[:n_layers])
+            elif (self._context_length or 0) < 1024 * 1024:
+                # GLM 5/5.1 defaulted every layer to a full indexer.
+                full_indexer_layers = n_layers
+            else:
+                # llama.cpp's GLM 5.2/5.3 compatibility default: layers 0, 1,
+                # 2, then every fourth layer starting at layer 6.
+                full_indexer_layers = min(n_layers, 3) + len(range(6, n_layers, 4))
+
+        if full_indexer_layers <= 0:
+            return None
+        row_bytes = _kv_row_size_bytes("q8_0", self._indexer_key_length or 128)
+        pooled_rows = (512 * 1024**2) // (full_indexer_layers * row_bytes)
+        # llama.cpp pads context allocations to 256-token boundaries.  Round
+        # down here so that padding cannot push the descriptor arena over cap.
+        return max(256, (pooled_rows * pool_size // 256) * 256)
+
+    @staticmethod
+    def _validate_virtual_kv_request(architecture: Optional[str], experimental: bool) -> None:
+        """Reject a virtual-KV load before llama.cpp maps a potentially huge GGUF."""
+        compatible = {"glm-dsa", "glm5next", "kimi-k3", "llama", "qwen2", "qwen3"}
+        certified: set[str] = set()
+        if architecture not in compatible:
+            raise ValueError(
+                f"Virtual KV is not structurally validated for architecture "
+                f"'{architecture or 'unknown'}'."
+            )
+        if architecture not in certified and not experimental:
+            raise ValueError(
+                f"Virtual KV for architecture '{architecture}' has not passed certification. "
+                "Enable the Experimental override to opt in."
+            )
 
     def _legacy_head_dim(self) -> int:
         """Head-dim fallback for GGUFs without explicit key/value dims. Reached
@@ -5731,6 +5943,9 @@ class LlamaCppBackend:
         self._ssm_state_size = None
         self._ssm_conv_kernel = None
         self._kda_head_dim = None
+        self._indexer_key_length = None
+        self._indexer_kpool = None
+        self._indexer_types = None
         self._shared_kv_layers = None
         self._nextn_predict_layers = None
         self._architecture = None
@@ -5825,6 +6040,9 @@ class LlamaCppBackend:
                                         f"{arch}.ssm.state_size": "ssm_state_size",
                                         f"{arch}.ssm.conv_kernel": "ssm_conv_kernel",
                                         f"{arch}.kda.head_dim": "kda_head_dim",
+                                        f"{arch}.attention.indexer.key_length": "indexer_key_length",
+                                        f"{arch}.attention.indexer.kpool": "indexer_kpool",
+                                        f"{arch}.attention.indexer.types": "indexer_types",
                                         f"{arch}.nextn_predict_layers": "nextn_predict_layers",
                                     }
                                 elif key == "tokenizer.chat_template":
@@ -5858,6 +6076,8 @@ class LlamaCppBackend:
                                 elif attr == "sliding_window_pattern" and val_a is not None:
                                     self._sliding_window_pattern = [bool(x) for x in val_a]
                                     sliding_window_pattern_period = None
+                                elif attr == "indexer_types" and val_a is not None:
+                                    self._indexer_types = [bool(x) for x in val_a]
                             else:
                                 self._gguf_skip_value(f, vtype)
                         else:
@@ -6138,6 +6358,8 @@ class LlamaCppBackend:
         self._is_audio = False  # clear any prior TTS/audio model's routing flag
         self._model_identifier = model_identifier
         self._cache_type_kv = None
+        self._virtual_kv = False
+        self._virtual_kv_plan = None
         self._swa_full = False
         self._kv_cache_unified = False
         self._n_ubatch = self._DEFAULT_N_UBATCH
@@ -7372,6 +7594,10 @@ class LlamaCppBackend:
         n_ctx: int = 4096,
         chat_template_override: Optional[str] = None,
         cache_type_kv: Optional[str] = None,
+        virtual_kv: bool = False,
+        virtual_kv_recent_tokens: int = 8192,
+        virtual_kv_selected_tokens: int = 8192,
+        virtual_kv_experimental: bool = False,
         speculative_type: Optional[str] = None,
         spec_draft_n_max: Optional[int] = None,
         tensor_parallel: bool = False,
@@ -7398,6 +7624,15 @@ class LlamaCppBackend:
 
         Returns True if the server started and the health check passed.
         """
+        if virtual_kv:
+            spec_mode = _canonicalize_spec_mode(speculative_type) or "auto"
+            if spec_mode not in ("auto", "off") or _extra_args_set_spec_type(extra_args):
+                raise ValueError(
+                    "Virtual KV cannot be combined with explicit speculative decoding."
+                )
+            speculative_type = "off"
+            n_parallel = 1
+
         # Raw load inputs so the runtime MTP-crash reload can replay this model
         # without MTP. Committed to _last_load_kwargs only on a healthy load.
         _pending_load_kwargs = {
@@ -7412,6 +7647,10 @@ class LlamaCppBackend:
             "n_ctx": n_ctx,
             "chat_template_override": chat_template_override,
             "cache_type_kv": cache_type_kv,
+            "virtual_kv": virtual_kv,
+            "virtual_kv_recent_tokens": virtual_kv_recent_tokens,
+            "virtual_kv_selected_tokens": virtual_kv_selected_tokens,
+            "virtual_kv_experimental": virtual_kv_experimental,
             "speculative_type": speculative_type,
             "spec_draft_n_max": spec_draft_n_max,
             "tensor_parallel": tensor_parallel,
@@ -7447,6 +7686,10 @@ class LlamaCppBackend:
                 hf_variant = hf_variant,
                 n_ctx = n_ctx,
                 cache_type_kv = cache_type_kv,
+                virtual_kv = virtual_kv,
+                virtual_kv_recent_tokens = virtual_kv_recent_tokens,
+                virtual_kv_selected_tokens = virtual_kv_selected_tokens,
+                virtual_kv_experimental = virtual_kv_experimental,
                 speculative_type = speculative_type,
                 spec_draft_n_max = spec_draft_n_max,
                 tensor_parallel = tensor_parallel,
@@ -7644,6 +7887,11 @@ class LlamaCppBackend:
 
             # Read GGUF metadata (context_length, chat_template); header-only.
             self._read_gguf_metadata(model_path)
+            if virtual_kv:
+                self._validate_virtual_kv_request(
+                    self._architecture,
+                    virtual_kv_experimental,
+                )
 
             if self._cancel_event.is_set():
                 logger.info("Load cancelled after download phase")
@@ -7692,6 +7940,11 @@ class LlamaCppBackend:
                 raise LlamaServerNotFoundError(LLAMA_SERVER_NOT_FOUND_DETAIL)
 
             server_caps = self.probe_server_capabilities(binary)
+            if virtual_kv and not server_caps.get("supports_virtual_kv"):
+                raise ValueError(
+                    "The selected llama-server binary does not support Virtual KV. "
+                    "Build this checkout with --with-llama-cpp-dir or update the prebuilt."
+                )
 
             # Outside ``self._lock`` so /unload, /cancel, /status aren't
             # blocked. ``unload_model`` also records the kill, so the
@@ -7868,6 +8121,16 @@ class LlamaCppBackend:
                     )
                 effective_ctx = requested_ctx if requested_ctx > 0 else (self._context_length or 0)
                 max_available_ctx = self._context_length or effective_ctx
+                virtual_kv_descriptor_cap = (
+                    self._virtual_kv_descriptor_context_cap() if virtual_kv else None
+                )
+                if (
+                    requested_ctx <= 0
+                    and virtual_kv_descriptor_cap
+                    and effective_ctx > virtual_kv_descriptor_cap
+                ):
+                    effective_ctx = virtual_kv_descriptor_cap
+                    max_available_ctx = min(max_available_ctx, virtual_kv_descriptor_cap)
                 gpus: list[tuple[int, int]] = []
                 # Keep fit-budget and launch-flag mmproj resolution in sync.
                 launch_mmproj_path = None
@@ -7985,6 +8248,18 @@ class LlamaCppBackend:
                     # Default UI ceiling to the native context length;
                     # GPU/VRAM-fit logic below may shrink it on limited HW.
                     max_available_ctx = self._context_length or effective_ctx
+                    if (
+                        requested_ctx <= 0
+                        and virtual_kv_descriptor_cap
+                        and effective_ctx > virtual_kv_descriptor_cap
+                    ):
+                        effective_ctx = virtual_kv_descriptor_cap
+                        max_available_ctx = min(max_available_ctx, virtual_kv_descriptor_cap)
+                        logger.info(
+                            "Virtual KV automatic context capped at %d tokens by the "
+                            "per-GPU GLM descriptor budget",
+                            virtual_kv_descriptor_cap,
+                        )
 
                     # MoE streaming planner (auto mode only): when the file can
                     # never fit RAM + VRAM, plan the NVMe expert-streaming
@@ -8001,6 +8276,8 @@ class LlamaCppBackend:
                             effective_ctx = effective_ctx,
                             n_parallel = n_parallel,
                             mtp_draft_path = mtp_draft_path,
+                            virtual_kv = virtual_kv,
+                            cache_type_kv = cache_type_kv,
                         )
                         if _plan is not None and _plan.streaming:
                             _moe_stream_plan = _plan
@@ -8015,7 +8292,11 @@ class LlamaCppBackend:
                         # Tensor parallelism was already dropped above (before the
                         # cache-drop), so a quantized KV survives into this --fit load.
                         gpus = []
-                        effective_ctx = requested_ctx if requested_ctx > 0 else 0
+                        effective_ctx = (
+                            requested_ctx
+                            if requested_ctx > 0
+                            else (virtual_kv_descriptor_cap or 0)
+                        )
                         original_ctx = effective_ctx
                         # --fit aborts under --split-mode tensor; a raw extras
                         # --split-mode/--tensor-split (appended last) would
@@ -8031,7 +8312,12 @@ class LlamaCppBackend:
                         # VRAM, or by the Split ratio if set).
                         gpus = []
                         effective_ctx = (
-                            requested_ctx if requested_ctx > 0 else (self._context_length or 0)
+                            requested_ctx
+                            if requested_ctx > 0
+                            else (
+                                virtual_kv_descriptor_cap
+                                or (self._context_length or 0)
+                            )
                         )
                         original_ctx = effective_ctx
                         # Strip the user --split-mode when the toggle owns the split
@@ -8863,7 +9149,11 @@ class LlamaCppBackend:
                     logger.warning(f"GPU selection failed ({e}), using --fit on")
                     gpu_indices, use_fit = None, True
                     tp_tensor_split = None
-                    effective_ctx = requested_ctx  # fall back to original
+                    effective_ctx = (
+                        requested_ctx
+                        if requested_ctx > 0
+                        else (virtual_kv_descriptor_cap or 0)
+                    )
 
                 # An unenumerated explicit Vulkan ordinal can't be pinned; fail loudly
                 # instead of fitting onto an unselected device. Clear the raw selection
@@ -8989,6 +9279,18 @@ class LlamaCppBackend:
                     # Error out at n_ctx instead of silently rotating the KV cache; frontend catches it and points the user at "Context Length".
                     "--no-context-shift",
                 ]
+                if virtual_kv:
+                    cmd.extend(
+                        [
+                            "--virtual-kv",
+                            "--virtual-kv-recent",
+                            str(virtual_kv_recent_tokens),
+                            "--virtual-kv-selected",
+                            str(virtual_kv_selected_tokens),
+                        ]
+                    )
+                    if virtual_kv_experimental:
+                        cmd.append("--virtual-kv-experimental")
                 # A positive context is always passed (in auto-fit, --fit then
                 # optimizes the gpu-layer offload around it). When auto-fit has
                 # no explicit context, omit -c so --fit sizes it to fit VRAM:
@@ -9928,6 +10230,10 @@ class LlamaCppBackend:
 
                 self._healthy = True
                 self._commit_effective_parallel_slots(n_parallel)
+                self._virtual_kv = virtual_kv
+                self._virtual_kv_recent_tokens = virtual_kv_recent_tokens
+                self._virtual_kv_selected_tokens = virtual_kv_selected_tokens
+                self._virtual_kv_experimental = virtual_kv_experimental
                 self._swa_full = swa_full
                 self._kv_cache_unified = kv_cache_unified
                 self._n_ubatch = max(
@@ -9950,6 +10256,7 @@ class LlamaCppBackend:
                 # before the spawn above always failed; the seeded value was the
                 # requested/native length.)
                 self._reconcile_effective_ctx_with_server()
+                self._virtual_kv_plan = self._query_virtual_kv_plan() if virtual_kv else None
                 if self._kv_cache_context_total is not None:
                     self._n_ubatch = min(
                         self._n_ubatch,
@@ -10375,6 +10682,10 @@ class LlamaCppBackend:
         hf_variant: Optional[str],
         n_ctx: int,
         cache_type_kv: Optional[str],
+        virtual_kv: bool = False,
+        virtual_kv_recent_tokens: int = 8192,
+        virtual_kv_selected_tokens: int = 8192,
+        virtual_kv_experimental: bool = False,
         speculative_type: Optional[str],
         chat_template_override: Optional[str],
         extra_args: Optional[List[str]],
@@ -10423,6 +10734,13 @@ class LlamaCppBackend:
             return value
 
         if _norm(self._cache_type_kv) != _norm(cache_type_kv):
+            return False
+        if (
+            self._virtual_kv != bool(virtual_kv)
+            or self._virtual_kv_recent_tokens != int(virtual_kv_recent_tokens)
+            or self._virtual_kv_selected_tokens != int(virtual_kv_selected_tokens)
+            or self._virtual_kv_experimental != bool(virtual_kv_experimental)
+        ):
             return False
         # Reconcile a user --split-mode in extras AND an inherited tensor
         # LLAMA_ARG_SPLIT_MODE env, but only against a server that actually
@@ -10675,6 +10993,11 @@ class LlamaCppBackend:
             self._supports_preserve_thinking = False
             self._supports_tools = False
             self._cache_type_kv = None
+            self._virtual_kv = False
+            self._virtual_kv_recent_tokens = 8192
+            self._virtual_kv_selected_tokens = 8192
+            self._virtual_kv_experimental = False
+            self._virtual_kv_plan = None
             # GPU-pin state describes the active runner only; clear it so an explicit
             # pin never leaks into the next (or diffusion) runner.
             self._gpu_ids = None
@@ -11682,6 +12005,17 @@ class LlamaCppBackend:
             settings = resp.json().get("default_generation_settings") or {}
             n_ctx = settings.get("n_ctx")
             return int(n_ctx) if n_ctx else None
+        except Exception:
+            return None
+
+    def _query_virtual_kv_plan(self) -> Optional[dict]:
+        """Return the immutable plan published by a virtual-KV server."""
+        try:
+            resp = httpx.get(f"{self.base_url}/props", timeout = 5.0, trust_env = False)
+            if resp.status_code != 200:
+                return None
+            plan = resp.json().get("virtual_kv_plan")
+            return plan if isinstance(plan, dict) else None
         except Exception:
             return None
 

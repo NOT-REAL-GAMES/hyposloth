@@ -1510,6 +1510,10 @@ async function autoLoadSmallestModel(): Promise<{
     gpu_ids?: number[];
     gpu_memory_mode?: "auto" | "manual";
     cache_type_kv?: string | null;
+    virtual_kv?: boolean;
+    virtual_kv_recent_tokens?: number;
+    virtual_kv_selected_tokens?: number;
+    virtual_kv_experimental?: boolean;
     tensor_parallel?: boolean | null;
   }): Promise<boolean> {
     const validation = await validateModel({
@@ -1615,10 +1619,15 @@ async function autoLoadSmallestModel(): Promise<{
       config.customContextLength ?? null,
       effectiveMaxSeqLength,
     );
-    const effectiveSpeculativeType =
-      config.speculativeType ?? specSettings.speculativeType;
-    const effectiveSpecDraftNMax =
-      config.specDraftNMax ?? specSettings.specDraftNMax;
+    const effectiveVirtualKv =
+      candidate.kind === "gguf" && (config.virtualKv ?? false);
+    const effectiveSpeculativeType = effectiveVirtualKv
+      ? "off"
+      : (config.speculativeType ?? specSettings.speculativeType);
+    const effectiveSpecDraftNMax = effectiveVirtualKv
+      ? null
+      : (config.specDraftNMax ?? specSettings.specDraftNMax);
+    const effectiveNParallel = effectiveVirtualKv ? 1 : (config.nParallel ?? null);
     const effectiveChatTemplateOverride = config.chatTemplateOverride?.trim()
       ? config.chatTemplateOverride
       : null;
@@ -1629,13 +1638,17 @@ async function autoLoadSmallestModel(): Promise<{
         is_lora: false,
         gguf_variant: candidate.ggufVariant,
         cache_type_kv: config.kvCacheDtype,
+        virtual_kv: effectiveVirtualKv,
+        virtual_kv_recent_tokens: config.virtualKvRecentTokens,
+        virtual_kv_selected_tokens: config.virtualKvSelectedTokens,
+        virtual_kv_experimental: config.virtualKvExperimental,
         tensor_parallel: effectiveTensorParallel,
         // The same remembered-derived GPU pick the load below sends.
         ...(candidate.kind === "gguf"
           ? {
               gpu_ids: effectiveGpuIds ?? undefined,
               gpu_memory_mode: effectiveGpuMemoryMode,
-              n_parallel: config.nParallel ?? null,
+              n_parallel: effectiveNParallel,
             }
           : {}),
       }))
@@ -1656,6 +1669,10 @@ async function autoLoadSmallestModel(): Promise<{
       trust_remote_code: trustRemoteCode,
       chat_template_override: effectiveChatTemplateOverride,
       cache_type_kv: config.kvCacheDtype,
+      virtual_kv: effectiveVirtualKv,
+      virtual_kv_recent_tokens: config.virtualKvRecentTokens,
+      virtual_kv_selected_tokens: config.virtualKvSelectedTokens,
+      virtual_kv_experimental: config.virtualKvExperimental,
       speculative_type: effectiveSpeculativeType,
       spec_draft_n_max: effectiveSpecDraftNMax,
       tensor_parallel: effectiveTensorParallel,
@@ -1670,7 +1687,7 @@ async function autoLoadSmallestModel(): Promise<{
             n_cpu_moe: effectiveNCpuMoe,
             gpu_ids: effectiveGpuIds ?? undefined,
             // Per-model too, or the auto-load reverts a remembered override.
-            n_parallel: config.nParallel ?? null,
+            n_parallel: effectiveNParallel,
           }
         : {}),
     });
@@ -1727,7 +1744,7 @@ async function autoLoadSmallestModel(): Promise<{
       // there would mint a phantom override a saved preset carries onto a GGUF.
       const committedSlots = (loadResp.is_diffusion ?? false)
         ? null
-        : (config.nParallel ?? null);
+        : effectiveNParallel;
       useChatRuntimeStore.setState({
         ggufContextLength: loadResp.context_length ?? 131072,
         ggufMaxContextLength:
@@ -1742,6 +1759,14 @@ async function autoLoadSmallestModel(): Promise<{
         ...resolveToolsEnabledOnLoad(loadResp.supports_tools ?? false),
         kvCacheDtype: loadResp.cache_type_kv ?? null,
         loadedKvCacheDtype: loadResp.cache_type_kv ?? null,
+        virtualKv: loadResp.virtual_kv ?? false,
+        loadedVirtualKv: loadResp.virtual_kv ?? false,
+        virtualKvRecentTokens: loadResp.virtual_kv_recent_tokens ?? 8192,
+        loadedVirtualKvRecentTokens: loadResp.virtual_kv_recent_tokens ?? 8192,
+        virtualKvSelectedTokens: loadResp.virtual_kv_selected_tokens ?? 8192,
+        loadedVirtualKvSelectedTokens: loadResp.virtual_kv_selected_tokens ?? 8192,
+        virtualKvExperimental: loadResp.virtual_kv_experimental ?? false,
+        loadedVirtualKvExperimental: loadResp.virtual_kv_experimental ?? false,
         // Click-time value, not the resolved backend echo (see performLoad).
         nParallel: committedSlots,
         loadedNParallel: committedSlots,
@@ -1771,6 +1796,14 @@ async function autoLoadSmallestModel(): Promise<{
         ...resolveToolsEnabledOnLoad(loadResp.supports_tools ?? false),
         kvCacheDtype: loadResp.cache_type_kv ?? null,
         loadedKvCacheDtype: loadResp.cache_type_kv ?? null,
+        virtualKv: false,
+        loadedVirtualKv: false,
+        virtualKvRecentTokens: 8192,
+        loadedVirtualKvRecentTokens: 8192,
+        virtualKvSelectedTokens: 8192,
+        loadedVirtualKvSelectedTokens: 8192,
+        virtualKvExperimental: false,
+        loadedVirtualKvExperimental: false,
         // GGUF-only and never sent here: a staged override would be saved for
         // a model that cannot use it.
         nParallel: null,
@@ -2056,6 +2089,14 @@ async function autoLoadSmallestModel(): Promise<{
         ...resolveToolsEnabledOnLoad(loadResp.supports_tools ?? false),
         kvCacheDtype: loadResp.cache_type_kv ?? null,
         loadedKvCacheDtype: loadResp.cache_type_kv ?? null,
+        virtualKv: false,
+        loadedVirtualKv: false,
+        virtualKvRecentTokens: 8192,
+        loadedVirtualKvRecentTokens: 8192,
+        virtualKvSelectedTokens: 8192,
+        loadedVirtualKvSelectedTokens: 8192,
+        virtualKvExperimental: false,
+        loadedVirtualKvExperimental: false,
         // The request above omits n_parallel: a staged override left from a
         // preset would read as applied and be re-sent by the next Apply.
         nParallel: null,

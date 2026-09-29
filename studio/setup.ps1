@@ -97,6 +97,27 @@ $IsPipInstall = -not (Test-Path $FrontendDir)
 # Helper functions
 # ─────────────────────────────────────────────
 
+function Get-LlamaServerCandidates {
+    param([Parameter(Mandatory = $true)][string]$Root)
+
+    $candidates = @(
+        (Join-Path $Root "llama-server.exe"),
+        (Join-Path $Root "build\bin\llama-server.exe"),
+        (Join-Path $Root "build\bin\Release\llama-server.exe")
+    )
+
+    if (Test-Path -LiteralPath $Root -PathType Container) {
+        $buildDirs = @(Get-ChildItem -LiteralPath $Root -Directory -Filter "build-*" -ErrorAction SilentlyContinue |
+            Sort-Object @{ Expression = { if ($_.Name -match '(?i)cuda') { 0 } else { 1 } } }, Name)
+        foreach ($dir in $buildDirs) {
+            $candidates += Join-Path $dir.FullName "bin\llama-server.exe"
+            $candidates += Join-Path $dir.FullName "bin\Release\llama-server.exe"
+        }
+    }
+
+    return $candidates
+}
+
 # Reload ALL environment variables from registry.
 # Picks up changes made by installers (winget, msi, etc.) including
 # Path, CUDA_PATH, CUDA_PATH_V*, and any other vars they set.
@@ -1720,8 +1741,8 @@ if (-not $HasGit) {
     $_localLlamaBuilt = $false
     if ($_localLlamaDir) {
         # Same layout candidates as the reuse check in Phase 4.
-        foreach ($_c in @("llama-server.exe", "build\bin\llama-server.exe", "build\bin\Release\llama-server.exe")) {
-            if (Test-Path -LiteralPath (Join-Path $_localLlamaDir $_c)) { $_localLlamaBuilt = $true; break }
+        foreach ($_c in Get-LlamaServerCandidates -Root $_localLlamaDir) {
+            if (Test-Path -LiteralPath $_c -PathType Leaf) { $_localLlamaBuilt = $true; break }
         }
     }
     if (-not $_localLlamaBuilt) {
@@ -3811,14 +3832,11 @@ if ($LocalLlamaCppSrc) {
     $ResolvedLocal = (Resolve-Path -LiteralPath $LocalLlamaCppSrc).Path
     # Reusing a local dir disables both the prebuilt download and the source
     # build, so a runnable llama-server.exe must already be present. Accept any
-    # layout LlamaCppBackend._layout_candidates() resolves (root-level, build\bin,
-    # or build\bin\Release) so the flag never rejects a tree Hyposloth could run.
+    # layout LlamaCppBackend._layout_candidates() resolves, including named CMake
+    # build directories such as build-vkv-cuda.
     $LocalLlamaServerFound = $false
-    foreach ($_cand in @(
-            (Join-Path $ResolvedLocal "llama-server.exe"),
-            (Join-Path $ResolvedLocal "build\bin\llama-server.exe"),
-            (Join-Path $ResolvedLocal "build\bin\Release\llama-server.exe"))) {
-        if (Test-Path -LiteralPath $_cand) { $LocalLlamaServerFound = $true; break }
+    foreach ($_cand in Get-LlamaServerCandidates -Root $ResolvedLocal) {
+        if (Test-Path -LiteralPath $_cand -PathType Leaf) { $LocalLlamaServerFound = $true; break }
     }
     if ($ResolvedLocal -eq $LlamaCppDir) {
         # Points at the canonical install location itself: never delete-then-link
@@ -3836,7 +3854,7 @@ if ($LocalLlamaCppSrc) {
         # Fail clearly rather than junction an unbuilt or wrong-platform checkout
         # and leave Hyposloth with no usable binary.
         if (-not $LocalLlamaServerFound) {
-            step "llama.cpp" "no llama-server.exe under $ResolvedLocal (looked for .\llama-server.exe, .\build\bin and .\build\bin\Release) -- build llama.cpp there first, or drop --with-llama-cpp-dir" "Red"
+            step "llama.cpp" "no llama-server.exe under $ResolvedLocal (looked in the root and build*/bin layouts) -- build llama.cpp there first, or drop --with-llama-cpp-dir" "Red"
             Exit-SetupFailure "No llama-server.exe was found under $ResolvedLocal"
         }
         # If the target is already a junction/symlink (e.g. a previous
@@ -4045,11 +4063,8 @@ if ($LocalLlamaCppLinked) {
             Write-LlamaFailureLog -Output $prebuiltOutput
             substep "Free up disk or move UNSLOTH_STUDIO_HOME/TEMP to a larger volume, then re-run" "Yellow"
             $PreservedLlamaServerFound = $false
-            foreach ($_cand in @(
-                    (Join-Path $LlamaCppDir "llama-server.exe"),
-                    (Join-Path $LlamaCppDir "build\bin\llama-server.exe"),
-                    (Join-Path $LlamaCppDir "build\bin\Release\llama-server.exe"))) {
-                if (Test-Path -LiteralPath $_cand) { $PreservedLlamaServerFound = $true; break }
+            foreach ($_cand in Get-LlamaServerCandidates -Root $LlamaCppDir) {
+                if (Test-Path -LiteralPath $_cand -PathType Leaf) { $PreservedLlamaServerFound = $true; break }
             }
             if (-not $PreservedLlamaServerFound) { $script:LlamaCppDegraded = $true }
             # A preserved CUDA/ROCm/CPU server does not satisfy an explicit Vulkan

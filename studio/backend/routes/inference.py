@@ -3532,6 +3532,13 @@ def _request_matches_loaded_settings(
         llama_backend.cache_type_kv
     ):
         return False
+    if (
+        bool(request.virtual_kv) != llama_backend.virtual_kv
+        or int(request.virtual_kv_recent_tokens) != llama_backend.virtual_kv_recent_tokens
+        or int(request.virtual_kv_selected_tokens) != llama_backend.virtual_kv_selected_tokens
+        or bool(request.virtual_kv_experimental) != llama_backend.virtual_kv_experimental
+    ):
+        return False
     # Reconcile a user --split-mode in extras into the effective tensor state.
     # When the request omits llama_extra_args ("inherit"), compare using the
     # stored extras stripped the way the reload strips them, so an extras-driven
@@ -3591,7 +3598,11 @@ def _request_matches_loaded_settings(
     # llama.cpp #22673; the old ``not is_vision`` gate is gone), so compare
     # the real requested mode -- coercing vision to ``off`` here used to
     # swallow every spec-mode change on a vision model as already_loaded.
-    req_mode = _canonicalize_spec_mode(request.speculative_type) or "auto"
+    req_mode = (
+        "off"
+        if request.virtual_kv
+        else (_canonicalize_spec_mode(request.speculative_type) or "auto")
+    )
     backend_mode = llama_backend.requested_spec_mode or "auto"
     if req_mode != backend_mode:
         return False
@@ -5780,6 +5791,16 @@ async def _load_model_impl(
             if request.n_parallel is not None
             else getattr(_app_state, "llama_parallel_slots", 1)
         )
+        if request.virtual_kv:
+            requested_spec = _canonicalize_spec_mode(request.speculative_type) or "auto"
+            if requested_spec not in ("auto", "off") or _extra_args_set_spec_type(
+                request.llama_extra_args
+            ):
+                raise HTTPException(
+                    status_code = 400,
+                    detail = "Virtual KV cannot be combined with explicit speculative decoding.",
+                )
+            _n_parallel = 1
 
         is_direct_gguf_request = model_identifier.lower().endswith(".gguf")
         if request.gguf_variant or is_direct_gguf_request:
@@ -6107,6 +6128,10 @@ async def _load_model_impl(
                 n_ctx = request.max_seq_length,
                 chat_template_override = effective_chat_template_override,
                 cache_type_kv = request.cache_type_kv,
+                virtual_kv = request.virtual_kv,
+                virtual_kv_recent_tokens = request.virtual_kv_recent_tokens,
+                virtual_kv_selected_tokens = request.virtual_kv_selected_tokens,
+                virtual_kv_experimental = request.virtual_kv_experimental,
                 speculative_type = request.speculative_type,
                 spec_draft_n_max = request.spec_draft_n_max,
                 gpu_memory_mode = request.gpu_memory_mode,
@@ -6317,6 +6342,11 @@ async def _load_model_impl(
                 supports_preserve_thinking = llama_backend.supports_preserve_thinking,
                 supports_tools = llama_backend.supports_tools,
                 cache_type_kv = llama_backend.cache_type_kv,
+                virtual_kv_plan = llama_backend.virtual_kv_plan,
+                virtual_kv = llama_backend.virtual_kv,
+                virtual_kv_recent_tokens = llama_backend.virtual_kv_recent_tokens,
+                virtual_kv_selected_tokens = llama_backend.virtual_kv_selected_tokens,
+                virtual_kv_experimental = llama_backend.virtual_kv_experimental,
                 chat_template = llama_backend.chat_template,
                 speculative_type = llama_backend.requested_spec_mode,
                 spec_draft_n_max = llama_backend.spec_draft_n_max,
@@ -6814,7 +6844,9 @@ async def validate_model(
                 requested_gpu_ids = effective_gpu_ids,
                 llama_extra_args = effective_extra_args,
                 n_parallel = (
-                    request.n_parallel
+                    1
+                    if request.virtual_kv
+                    else request.n_parallel
                     if request.n_parallel is not None
                     # Same getattr chain as the load path: preflight must size like the load.
                     else getattr(
@@ -7604,6 +7636,7 @@ async def get_status(current_subject: str = Depends(get_current_subject)):
         llama_backend = get_llama_cpp_backend()
 
         # MTP probe + freshness check (both cached); drive the UI banner.
+        _caps = {}
         try:
             _bin = type(llama_backend)._find_llama_server_binary()
             _caps = type(llama_backend).probe_server_capabilities(_bin)
@@ -7688,6 +7721,11 @@ async def get_status(current_subject: str = Depends(get_current_subject)):
                 max_context_length = llama_backend.max_context_length,
                 native_context_length = llama_backend.native_context_length,
                 cache_type_kv = llama_backend.cache_type_kv,
+                virtual_kv_plan = llama_backend.virtual_kv_plan,
+                virtual_kv = llama_backend.virtual_kv,
+                virtual_kv_recent_tokens = llama_backend.virtual_kv_recent_tokens,
+                virtual_kv_selected_tokens = llama_backend.virtual_kv_selected_tokens,
+                virtual_kv_experimental = llama_backend.virtual_kv_experimental,
                 chat_template_override = _reported_chat_template_override,
                 speculative_type = llama_backend.requested_spec_mode,
                 spec_draft_n_max = llama_backend.spec_draft_n_max,
@@ -7704,6 +7742,7 @@ async def get_status(current_subject: str = Depends(get_current_subject)):
                 requested_gpu_ids = llama_backend.requested_gpu_ids,
                 **_parallel_slot_echo(llama_backend),
                 llama_cpp_supports_mtp = _supports_mtp,
+                llama_cpp_supports_virtual_kv = bool(_caps.get("supports_virtual_kv", False)),
                 spec_fallback_reason = llama_backend.spec_fallback_reason,
                 llama_cpp_prebuilt_stale = _stale,
                 llama_cpp_installed_tag = _installed_tag,
@@ -7761,6 +7800,7 @@ async def get_status(current_subject: str = Depends(get_current_subject)):
             context_length = _positive_int_or_none(model_info.get("context_length")),
             chat_template = chat_template,
             llama_cpp_supports_mtp = _supports_mtp,
+            llama_cpp_supports_virtual_kv = bool(_caps.get("supports_virtual_kv", False)),
             llama_cpp_prebuilt_stale = _stale,
             llama_cpp_installed_tag = _installed_tag,
             llama_cpp_latest_tag = _latest_tag,

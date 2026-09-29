@@ -1007,6 +1007,14 @@ type ChatRuntimeStore = {
   toolCallTimeout: number;
   kvCacheDtype: string | null;
   loadedKvCacheDtype: string | null;
+  virtualKv: boolean;
+  loadedVirtualKv: boolean | null;
+  virtualKvRecentTokens: number;
+  loadedVirtualKvRecentTokens: number | null;
+  virtualKvSelectedTokens: number;
+  loadedVirtualKvSelectedTokens: number | null;
+  virtualKvExperimental: boolean;
+  loadedVirtualKvExperimental: boolean | null;
   speculativeType: string | null;
   loadedSpeculativeType: string | null;
   /**
@@ -1553,6 +1561,14 @@ export const useChatRuntimeStore = create<ChatRuntimeStore>((set, get) => ({
   toolCallTimeout: 5,
   kvCacheDtype: null,
   loadedKvCacheDtype: null,
+  virtualKv: false,
+  loadedVirtualKv: null,
+  virtualKvRecentTokens: 8192,
+  loadedVirtualKvRecentTokens: null,
+  virtualKvSelectedTokens: 8192,
+  loadedVirtualKvSelectedTokens: null,
+  virtualKvExperimental: false,
+  loadedVirtualKvExperimental: null,
   speculativeType: readPersistedSpeculativeType(),
   loadedSpeculativeType: null,
   specFallbackReason: null,
@@ -1952,6 +1968,14 @@ export const useChatRuntimeStore = create<ChatRuntimeStore>((set, get) => ({
       activeDiffusionCanvasByThreadId: {},
       kvCacheDtype: null,
       loadedKvCacheDtype: null,
+      virtualKv: false,
+      loadedVirtualKv: null,
+      virtualKvRecentTokens: 8192,
+      loadedVirtualKvRecentTokens: null,
+      virtualKvSelectedTokens: 8192,
+      loadedVirtualKvSelectedTokens: null,
+      virtualKvExperimental: false,
+      loadedVirtualKvExperimental: null,
       speculativeType: readPersistedSpeculativeType(),
       loadedSpeculativeType: null,
       specFallbackReason: null,

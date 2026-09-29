@@ -169,6 +169,10 @@ class ModelOverridePayload(BaseModel):
     max_seq_length: Optional[int] = Field(default = None, ge = 1, le = 1048576)
     custom_context_length: Optional[int] = Field(default = None, ge = 1, le = 1048576)
     kv_cache_dtype: Optional[str] = Field(default = None, max_length = 32)
+    virtual_kv: bool = False
+    virtual_kv_recent_tokens: Optional[int] = Field(default = None, ge = 1, le = 1048576)
+    virtual_kv_selected_tokens: Optional[int] = Field(default = None, ge = 1, le = 1048576)
+    virtual_kv_experimental: bool = False
     speculative_type: Optional[str] = Field(default = None, max_length = 32)
     spec_draft_n_max: Optional[int] = Field(default = None, ge = 1, le = 16)
     # Parallel decode slots (llama-server --parallel), GGUF-only; None follows the server default.
@@ -206,6 +210,8 @@ class ModelOverridePayload(BaseModel):
         "custom_context_length",
         "spec_draft_n_max",
         "n_parallel",
+        "virtual_kv_recent_tokens",
+        "virtual_kv_selected_tokens",
         "gpu_layers",
         "n_cpu_moe",
         "gpu_ids",
@@ -514,8 +520,13 @@ def update_openai_auto_switch_override(
         if payload.remove is not None:
             is_removal = payload.remove
         else:
-            is_removal = not payload.tensor_parallel and not {
-                key: value for key, value in saved_fields.items() if key != "tensor_parallel"
+            default_false_fields = {
+                "tensor_parallel",
+                "virtual_kv",
+                "virtual_kv_experimental",
+            }
+            is_removal = not any(saved_fields.get(key) for key in default_false_fields) and not {
+                key: value for key, value in saved_fields.items() if key not in default_false_fields
             }
         if requested_extra_args is None and not is_removal:
             stored = get_model_override(payload.model_id)
@@ -600,6 +611,10 @@ def update_openai_auto_switch_override(
                 max_seq_length = payload.max_seq_length,
                 custom_context_length = payload.custom_context_length,
                 kv_cache_dtype = payload.kv_cache_dtype,
+                virtual_kv = payload.virtual_kv,
+                virtual_kv_recent_tokens = payload.virtual_kv_recent_tokens,
+                virtual_kv_selected_tokens = payload.virtual_kv_selected_tokens,
+                virtual_kv_experimental = payload.virtual_kv_experimental,
                 speculative_type = payload.speculative_type,
                 spec_draft_n_max = payload.spec_draft_n_max,
                 n_parallel = payload.n_parallel,
